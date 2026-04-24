@@ -1,99 +1,68 @@
-# MCP Server
 
-This README was created using the C# MCP server project template.
-It demonstrates how you can easily create an MCP server using C# and publish it as a NuGet package.
+# Reason MCP 🧠
 
-The MCP server is built as a self-contained application and does not require the .NET runtime to be installed on the target machine.
-However, since it is self-contained, it must be built for each target platform separately.
-By default, the template is configured to build for:
-* `win-x64`
-* `win-arm64`
-* `osx-arm64`
-* `linux-x64`
-* `linux-arm64`
-* `linux-musl-x64`
+**A high-performance, locally-hosted Model Context Protocol (MCP) server built in C# and .NET Core, designed for seamless integration with [Continue.dev](https://continue.dev).**
 
-If your users require more platforms to be supported, update the list of runtime identifiers in the project's `<RuntimeIdentifiers />` element.
+## 📖 The Story of "Reason"
 
-See [aka.ms/nuget/mcp/guide](https://aka.ms/nuget/mcp/guide) for the full guide.
+In Neal Stephenson’s foundational cyberpunk novel *Snow Crash*, the protagonists are given an experimental, nuclear-powered, water-cooled gatling gun. Printed on the side of the weapon is the Latin phrase *Ultima Ratio Regum*—"The Last Argument of Kings." When diplomacy, hacking, and standard negotiations fail, the characters simply say: *"Let's listen to Reason."*
 
-Please note that this template is currently in an early preview stage. If you have feedback, please take a [brief survey](http://aka.ms/dotnet-mcp-template-survey).
+In the modern software engineering landscape, we are currently living through an AI hype cycle dominated by "vibe-coding." Developers are rushing brittle, unarchitected prototypes to production, relying on non-deterministic LLMs to write logic they don't fully understand.
 
-## Checklist before publishing to NuGet.org
+I operate my career as the **"Adult in the Room"**. I believe that AI is an incredible productivity multiplier, but it must be governed by strict, deterministic architectural boundaries, type safety, and enterprise rigor.
 
-- Test the MCP server locally using the steps below.
-- Update the package metadata in the .csproj file, in particular the `<PackageId>`.
-- Update `.mcp/server.json` to declare your MCP server's inputs.
-  - See [configuring inputs](https://aka.ms/nuget/mcp/guide/configuring-inputs) for more details.
-- Pack the project using `dotnet pack`.
+When your AI coding assistant starts hallucinating bad architecture or forgetting your codebase's design patterns, it needs to be constrained by hard data, local RAG pipelines, and strict rules. It is time to make the AI listen to *Reason*.
 
-The `bin/Release` directory will contain the package file (.nupkg), which can be [published to NuGet.org](https://learn.microsoft.com/nuget/nuget-org/publish-a-package).
+## 🛠️ What is Reason MCP?
 
-## Developing locally
+While much of the current Model Context Protocol (MCP) ecosystem is heavily dominated by Python and Node.js/TypeScript reference implementations, **Reason MCP** brings the protocol to the robust, strongly-typed world of the modern Microsoft ecosystem.
 
-To test this MCP server from source code (locally) without using a built MCP server package, you can configure your IDE to run the project directly using `dotnet run`.
+This project is a standalone C#/.NET Core executable that operates over standard input/output (`stdio`). It acts as a local RAG (Retrieval-Augmented Generation) backend and vector database engine for the Continue.dev VS Code extension.
 
-```json
-{
-  "servers": {
-    "ReasonMCP": {
-      "type": "stdio",
-      "command": "dotnet",
-      "args": [
-        "run",
-        "--project",
-        "<PATH TO PROJECT DIRECTORY>"
-      ]
-    }
-  }
-}
+By running Reason MCP, your local AI coding agents gain secure, air-gapped, and lightning-fast access to your proprietary codebase context, Architecture Decision Records (ADRs), and coding standards.
+
+### Key Features
+* **Built on .NET Core:** Utilizing modern C# features, primary constructors, and high-performance asynchronous streams.
+* **Local Vector RAG:** Replaces basic text-search context with a robust vector embeddings pipeline (powered by Microsoft Semantic Kernel and SQLite Vector).
+* **Zero-Trust & Air-Gapped:** Runs entirely on local hardware. No cloud egress, no vendor lock-in, and no API costs.
+* **Continue.dev Native:** Plugs directly into the `config.yaml` of the Continue VS Code extension via the `stdio` transport layer.
+
+## ⚙️ Tech Stack
+* **Language:** C# 12 / .NET 10 (Preview)
+* **AI Orchestration:** Microsoft Semantic Kernel
+* **Protocol:** Model Context Protocol (MCP) JSON-RPC over `stdio`
+* **Data Layer:** SQLite / Vector Store
+
+## 🚀 Getting Started
+
+### 1. Build the Project
+Clone the repository and build the C# console application.
+```bash
+git clone https://github.com/djapothecary/ReasonMCP.git
+cd ReasonMCP
+dotnet build -c Release
 ```
 
-Refer to the VS Code or Visual Studio documentation for more information on configuring and using MCP servers:
+### 2. Configure Continue.dev
+Open your Continue.dev `config.yaml` or `config.json` (located in your `%APPDATA%\.continue\` or `~/.continue/` folder) and add Reason to your `mcpServers` array:
 
-- [Use MCP servers in VS Code (Preview)](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)
-- [Use MCP servers in Visual Studio (Preview)](https://learn.microsoft.com/visualstudio/ide/mcp-servers)
+```yaml
+mcpServers:
+  - name: Reason
+    command: dotnet
+    args:
+      - "run"
+      - "--project"
+      - "C:/Absolute/Path/To/Your/ReasonMCP.csproj"
+      - "-c"
+      - "Release"
+```
+*(Alternatively, you can point the `command` directly to the compiled `.exe` or `.dll` file).*
 
-## Testing the MCP Server
+### 3. Let it Reason
+Once configured, reload your VS Code window. The Continue.dev extension will automatically spin up the Reason MCP server in the background. You can now use tools provided by Reason directly in your chat context!
 
-Once configured, you can ask Copilot Chat for a random number, for example, `Give me 3 random numbers`. It should prompt you to use the `get_random_number` tool on the `ReasonMCP` MCP server and show you the results.
-
-## Publishing to NuGet.org
-
-1. Run `dotnet pack -c Release` to create the NuGet package
-2. Publish to NuGet.org with `dotnet nuget push bin/Release/*.nupkg --api-key <your-api-key> --source https://api.nuget.org/v3/index.json`
-
-## Using the MCP Server from NuGet.org
-
-Once the MCP server package is published to NuGet.org, you can configure it in your preferred IDE. Both VS Code and Visual Studio use the `dnx` command to download and install the MCP server package from NuGet.org.
-
-- **VS Code**: Create a `<WORKSPACE DIRECTORY>/.vscode/mcp.json` file
-- **Visual Studio**: Create a `<SOLUTION DIRECTORY>\.mcp.json` file
-
-For both VS Code and Visual Studio, the configuration file uses the following server definition:
-
-```json
-{
-  "servers": {
-    "ReasonMCP": {
-      "type": "stdio",
-      "command": "dnx",
-      "args": [
-        "<your package ID here>",
-        "--version",
-        "<your package version here>",
-        "--yes"
-      ]
-    }
-  }
-}
+## 🤝 Contributing
+As a champion of Clean Architecture and "Adult in the Room" engineering, contributions, pull requests, and discussions regarding C# design patterns are highly encouraged.
 ```
 
-## More information
-
-.NET MCP servers use the [ModelContextProtocol](https://www.nuget.org/packages/ModelContextProtocol) C# SDK. For more information about MCP:
-
-- [Official Documentation](https://modelcontextprotocol.io/)
-- [Protocol Specification](https://spec.modelcontextprotocol.io/)
-- [GitHub Organization](https://github.com/modelcontextprotocol)
-- [MCP C# SDK](https://modelcontextprotocol.github.io/csharp-sdk)
