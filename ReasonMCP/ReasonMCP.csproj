@@ -35,6 +35,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="11.0.0-preview.2.26159.112" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.2.0" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="10.2.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.Sqlite" Version="1.51.0-preview" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="1.70.0-preview" />
