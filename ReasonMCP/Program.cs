@@ -1,10 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
-using ReasonMcp.Extensions;
+using ReasonMCP.Data;
 using ReasonMCP.Extensions;
 using ReasonMCP.Models;
+using ReasonMCP.Workers;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -22,7 +22,12 @@ builder.Logging.AddConsole(o => o.LogToStandardErrorThreshold = LogLevel.Trace);
 //  Add services from extensions
 builder.AddReasonOllamaService();
 builder.AddReasonNomicEmbedService();
-await builder.AddReasonVectorDbService(builder.Configuration);
+builder.AddReasonVectorDbService();
+builder.AddReasonVectorStore();
+builder.AddFileServices();
+
+//  Register the Background Service
+builder.Services.AddHostedService<DocumentProcessingWorker>();
 
 // Add the MCP services: the transport to use (stdio) and the tools to register.
 builder.Services
@@ -39,8 +44,9 @@ using (var scope = host.Services.CreateAsyncScope())
 
     logger.LogInformation("Initializing ReasonMCP pre-flight ingestion ...");
 
-    //  File scanner (orchestrator) will go here
-    var kernel = services.GetRequiredService<Kernel>();
+    //  This gaurantees the vec0 tables exist BEFORE the background worker wakes up!
+    var dbInit = services.GetRequiredService<DatabaseInitializer>();
+    await dbInit.InitializeDatabaseAsync();
 
     logger.LogInformation("Ingestion complete. Start MCP Server loop ...");
 }

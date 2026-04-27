@@ -1,7 +1,6 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using OllamaSharp;
 
 namespace ReasonMCP.Extensions
@@ -15,8 +14,7 @@ namespace ReasonMCP.Extensions
             // Register the OllamaApiClient
             builder.Services.AddSingleton<IOllamaApiClient>(sp =>
             {
-                var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("Ollama");
-                httpClient.Timeout = TimeSpan.FromSeconds(300); // Changed from TimeOut to Timeout
+                var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("Alpacca");
                 return new OllamaApiClient(httpClient) { SelectedModel = "nomic-embed-text:v1.5" };
             });
 

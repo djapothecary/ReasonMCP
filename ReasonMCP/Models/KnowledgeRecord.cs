@@ -26,6 +26,6 @@ namespace ReasonMCP.Models
         [VectorStoreVector(Dimensions: 768)]
         public ReadOnlyMemory<float> Vector { get; set; }
 
-        public Dictionary<string, string>? MetaData { get; set; }
+        public Dictionary<string, string>? Metadata { get; set; }
     }
 }

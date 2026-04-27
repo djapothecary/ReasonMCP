@@ -2,69 +2,66 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using ReasonMCP.Data;
 
-namespace ReasonMcp.Extensions
+namespace ReasonMCP.Extensions
 {
     public static class ReasonVectorDbExtensions
     {
-        public static async Task<IHostApplicationBuilder> AddReasonVectorDbService(
-            this IHostApplicationBuilder builder,
-            IConfiguration configuration
+        public static IHostApplicationBuilder AddReasonVectorDbService(
+            this IHostApplicationBuilder builder
         )
         {
-            var dbPath = configuration.GetValue<string>("StorageConfig:VectorDbPath");
-            var directory = Path.GetDirectoryName(dbPath);
+            //  1.  Register DatabaseInitializer
+            builder.Services.AddTransient<DatabaseInitializer>();
 
-            if (!string.IsNullOrEmpty(directory))
-                Directory.CreateDirectory(directory);
-
-            //  Create ONE Singleton connection, open it and load the extension
-            var dataSource = $"Data Source={dbPath}";
-            var masterConnection = new SqliteConnection(dataSource);
-            masterConnection.Open();
-            masterConnection.EnableExtensions(true);
-
-            //  Attempt to load the native binary.  Ensure SqliteVec.Native.Windows is in your project.
-            try
+            //  2.  Defer the DB creation until requested by the DI Container
+            builder.Services.AddSingleton(sp =>
             {
-                masterConnection.LoadExtension("vec0", "sqlite3_vec_init");
-            }
-            catch (Exception ex)
-            {
-                //  Fallback for some alternate versions of the binary
+                var config = sp.GetRequiredService<IConfiguration>();
+                var logger = sp.GetRequiredService<ILogger<SqliteConnection>>();
+
+                var dbPath = config.GetValue<string>("StorageConfig:VectorDbPath")
+                            ?? "ReasonContext.db";
+
+                var directory = Path.GetDirectoryName(dbPath);
+                if (!string.IsNullOrEmpty(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                //  Create ONE Singleton  connection, open it and load the extension
+                var dataSource = $"Data Source={dbPath}";
+                var masterConnection = new SqliteConnection(dataSource);
+                masterConnection.Open();
+                masterConnection.EnableExtensions(true);
+
+                //  Attempt to load the native binary
                 try
                 {
-                    masterConnection.LoadExtension("vec0", "sqlite3_vec0_init");
+                    masterConnection.LoadExtension("vec0", "sqlite3_vec_init");
+                    logger.LogTrace("Loaded sqlite-vec extension successfully.");
                 }
-                catch
+                catch (Exception ex1)
                 {
-                    //  failed fall back
-                    return builder;
+                    try
+                    {
+                        //  Fallback for alternate binary versions
+                        masterConnection.LoadExtension("vec0", "sqlite3_vec0_init");
+                        logger.LogTrace("Loaded fallback sqlite-vec0 extension successfully.");
+                    }
+                    catch (Exception ex2)
+                    {
+                        //  3.  FAIL LOUDLY! If the AI can't load the vector engine, the app must crash!
+                        logger.LogCritical(ex2, "[VECTOR_DB_ERROR] Critical failure loading sqlite-vec extension.");
+
+                        throw new InvalidOperationException("Could not initialize vector database extensions.", ex2);
+                    }
                 }
-            }
 
-            //  Manually initialize the virtual table
-            using (var cmd = masterConnection.CreateCommand())
-            {
-                //  We manually create the virtual table that is expected
-                //  the Nomic-embedd-text model used has a dimension of 768
-                cmd.CommandText = @"
-                    CREATE VIRTUAL TABLE IF NOT EXISTS vec_CodebaseContext USINC vec0(
-                        Id TEXT PRIMARY KEY,
-                        vector FLOAT[768]
-                    );";
-
-                try
-                {
-                    await cmd.ExecuteNonQueryAsync();
-                }
-                catch (Exception ex)
-                {
-
-                }
-            }
-
-            builder.Services.AddSingleton(masterConnection);
+                return masterConnection;
+            });
 
             return builder;
         }
