@@ -11,7 +11,7 @@ namespace ReasonMCP.Orchestration
 {
     public class PreProcessOrchestrator
     {
-        private readonly IEnumerable<IDocumentProcessor> _processors;
+        private readonly IEnumerable<IFileConverterStrategy> _strategies;
         private readonly IFileConverterUtility _fileConverter;
         private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
         private readonly VectorStore _vectorStore;
@@ -19,7 +19,7 @@ namespace ReasonMCP.Orchestration
         private readonly ILogger<PreProcessOrchestrator> _logger;
 
         public PreProcessOrchestrator(
-            IEnumerable<IDocumentProcessor> processors,
+            IEnumerable<IFileConverterStrategy> strategies,
             IFileConverterUtility fileConverter,
             IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
             VectorStore vectorStore,
@@ -27,7 +27,7 @@ namespace ReasonMCP.Orchestration
             ILogger<PreProcessOrchestrator> logger
             )
         {
-            _processors = processors;
+            _strategies = strategies;
             _fileConverter = fileConverter;
             _embeddingGenerator = embeddingGenerator;
             _vectorStore = vectorStore;
@@ -63,15 +63,16 @@ namespace ReasonMCP.Orchestration
             //  2.  Pre-processing: Convert files to markdown
             foreach (var file in files)
             {
-                if (file.EndsWith(".txt"))
-                {
-                    await _fileConverter.ConvertTextToMarkdown(file);
-                }
+                bool convertSuccesss;
 
-                if (file.EndsWith(".mhtml"))
-                {
-                    await _fileConverter.ConvertHtmlToMarkdown(file);
-                }
+                //  2.1 Determine file type and what processor to use
+                var strategy = _strategies.FirstOrDefault(s => s.CanConvert(file));
+
+                //  3.  Convert file to markdown
+                convertSuccesss = await strategy!.ConvertToMarkdownAsync(file);
+
+                if (convertSuccesss)
+                    await _fileConverter.ClearOriginalFile(file);
             }
 
             //  TODO:   Feature:    Add Converter/Processor for images

@@ -16,10 +16,10 @@ namespace ReasonMCP.Extensions
         {
             builder.Services.AddTransient<LoggingDelegatingHandler>();
             builder.Services.AddScoped<PreProcessOrchestrator>();
-            builder.Services.AddScoped<FileIngestOrchestrator>();
+            builder.Services.AddScoped<IFileConverterStrategy, TxtConverterStrategy>();
+            builder.Services.AddScoped<IFileConverterStrategy, MhtmlConverterStrategy>();
             builder.Services.AddScoped<IFileConverterUtility, FileConverterUtility>();
-            builder.Services.AddScoped<IDocumentProcessor, AdrProcessor>();
-            builder.Services.AddScoped<IDocumentProcessor, NewsletterProcessor>();
+            builder.Services.AddScoped<IMetadataEnrichmentUtility, MetadataEnrichmentUtility>();
 
             return builder;
         }

@@ -22,7 +22,7 @@ namespace ReasonMCP.Utilities
             _logger = logger;
         }
 
-        public async Task ConvertTextToMarkdown(string filePath)
+        public async Task<bool> ConvertToMarkdown(string filePath)
         {
             var fileName = Path.GetFileName(filePath);
             var fileInfo = new FileInfo(filePath);
@@ -41,33 +41,46 @@ namespace ReasonMCP.Utilities
                 chunks.Add(chunk);
             }
 
+            //  Add Metadata enrichment
+            var metadataEnricher = new MetadataEnrichmentUtility();
+            var enrichedRagObj = metadataEnricher.EnrichChunksAsync(chunks, fileName);
+
             var markdownBuilder = new StringBuilder();
             markdownBuilder.AppendLine("RAG Ingestion Data");
             markdownBuilder.AppendLine($"> **Source:**  {fileName}");
-            markdownBuilder.AppendLine($"> **Generated:** {DateTime.Now:yyyy-MM-dd HH:mm:ss}\n");
+            markdownBuilder.AppendLine($"> **Generated:** {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            markdownBuilder.AppendLine($"> **Topic:** {folderNameOnly}");
+            markdownBuilder.AppendLine($"> **Header Context:** {enrichedRagObj.Result[0].SourceHeader}\n");
 
-            for (int i = 0; i < chunks.Count; i++)
+            for (int i = 0; i < enrichedRagObj.Result.Count; i++)
             {
                 markdownBuilder.AppendLine($"## Chunk {i + 1}");
                 markdownBuilder.AppendLine("```text");
-                markdownBuilder.AppendLine(chunks[i]);
+                markdownBuilder.AppendLine(enrichedRagObj.Result[i].Content);
                 markdownBuilder.AppendLine("```");
                 markdownBuilder.AppendLine("\n---\n");
             }
 
-            await File.WriteAllTextAsync(convertedOutputPath, markdownBuilder.ToString());
+            try
+            {
+
+                await File.WriteAllTextAsync(convertedOutputPath, markdownBuilder.ToString());
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[FILE_CONVERSION_ERROR].  An error occured converting {fileName} to Markdown.", fileName);
+                return false;
+            }
         }
 
-        public Task ConvertHtmlToMarkdown(string filePath)
+        public async Task ClearOriginalFile(string filePath)
         {
-            throw new NotImplementedException();
-            // var fileName = Path.GetFileName(filePath);
-            // var fileInfo = new FileInfo(filePath);
-            // var directoryPath = fileInfo.DirectoryName;  //  get the full path
-            // var folderNameOnly = fileInfo?.Directory?.Name;   //  just the name of the containing folder
-
-            // var convertedOutputRoot = directoryPath + @"\Markdowns";
-            // var convertedOutputPath = Path.Combine(convertedOutputRoot, fileName.Replace(".mhtml", ".md"));
+            //  Delete the original (source) file
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
         }
     }
 }

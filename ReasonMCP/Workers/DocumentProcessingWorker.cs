@@ -23,8 +23,8 @@ namespace ReasonMCP.Workers
                     using var scope = scopeFactory.CreateScope();
 
                     //  2.  Pre-Process files/locations
-                    var preProcessor = scope.ServiceProvider.GetRequiredService<PreProcessOrchestrator>();
-                    await preProcessor.ScanDirectory(cancellationToken);
+                    var preProcessOrchestrator = scope.ServiceProvider.GetRequiredService<PreProcessOrchestrator>();
+                    await preProcessOrchestrator.ScanDirectory(cancellationToken);
 
                     logger.LogTrace("File scan complete. Sleeping ...");
                 }

@@ -4,6 +4,7 @@ namespace ReasonMCP.Models
 {
     public class KnowledgeRecord
     {
+        [VectorStoreKey]
         public string Id { get; set; } = Guid.NewGuid().ToString();
 
         [VectorStoreData(IsFullTextIndexed = true)]
