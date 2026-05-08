@@ -33,6 +33,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ElBruno.MarkItDotNet" Version="0.6.0" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="11.0.0-preview.2.26159.112" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.2" />
@@ -40,6 +42,7 @@
     <PackageReference Include="Microsoft.Extensions.AI" Version="10.2.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="1.68.0-preview" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="1.68.0-preview" />
+    <PackageReference Include="MimeKit" Version="4.16.0" />
     <PackageReference Include="ModelContextProtocol" Version="1.2.0" />
     <PackageReference Include="OllamaSharp" Version="5.4.16" />
     <PackageReference Include="OllamaSharp.ModelContextProtocol" Version="5.4.16" />

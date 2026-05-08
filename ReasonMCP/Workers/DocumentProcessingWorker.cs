@@ -27,6 +27,14 @@ namespace ReasonMCP.Workers
                     await preProcessOrchestrator.ScanDirectory(cancellationToken);
 
                     logger.LogTrace("File scan complete. Sleeping ...");
+
+                    //  3.  Upsert the documents to the vectore store
+                    logger.LogTrace("Starting File Upsert Orchestration ...");
+
+                    var fileUpsertOrchestrator = scope.ServiceProvider.GetRequiredService<FileUpsertOrchestrator>();
+                    await fileUpsertOrchestrator.ScanMarkdownDirectory(cancellationToken);
+
+                    logger.LogTrace("File Upser completed.  Sleeping ...");
                 }
                 catch (Exception ex)
                 {

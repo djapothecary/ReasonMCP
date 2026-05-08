@@ -21,8 +21,7 @@ namespace ReasonMCP.Services
         }
 
         public async Task<bool> IngestSingleEnrichedObjectAsync(
-            RagObject ragObj,
-            IEmbeddingGenerator<string, Embedding<float>> embeddgingGenerator,
+            KnowledgeRecord record,
             CancellationToken cancellationToken)
         {
             try
@@ -30,36 +29,20 @@ namespace ReasonMCP.Services
                 //  1.  Ensure the collection actually existss
                 await _collection.EnsureCollectionExistsAsync(cancellationToken);
 
-                //  2.  Generate embeddings
-                var embeddings = await embeddgingGenerator.GenerateAsync(
-                    new[] { ragObj.Content },
-                    cancellationToken: cancellationToken
-                );
-
-                //  3.  Map to knowledge record
-                var record = new KnowledgeRecord
-                {
-                    Text = ragObj.Content,
-                    Vector = embeddings.First().Vector.ToArray(),
-                    Source = ragObj.Metadata["source"].ToString(),
-                    HeaderContext = ragObj.SourceHeader,
-                    ChunkIndex = ragObj.ChunkIndex
-                };
-
-                //  4.  Upsert the record. If it fails, it throws an exception.
+                //  2.  Upsert the record. If it fails, it throws an exception.
                 await _collection.UpsertAsync(record, cancellationToken: cancellationToken);
                 return true;
             }
             catch (VectorStoreException vEx)
             {
                 // Log specifically that the Vector DB rejected the upsert
-                _logger.LogError(vEx, "Vector database error during upsert for chunk {ChunkIndex} of {Source}", ragObj.ChunkIndex, ragObj.Metadata["source"]);
+                _logger.LogError(vEx, "Vector database error during upsert for chunk {ChunkIndex} of {Source}", record.ChunkIndex, record?.Metadata?["source"]);
                 return false;
             }
 
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to ingest RagObject for source: {Source}", ragObj.Metadata.GetValueOrDefault("source"));
+                _logger.LogError(ex, "Failed to ingest RagObject for source: {Source}", record?.Metadata?.GetValueOrDefault("source"));
                 return false;
             }
         }

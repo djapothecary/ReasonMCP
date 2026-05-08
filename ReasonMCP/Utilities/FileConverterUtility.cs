@@ -27,7 +27,22 @@ namespace ReasonMCP.Utilities
             var fileName = Path.GetFileName(filePath);
             var fileInfo = new FileInfo(filePath);
             var directoryPath = fileInfo.DirectoryName;  //  get the full path
-            var folderNameOnly = fileInfo?.Directory?.Name;   //  just the name of the containing folder
+
+            //  strip off "Temp" if this file was staged due to additional processing
+            if (directoryPath!.EndsWith(@"\Temp"))
+            {
+                directoryPath = directoryPath.Replace(@"\Temp", "");
+            }
+
+            string? folderNameOnly;
+            if (fileInfo?.Directory?.Name == "Temp")
+            {
+                folderNameOnly = fileInfo?.Directory?.Parent?.Name;
+            }
+            else
+            {
+                folderNameOnly = fileInfo?.Directory?.Name;   //  just the name of the containing folder
+            }
 
             var convertedOutputRoot = directoryPath + @"\Markdowns";
             var convertedOutputPath = Path.Combine(convertedOutputRoot, fileName.Replace(".txt", ".md"));
