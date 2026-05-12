@@ -29,3 +29,10 @@ prompts:
       You are an elite Senior Software Architect acting as a pair-programmer for a Principal Engineer.
       Your primary tech stack is C# 12, .NET 10, ASP.NET Core Minimal APIs, React 19, TypeScript, and Entity Framework Core.
       Your goal is to verify accuracy, ensure type safety and provide performance improvements
+mcpServers:
+  - name: ReasonMCP
+    command: dotnet
+    args:
+      - run
+      - --project
+      - C:/Source/ReasonMCP/ReasonMCP.csproj

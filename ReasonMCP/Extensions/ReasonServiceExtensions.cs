@@ -6,6 +6,7 @@ using ReasonMCP.Interfaces;
 using ReasonMCP.Orchestration;
 using ReasonMCP.Processors;
 using ReasonMCP.Services;
+using ReasonMCP.Tools;
 using ReasonMCP.Utilities;
 
 namespace ReasonMCP.Extensions
@@ -17,6 +18,7 @@ namespace ReasonMCP.Extensions
         )
         {
             builder.Services.AddTransient<LoggingDelegatingHandler>();
+            builder.Services.AddTransient<KnowledgeSearchTool>();
             builder.Services.AddTransient<IMhtmlConverterUtility, MhtmlConverterUtility>();
             builder.Services.AddScoped<PreProcessOrchestrator>();
             builder.Services.AddScoped<FileUpsertOrchestrator>();

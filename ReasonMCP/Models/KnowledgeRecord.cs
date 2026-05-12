@@ -10,10 +10,10 @@ namespace ReasonMCP.Models
         [VectorStoreData(IsFullTextIndexed = true)]
         public string? Text { get; set; }
 
-        [VectorStoreData]
+        [VectorStoreData(IsIndexed = true)]
         public string? Topic { get; set; }
 
-        [VectorStoreData]
+        [VectorStoreData(IsIndexed = true)]
         public string? Source { get; set; }
 
         [VectorStoreData]
@@ -21,6 +21,12 @@ namespace ReasonMCP.Models
 
         [VectorStoreData]
         public int ChunkIndex { get; set; }
+
+        [VectorStoreData(IsIndexed = true)]
+        public string? Version { get; set; }
+
+        [VectorStoreData(IsIndexed = true)]
+        public string? GeneratedDate { get; set; }
 
         //  MUST MATCH embedding model
         //  this is for nomic

@@ -1,4 +1,6 @@
+using System.Text;
 using ElBruno.MarkItDotNet;
+using ElBruno.MarkItDotNet.Converters;
 using Microsoft.Extensions.Logging;
 using ReasonMCP.Interfaces;
 
@@ -28,13 +30,39 @@ namespace ReasonMCP.Processors
 
         public async Task<bool> ConvertToMarkdownAsync(string filePath)
         {
+            string? convertedPdfFile;
+            //  0.  Determine the size of the file
+            //  Use streaming for large file sizes
+            var fileInfo = new FileInfo(filePath);
+
+            //  size in bytes
+            long fileBytes = fileInfo.Length;
+            var maxNonStreamingFileBytes = 104857600;
+
             //  1.  Use MarkItDownNet package to convert to markdown
-            var pdfConverter = new MarkdownConverter();
-            var convertedPdfFile = pdfConverter.ConvertToMarkdown(filePath);
+            var pdfConverter = new PdfConverter();
+
+            if (fileBytes <= maxNonStreamingFileBytes)
+            {
+                convertedPdfFile = await pdfConverter.ConvertAsync(filePath);
+            }
+            else
+            {
+                var chunksStringBuilder = new StringBuilder();
+                using var stream = File.OpenRead(filePath);
+
+                await foreach (var chunk in pdfConverter.ConvertStreamingAsync(stream, ".pdf"))
+                {
+                    chunksStringBuilder.Append(chunk);
+                }
+
+                convertedPdfFile = chunksStringBuilder.ToString();
+            }
 
             //  2.  Create a temp directory to store the file and read from
             var fileName = Path.GetFileName(filePath);
-            var fileInfo = new FileInfo(filePath);
+
+            //  re-use fileInfo that was previously retrieved
             var directoryPath = fileInfo.DirectoryName;
             var tempFileRoot = directoryPath + @"\Temp";
             var tempFilePath = Path.Combine(tempFileRoot, fileName.Replace(".pdf", ".md"));

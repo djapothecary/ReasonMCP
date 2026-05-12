@@ -1,12 +1,16 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ReasonMCP.Data;
 using ReasonMCP.Extensions;
 using ReasonMCP.Models;
+using ReasonMCP.Tools;
 using ReasonMCP.Workers;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.UseUrls("http://localhost:5000");
 
 builder.Services.Configure<StorageConfig>(builder.Configuration.GetSection("StorageConfig"));
 
@@ -32,12 +36,13 @@ builder.Services.AddHostedService<DocumentProcessingWorker>();
 // Add the MCP services: the transport to use (stdio) and the tools to register.
 builder.Services
     .AddMcpServer()
-    .WithStdioServerTransport()
-    .WithTools<RandomNumberTools>();
+    .WithHttpTransport()
+    .WithTools<RandomNumberTools>()
+    .WithTools<KnowledgeSearchTool>();
 
-using IHost host = builder.Build();
+using WebApplication webHost = builder.Build();
 
-using (var scope = host.Services.CreateAsyncScope())
+using (var scope = webHost.Services.CreateAsyncScope())
 {
     var services = scope.ServiceProvider;
     var logger = services.GetRequiredService<ILogger<Program>>();
@@ -51,4 +56,4 @@ using (var scope = host.Services.CreateAsyncScope())
     logger.LogInformation("Ingestion complete. Start MCP Server loop ...");
 }
 
-await host.RunAsync();
+await webHost.RunAsync();

@@ -43,10 +43,15 @@
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="1.68.0-preview" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="1.68.0-preview" />
     <PackageReference Include="MimeKit" Version="4.16.0" />
-    <PackageReference Include="ModelContextProtocol" Version="1.2.0" />
+    <PackageReference Include="ModelContextProtocol" Version="1.3.0" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="1.3.0" />
     <PackageReference Include="OllamaSharp" Version="5.4.16" />
     <PackageReference Include="OllamaSharp.ModelContextProtocol" Version="5.4.16" />
     <PackageReference Include="sqlite-vec" Version="0.1.7-alpha.2.1" />
   </ItemGroup>
+
+  <Target Name="killReasonMCP" BeforeTargets="PreBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
+    <Exec command="taskkill /F /IM RerasonMCP.exe 2&gt;nul" IgnoreExitCode="true" />
+  </Target>
 
 </Project>

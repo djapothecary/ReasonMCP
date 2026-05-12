@@ -39,19 +39,22 @@ namespace ReasonMCP.Orchestration
             var baseDirectory = _options.Value.KnowledgeBaseRootDirectory;
 
             var childDirectoriesEnum = new DirectoryInfo(baseDirectory)
-                .EnumerateDirectories("*", SearchOption.TopDirectoryOnly);
+                .EnumerateDirectories("*", SearchOption.TopDirectoryOnly) ?? null;
 
-            foreach (var dir in childDirectoriesEnum)
+            if (childDirectoriesEnum != null)
             {
-                _logger.LogTrace($"Processing file: {dir.Name}");
+                foreach (var dir in childDirectoriesEnum)
+                {
+                    _logger.LogTrace($"Processing file: {dir.Name}");
 
-                await PreprocessFileAsync(dir.ToString());
+                    if (!string.IsNullOrEmpty(dir.ToString()))
+                    {
+                        await PreprocessFileAsync(dir.ToString());
+                    }
 
-                _logger.LogTrace("Processing completed.");
+                    _logger.LogTrace("Processing completed.");
+                }
             }
-
-            //  now get the markdown directories and begin processing
-
         }
 
         public async Task PreprocessFileAsync(string filePath)
@@ -60,18 +63,22 @@ namespace ReasonMCP.Orchestration
             string[] files = Directory.GetFiles(filePath);
 
             //  2.  Pre-processing: Convert files to markdown
-            foreach (var file in files)
+            //  Prevent exception of empty files
+            if (files.Length != 0)
             {
-                bool convertSuccesss;
+                foreach (var file in files)
+                {
+                    bool convertSuccesss;
 
-                //  2.1 Determine file type and what processor to use
-                var strategy = _strategies.FirstOrDefault(s => s.CanConvert(file));
+                    //  2.1 Determine file type and what processor to use
+                    var strategy = _strategies.FirstOrDefault(s => s.CanConvert(file));
 
-                //  3.  Convert file to markdown
-                convertSuccesss = await strategy!.ConvertToMarkdownAsync(file);
+                    //  3.  Convert file to markdown
+                    convertSuccesss = await strategy!.ConvertToMarkdownAsync(file);
 
-                if (convertSuccesss)
-                    await _fileConverter.ClearOriginalFile(file);
+                    if (convertSuccesss)
+                        await _fileConverter.ClearOriginalFile(file);
+                }
             }
 
             //  TODO:   Feature:    Add Converter/Processor for images

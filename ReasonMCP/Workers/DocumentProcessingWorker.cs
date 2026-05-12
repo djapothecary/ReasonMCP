@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ReasonMCP.Orchestration;
+using ReasonMCP.Tools;
 
 namespace ReasonMCP.Workers
 {
@@ -35,6 +36,9 @@ namespace ReasonMCP.Workers
                     await fileUpsertOrchestrator.ScanMarkdownDirectory(cancellationToken);
 
                     logger.LogTrace("File Upser completed.  Sleeping ...");
+
+                    // var testKnowledge = scope.ServiceProvider.GetRequiredService<KnowledgeSearchTool>();
+                    // var resultString = await testKnowledge.SearchKnowledgeBaseASync("Find information about DeepSeaExpoloration.", 5, cancellationToken);
                 }
                 catch (Exception ex)
                 {
