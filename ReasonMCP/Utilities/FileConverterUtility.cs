@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReasonMCP.Interfaces;
@@ -60,12 +61,22 @@ namespace ReasonMCP.Utilities
             var metadataEnricher = new MetadataEnrichmentUtility();
             var enrichedRagObj = metadataEnricher.EnrichChunksAsync(chunks, fileName);
 
+            //  build version information
+            string defaultVersion = "1.0";
+            var versionMatch = Regex.Match(fileInfo!.Name, @"(?<version>\d\d+\.\d\d+)");
+            if (versionMatch.Success)
+            {
+                defaultVersion = versionMatch.Groups["version"].Value;
+            }
+
             var markdownBuilder = new StringBuilder();
             markdownBuilder.AppendLine("RAG Ingestion Data");
             markdownBuilder.AppendLine($"> **Source:**  {fileName}");
             markdownBuilder.AppendLine($"> **Generated:** {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
             markdownBuilder.AppendLine($"> **Topic:** {folderNameOnly}");
-            markdownBuilder.AppendLine($"> **Header Context:** {enrichedRagObj.Result[0].SourceHeader}\n");
+            markdownBuilder.AppendLine($"> **Header Context:** {enrichedRagObj.Result[0].SourceHeader}");
+            markdownBuilder.AppendLine($"> **Generated Date:** {DateTime.UtcNow.ToString()}");
+            markdownBuilder.AppendLine($"> **Version:** {defaultVersion}\n");
 
             for (int i = 0; i < enrichedRagObj.Result.Count; i++)
             {

@@ -34,6 +34,8 @@ namespace ReasonMCP.Utilities
             string source = ExtractMetadata(headerBlock, "Source");
             string topic = ExtractMetadata(headerBlock, "Topic");
             string headerContext = ExtractMetadata(headerBlock, "Header Context");
+            string generatedDate = ExtractMetadata(headerBlock, "Generated Date");
+            string version = ExtractMetadata(headerBlock, "Version");
 
             var records = new List<KnowledgeRecord>();
 
@@ -49,7 +51,9 @@ namespace ReasonMCP.Utilities
                     Topic = topic,
                     HeaderContext = headerContext,
                     ChunkIndex = ExtractChunkIndex(chunkBlock),
-                    Text = ExtractFencedContent(chunkBlock)
+                    Text = ExtractFencedContent(chunkBlock),
+                    GeneratedDate = generatedDate,
+                    Version = version
                 });
             }
 
