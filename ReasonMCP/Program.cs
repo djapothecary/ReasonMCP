@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using ReasonMCP.Configuration;
 using ReasonMCP.Data;
 using ReasonMCP.Extensions;
 using ReasonMCP.Models;
@@ -12,10 +12,11 @@ using ReasonMCP.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseUrls("http://localhost:5000");
+builder.WebHost.UseUrls("http://127.0.0.1:5000");
 
 builder.Services.Configure<StorageConfig>(builder.Configuration.GetSection("StorageConfig"));
 builder.Services.Configure<TestingSettings>(builder.Configuration.GetSection("TestingSettings"));
+builder.Services.Configure<CodebaseScanSettings>(builder.Configuration.GetSection("CodebaseScanSettings"));
 
 builder.Services.AddCors(options =>
 {
@@ -41,10 +42,13 @@ builder.AddReasonOllamaService();
 builder.AddReasonNomicEmbedService();
 builder.AddReasonVectorDbService();
 builder.AddReasonVectorStore();
+builder.AddOrchestrators();
+builder.AddStrategies();
 builder.AddFileServices();
 
 //  Register the Background Service
 builder.Services.AddHostedService<DocumentProcessingWorker>();
+builder.Services.AddHostedService<CodebaseScanWorker>();
 
 // Add the MCP services: the transport to use (stdio) and the tools to register.
 builder.Services
@@ -56,6 +60,17 @@ builder.Services
 var webHost = builder.Build();
 webHost.UseDeveloperExceptionPage();
 webHost.MapHealthEndpoints();
+
+webHost.MapGet("/routes", (IEnumerable<EndpointDataSource> endpointSources) =>
+{
+    var endpoints = endpointSources.SelectMany(es => es.Endpoints).OfType<RouteEndpoint>();
+    return endpoints.Select(e => new
+    {
+        Route = e.RoutePattern.RawText,
+        Methods = e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods
+    });
+});
+
 
 webHost.MapMcp();
 

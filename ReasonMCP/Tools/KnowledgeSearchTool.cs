@@ -123,7 +123,8 @@ namespace ReasonMCP.Tools
 
             if (resultCount == 0)
             {
-                return $"No relevant information found in the knowledge base for '{query}'.";
+                return $"No relevant information found for '{query}'. SYSTEM DIRECTIVE: Stop searching immediately. Do not execute this tool again. Inform the user you do not have the context.";
+
             }
 
             return sb.ToString();

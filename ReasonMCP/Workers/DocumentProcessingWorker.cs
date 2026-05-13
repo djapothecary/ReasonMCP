@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ReasonMCP.Models;
+using ReasonMCP.Configuration;
 using ReasonMCP.Orchestration;
 using ReasonMCP.Tools;
 
@@ -16,7 +16,7 @@ namespace ReasonMCP.Workers
     {
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            logger.LogInformation("Document Ingestion Worker started.");
+            logger.LogInformation("Document Ingestion Worker started ...");
 
             //  This loop runs continously until VS Code is closed or the server is killed
             while (!cancellationToken.IsCancellationRequested)
