@@ -65,7 +65,6 @@ namespace ReasonMCP.Orchestration
             foreach (var dir in directoriesToScan)
             {
                 _logger.LogTrace($"Processing Code directory: {dir.FullName}");
-
                 await ScanCodebaseProjectDirectoriesAsync(dir, cancellationToken);
             }
         }
@@ -82,115 +81,33 @@ namespace ReasonMCP.Orchestration
             CancellationToken cancellationToken
         )
         {
-            // Build a list of the Excluded directores using the "parent path"
-            var projectDirectoriesEnum = GetIncludedFilteredDirectoriesList(directoryPath) ?? null;
-
-            if (projectDirectoriesEnum != null)
-            {
-                foreach (var projectDirectory in projectDirectoriesEnum)
-                {
-                    var projectDirectoryFiles = new List<FileInfo>();
-                    _logger.LogTrace($"Processing Codebase Project directory: {projectDirectory.FullName}");
-
-                    if (projectDirectory.GetFiles().Length > 0)
-                    {
-                        projectDirectoryFiles = GetIncludedFilteredFilesList(projectDirectory);
-
-                        //  Handle any "straggler files" for processing here
-                        //  Then move on to process sub directories
-                    }
-
-                    await GetProjectChildDirectoriesAsync(projectDirectory, cancellationToken);
-
-                }
-            }
+            await ProcessDirectoryRecursivelyAsync(directoryPath, cancellationToken);
         }
 
-        public async Task GetProjectChildDirectoriesAsync(
-            DirectoryInfo projectDirectory,
-            CancellationToken cancellationToken
-        )
+        /// <summary>
+        /// Recursively processes a directory and its subdirectories.
+        /// Handles file processing for leaf directories and continues traversal for directories with subdirectories.
+        /// </summary>
+        /// <param name="directory">The directory to process</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        private async Task ProcessDirectoryRecursivelyAsync(DirectoryInfo directory, CancellationToken cancellationToken)
         {
-            var projectChildDirectoriesList = GetIncludedFilteredDirectoriesList(projectDirectory) ?? null;
+            var subdirectories = GetIncludedFilteredDirectoriesList(directory);
 
-            if (projectChildDirectoriesList != null)
+            if (subdirectories == null || !subdirectories.Any())
+                return;
+
+            foreach (var subdirectory in subdirectories)
             {
-                foreach (var childDirectory in projectChildDirectoriesList)
+                _logger.LogTrace($"Processing Codebase Project directory: {subdirectory.FullName}");
+
+                var files = GetIncludedFilteredFilesList(subdirectory);
+                if (files.Count > 0)
                 {
-                    var childDirectoryFiles = new List<FileInfo>();
-                    if (childDirectory.GetDirectories().Length == 0)
-                    {
-                        childDirectoryFiles = GetIncludedFilteredFilesList(childDirectory);
-
-                        //  Handle any "straggler files" for processing here
-                        //  Then move on to process sub directories
-                    }
-
-                    //  One final pass for any other sub ("composite") directories
-                    if (childDirectory.GetDirectories().Length > 0)
-                    {
-                        var childSubDirectories = GetIncludedFilteredDirectoriesList(childDirectory) ?? null;
-                        await GetChildCompositeDirectoriesAsync(childDirectory, cancellationToken);
-                    }
+                    //  Handle any "straggler files" for processing here
                 }
-            }
-        }
 
-        public async Task GetChildCompositeDirectoriesAsync(
-            DirectoryInfo childSubDirectory,
-            CancellationToken cancellationToken
-        )
-        {
-            var childCompositeDirectories = GetIncludedFilteredDirectoriesList(childSubDirectory) ?? null;
-
-            if (childCompositeDirectories != null)
-            {
-                foreach (var compositeDirectory in childCompositeDirectories)
-                {
-                    var compositeDirectoryFiles = new List<FileInfo>();
-                    if (compositeDirectory.GetDirectories().Length == 0)
-                    {
-                        compositeDirectoryFiles = GetIncludedFilteredFilesList(compositeDirectory);
-
-                        //  Handle any "straggler files" for processing here
-                        //  Then move on to process sub directories
-                    }
-
-                    //  One final pass for any other sub directories
-                    if (compositeDirectory.GetDirectories().Length > 0)
-                    {
-                        await GetChildCompositeSubDirectoriesAsync(compositeDirectory, cancellationToken);
-                    }
-                }
-            }
-        }
-
-        public async Task GetChildCompositeSubDirectoriesAsync(
-            DirectoryInfo childCompositeDirectory,
-            CancellationToken cancellationToken
-        )
-        {
-            var childCompositeSubDirectories = GetIncludedFilteredDirectoriesList(childCompositeDirectory) ?? null;
-
-            if (childCompositeSubDirectories != null)
-            {
-                foreach (var compositeDirectory in childCompositeSubDirectories)
-                {
-                    var childCompositeSubDirectoryFiles = new List<FileInfo>();
-                    if (compositeDirectory.GetDirectories().Length == 0)
-                    {
-                        childCompositeSubDirectoryFiles = GetIncludedFilteredFilesList(compositeDirectory);
-
-                        //  Handle any "straggler files" for processing here
-                        //  Then move on to process sub directories
-                    }
-
-                    //  One final pass for any other sub directories
-                    if (compositeDirectory.GetDirectories().Length > 0)
-                    {
-                        // We SHOULD be stopping here
-                    }
-                }
+                await ProcessDirectoryRecursivelyAsync(subdirectory, cancellationToken);
             }
         }
 
