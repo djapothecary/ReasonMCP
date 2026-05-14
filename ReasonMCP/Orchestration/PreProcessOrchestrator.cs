@@ -14,7 +14,7 @@ namespace ReasonMCP.Orchestration
         private readonly IFileConverterUtility _fileConverter;
         private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
         private readonly VectorStore _vectorStore;
-        private readonly IOptions<StorageConfig> _options;
+        private readonly StorageConfig _options;
         private readonly ILogger<PreProcessOrchestrator> _logger;
 
         public PreProcessOrchestrator(
@@ -30,13 +30,13 @@ namespace ReasonMCP.Orchestration
             _fileConverter = fileConverter;
             _embeddingGenerator = embeddingGenerator;
             _vectorStore = vectorStore;
-            _options = options;
+            _options = options.Value;
             _logger = logger;
         }
 
         public async Task ScanDirectory(CancellationToken cancellationToken)
         {
-            var baseDirectory = _options.Value.KnowledgeBaseRootDirectory;
+            var baseDirectory = _options.KnowledgeBaseRootDirectory;
 
             var childDirectoriesEnum = new DirectoryInfo(baseDirectory)
                 .EnumerateDirectories("*", SearchOption.TopDirectoryOnly) ?? null;
