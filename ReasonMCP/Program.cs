@@ -17,6 +17,7 @@ builder.WebHost.UseUrls("http://127.0.0.1:5000");
 builder.Services.Configure<StorageConfig>(builder.Configuration.GetSection("StorageConfig"));
 builder.Services.Configure<TestingSettings>(builder.Configuration.GetSection("TestingSettings"));
 builder.Services.Configure<CodebaseScanSettings>(builder.Configuration.GetSection("CodebaseScanSettings"));
+builder.Services.Configure<KnowledgebaseScanSettings>(builder.Configuration.GetSection("KnowledgebaseScanSettings"));
 
 builder.Services.AddCors(options =>
 {
@@ -47,7 +48,11 @@ builder.AddStrategies();
 builder.AddFileServices();
 
 //  Register the Background Service
-builder.Services.AddHostedService<DocumentProcessingWorker>();
+
+//  DEPRECATED: This have been replaced by the Seperate Workers
+//builder.Services.AddHostedService<DocumentProcessingWorker>();
+
+builder.Services.AddHostedService<KnowledgebaseScanWorker>();
 builder.Services.AddHostedService<CodebaseScanWorker>();
 
 // Add the MCP services: the transport to use (stdio) and the tools to register.

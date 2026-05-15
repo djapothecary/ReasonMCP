@@ -48,6 +48,7 @@ namespace ReasonMCP.Utilities
             var convertedOutputRoot = directoryPath + @"\Markdowns";
             var convertedOutputPath = Path.Combine(convertedOutputRoot, fileName.Replace(".txt", ".md"));
 
+
             string rawText = await File.ReadAllTextAsync(filePath);
             var chunkUtility = new RAGChunkingUtility();
 

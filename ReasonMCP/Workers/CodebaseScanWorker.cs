@@ -24,32 +24,45 @@ namespace ReasonMCP.Workers
             _settings = options.Value;
             _logger = logger;
         }
-        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(
+            CancellationToken cancellationToken = default
+        )
         {
+            if (!_settings.Enabled)
+                return;
+
             _logger.LogInformation("Codebase Scan Worker started ...");
 
-            while (!cancellationToken.IsCancellationRequested)
+            try
             {
-                try
-                {
-                    //  This allows for code base scanning to be turned on/off through appsettings.json
-                    if (_settings.Enabled)
-                    {
-                        //  1.  Create a fresh scope for Codebase scanning
-                        using var scope = _scopeFactory.CreateScope();
+                //  1.  Create a fresh scope for Codebase scanning
+                using var scope = _scopeFactory.CreateScope();
 
-                        //  2.  Scan Codebase directories
-                        var codebaseOrchestrator = scope.ServiceProvider.GetRequiredService<CodebaseScanOrchestrator>();
-                        await codebaseOrchestrator.ScanCodebaseAsync(cancellationToken);
+                //  2.  Scan Codebase directories
+                var codebaseOrchestrator = scope.ServiceProvider.GetRequiredService<CodebaseScanOrchestrator>();
+                await codebaseOrchestrator.ScanCodebaseAsync(cancellationToken);
 
-                        _logger.LogTrace("Codebase scan complete. Sleeping ...");
-                    }
-                }
-                catch (Exception ex)
-                {
+                // var knowledgebaseOrchestrator = scope.ServiceProvider.GetRequiredService<KnowledgebaseScanOrchestrator>();
+                // await knowledgebaseOrchestrator.ScanKnowledgebaseAsync(cancellationToken);
 
-                }
+                _logger.LogTrace("Codebase scan complete. Sleeping ...");
             }
+            catch (Exception ex)
+            {
+
+            }
+
+            // while (!cancellationToken.IsCancellationRequested)
+            // {
+            //     try
+            //     {
+            //         //  Run Dequeue here
+            //     }
+            //     catch (Exception whileEx)
+            //     {
+
+            //     }
+            // }
         }
     }
 }

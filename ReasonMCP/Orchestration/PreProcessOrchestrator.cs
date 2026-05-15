@@ -57,7 +57,30 @@ namespace ReasonMCP.Orchestration
             }
         }
 
-        public async Task PreprocessFileAsync(string filePath)
+        public async Task PreprocessFileFromQueueAsync(
+            string filePath,
+            CancellationToken cancellationToken = default
+        )
+        {
+            bool convertSuccesss;
+
+            //  2.1 Determine file type and what processor to use
+            var strategy = _strategies.FirstOrDefault(s => s.CanConvert(filePath));
+
+            //  3.  Convert file to markdown
+            convertSuccesss = await strategy!.ConvertToMarkdownAsync(filePath);
+
+            if (convertSuccesss)
+                await _fileConverter.ClearOriginalFile(filePath);
+
+            //  TODO:   Feature:    Add Converter/Processor for images
+            //  will need an image model (moondream2) if this becomes necessary
+        }
+
+        public async Task PreprocessFileAsync(
+            string filePath,
+            CancellationToken cancellationToken = default
+        )
         {
             //  1.  Get all the files in the directory
             string[] files = Directory.GetFiles(filePath);

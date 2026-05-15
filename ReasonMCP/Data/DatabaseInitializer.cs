@@ -10,7 +10,7 @@ namespace ReasonMCP.Data
     {
         public async Task InitializeDatabaseAsync()
         {
-            logger.LogInformation("Initializing SQLite Vector Databases ...");
+            logger.LogInformation("Initializing SQLite Databases ...");
 
             try
             {
@@ -33,6 +33,20 @@ namespace ReasonMCP.Data
                 await cmd.ExecuteNonQueryAsync();
 
                 logger.LogInformation("Vector Databases initialized successfully.");
+
+                //  3.  Create Standard table for FileIngestion queue
+                logger.LogInformation("Creating IngestionQueue for file processing ...");
+
+                cmd.CommandText = @"
+                    CREATE TABLE IF NOT EXISTS IngestionQueue (
+                        FilePath TEXT PRIMARY KEY,
+                        TargetStore TEXT,
+                        Status INTEGER NOT NULL,
+                        LastModified TEXT NOT NULL,
+                        RetryCount INTEGER DEFAULT 0,
+                        ErrorMessage TEXT
+                    );";
+                await cmd.ExecuteNonQueryAsync();
             }
             catch (Exception ex)
             {

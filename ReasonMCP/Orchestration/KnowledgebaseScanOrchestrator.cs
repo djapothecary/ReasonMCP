@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -9,21 +10,21 @@ using ReasonMCP.Utilities;
 
 namespace ReasonMCP.Orchestration
 {
-    public class CodebaseScanOrchestrator
+    public class KnowledgebaseScanOrchestrator
     {
-        private readonly CodebaseScanSettings _settings;
-        private readonly ILogger<CodebaseScanOrchestrator> _logger;
+        private readonly KnowledgebaseScanSettings _settings;
+        private readonly ILogger<KnowledgebaseScanOrchestrator> _logger;
 
-        public CodebaseScanOrchestrator(
-            IOptions<CodebaseScanSettings> options,
-            ILogger<CodebaseScanOrchestrator> logger
+        public KnowledgebaseScanOrchestrator(
+            IOptions<KnowledgebaseScanSettings> options,
+            ILogger<KnowledgebaseScanOrchestrator> logger
         )
         {
             _settings = options.Value;
             _logger = logger;
         }
 
-        public async Task ScanCodebaseAsync(
+        public async Task ScanKnowledgebaseAsync(
             CancellationToken cancellationToken = default
         )
         {
@@ -53,20 +54,15 @@ namespace ReasonMCP.Orchestration
 
             foreach (var dir in directoriesToScan)
             {
-                _logger.LogTrace($"Processing Code directory: {dir.FullName}");
+                _logger.LogTrace($"Processing Knowledgebase directory: {dir.FullName}");
                 await ProcessDirectoryRecursivelyAsync(dir, cancellationToken);
             }
         }
 
-        /// <summary>
-        /// Recursively processes a directory and its subdirectories.
-        /// Handles file processing for leaf directories and continues traversal for directories with subdirectories.
-        /// </summary>
-        /// <param name="directory">The directory to process</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        private async Task ProcessDirectoryRecursivelyAsync(
+        public async Task ProcessDirectoryRecursivelyAsync(
             DirectoryInfo directory,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             var subDirectories = GetIncludedFilteredDirectoriesList(directory);
 
@@ -75,12 +71,12 @@ namespace ReasonMCP.Orchestration
 
             foreach (var subdirectory in subDirectories)
             {
-                _logger.LogTrace($"Processing Codebase Project directory: {subdirectory.FullName}");
+                _logger.LogTrace($"Processing Knowledgebase Document directory: {subdirectory.FullName}");
 
                 var files = GetIncludedFilteredFilesList(subdirectory);
                 if (files.Count > 0)
                 {
-                    //  Handle any "straggler files" for processing here
+                    //  Add files to IngestionQueue here
                     foreach (var file in files)
                     {
 
@@ -112,7 +108,7 @@ namespace ReasonMCP.Orchestration
         private List<FileInfo> GetIncludedFilteredFilesList(DirectoryInfo directoryPath)
         {
             var includedList = new List<string>();
-            foreach (var include in _settings.AllTargetExtensions)
+            foreach (var include in _settings.AllKnowledgeExtensions)
             {
                 includedList.Add(include);
             }
