@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ReaconMCP.Interfaces;
 using ReasonMCP.Data;
 using ReasonMCP.Handlers;
 using ReasonMCP.Interfaces;
@@ -26,7 +25,8 @@ namespace ReasonMCP.Extensions
             builder.Services.AddScoped<IFileConverterUtility, FileConverterUtility>();
             builder.Services.AddScoped<IChunkParsingUtility, ChunkParsingUtility>();
             builder.Services.AddScoped<IMetadataEnrichmentUtility, MetadataEnrichmentUtility>();
-            builder.Services.AddScoped<IFileIngestionService, FileIngestionService>();
+            builder.Services.AddScoped<ICodebaseRecordIngestionService, CodebaseRecordIngestionService>();
+            builder.Services.AddScoped<IKnowledgebaseRecordIngestionService, KnowledgebaseRecordIngestionService>();
             builder.Services.AddScoped<DapperIngestionQueueService>();
 
             return builder;
@@ -38,7 +38,8 @@ namespace ReasonMCP.Extensions
         {
             builder.Services.AddScoped<CodebaseScanOrchestrator>();
             builder.Services.AddScoped<KnowledgebaseScanOrchestrator>();
-            builder.Services.AddScoped<FileUpsertOrchestrator>();
+            builder.Services.AddScoped<CodebaseRecordUpsertOrchestrator>();
+            builder.Services.AddScoped<KnowledgebaseRecordUpsertOrchestrator>();
             builder.Services.AddScoped<PreProcessOrchestrator>();
 
             return builder;

@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ReaconMCP.Interfaces;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Models;
 
@@ -12,7 +11,7 @@ namespace ReasonMCP.Utilities
 {
     public class ChunkParsingUtility : IChunkParsingUtility
     {
-        public async Task<List<KnowledgeRecord>> ParseEnrichedMarkdownAsync(
+        public async Task<List<KnowledgebaseRecord>> ParseEnrichedMarkdownAsync(
             string filePath,
             CancellationToken cancellationToken = default
         )
@@ -27,7 +26,7 @@ namespace ReasonMCP.Utilities
             var sections = fullText.Split("## Chunk ", StringSplitOptions.RemoveEmptyEntries);
 
             if (sections.Length == 0)
-                return new List<KnowledgeRecord>();
+                return new List<KnowledgebaseRecord>();
 
             //  3.  Extract Metadata ONCE from the header block
             var headerBlock = sections[0];
@@ -37,14 +36,14 @@ namespace ReasonMCP.Utilities
             string generatedDate = ExtractMetadata(headerBlock, "Generated Date");
             string version = ExtractMetadata(headerBlock, "Version");
 
-            var records = new List<KnowledgeRecord>();
+            var records = new List<KnowledgebaseRecord>();
 
             //  4.  Process the remaining blocks using a simple mapping loop
             for (int i = 1; i < sections.Length; i++)
             {
                 var chunkBlock = sections[i];
 
-                records.Add(new KnowledgeRecord
+                records.Add(new KnowledgebaseRecord
                 {
                     Id = Guid.NewGuid().ToString(),
                     Source = source,

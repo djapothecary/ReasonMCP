@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-using DocumentFormat.OpenXml.Office.CustomXsn;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -7,7 +5,6 @@ using Microsoft.Extensions.Options;
 using ReasonMCP.Configuration;
 using ReasonMCP.Orchestration;
 using ReasonMCP.Services;
-using ReasonMCP.Tools;
 
 namespace ReasonMCP.Workers
 {
@@ -70,7 +67,7 @@ namespace ReasonMCP.Workers
 
                     //  5.  Get the file for Upsert
                     //  This will handle the embeddings and Upsert to the vector store
-                    var fileUpsertOrchestrator = scope.ServiceProvider.GetRequiredService<FileUpsertOrchestrator>();
+                    var fileUpsertOrchestrator = scope.ServiceProvider.GetRequiredService<KnowledgebaseRecordUpsertOrchestrator>();
                     // await fileUpsertOrchestrator.GetFileForUpsert(file!.FilePath, cancellationToken);
                     await fileUpsertOrchestrator.GetFileForUpsertFromIngestQueueAsync(file, cancellationToken);
 

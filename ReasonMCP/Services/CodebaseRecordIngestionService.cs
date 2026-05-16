@@ -1,0 +1,47 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.VectorData;
+using ReasonMCP.Interfaces;
+using ReasonMCP.Models;
+
+namespace ReasonMCP.Services
+{
+    public class CodebaseRecordIngestionService : ICodebaseRecordIngestionService
+    {
+        private readonly VectorStoreCollection<string, CodebaseRecord> _collection;
+        private readonly ILogger<CodebaseRecordIngestionService> _logger;
+
+        public CodebaseRecordIngestionService(
+            VectorStore vectorStore,
+            ILogger<CodebaseRecordIngestionService> logger
+        )
+        {
+            _collection = vectorStore.GetCollection<string, CodebaseRecord>("ReasonContext");
+            _logger = logger;
+        }
+
+        public async Task<bool> IngestEnrichedCodebaseRecordAsync(CodebaseRecord record, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                //  1.  Ensure the collection actually existss
+                await _collection.EnsureCollectionExistsAsync(cancellationToken);
+
+                //  2.  Upsert the record. If it fails, it throws an exception.
+                await _collection.UpsertAsync(record, cancellationToken: cancellationToken);
+                return true;
+            }
+            catch (VectorStoreException vEx)
+            {
+                // Log specifically that the Vector DB rejected the upsert
+                _logger.LogError(vEx, "Vector database error during upsert for File {FilePath}", record?.Metadata?["source"]);
+                return false;
+            }
+
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to ingest RagObject for source: {Source}", record?.Metadata?.GetValueOrDefault("source"));
+                return false;
+            }
+        }
+    }
+}

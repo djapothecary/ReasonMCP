@@ -1,4 +1,3 @@
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
 using ReasonMCP.Interfaces;
@@ -6,22 +5,22 @@ using ReasonMCP.Models;
 
 namespace ReasonMCP.Services
 {
-    public class FileIngestionService : IFileIngestionService
+    public class KnowledgebaseRecordIngestionService : IKnowledgebaseRecordIngestionService
     {
-        private readonly VectorStoreCollection<string, KnowledgeRecord> _collection;
-        private readonly ILogger<FileIngestionService> _logger;
+        private readonly VectorStoreCollection<string, KnowledgebaseRecord> _collection;
+        private readonly ILogger<KnowledgebaseRecordIngestionService> _logger;
 
-        public FileIngestionService(
+        public KnowledgebaseRecordIngestionService(
             VectorStore vectorStore,
-            ILogger<FileIngestionService> logger
+            ILogger<KnowledgebaseRecordIngestionService> logger
         )
         {
-            _collection = vectorStore.GetCollection<string, KnowledgeRecord>("ReasonContext");
+            _collection = vectorStore.GetCollection<string, KnowledgebaseRecord>("ReasonContext");
             _logger = logger;
         }
 
-        public async Task<bool> IngestSingleEnrichedObjectAsync(
-            KnowledgeRecord record,
+        public async Task<bool> IngestEnrichedKnowledgeBaseRecordAsync(
+            KnowledgebaseRecord record,
             CancellationToken cancellationToken)
         {
             try

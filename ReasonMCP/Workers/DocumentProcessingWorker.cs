@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReasonMCP.Configuration;
 using ReasonMCP.Orchestration;
-using ReasonMCP.Tools;
 
 namespace ReasonMCP.Workers
 {
@@ -49,7 +48,7 @@ namespace ReasonMCP.Workers
                     //  3.  Upsert the documents to the vector store
                     _logger.LogTrace("Starting File Upsert Orchestration ...");
 
-                    var fileUpsertOrchestrator = scope.ServiceProvider.GetRequiredService<FileUpsertOrchestrator>();
+                    var fileUpsertOrchestrator = scope.ServiceProvider.GetRequiredService<KnowledgebaseRecordUpsertOrchestrator>();
                     await fileUpsertOrchestrator.ScanMarkdownDirectory(cancellationToken);
 
                     _logger.LogTrace("File Upser completed.  Sleeping ...");

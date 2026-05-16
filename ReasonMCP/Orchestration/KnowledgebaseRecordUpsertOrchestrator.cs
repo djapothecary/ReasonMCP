@@ -1,30 +1,26 @@
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.VectorData;
-using ReaconMCP.Interfaces;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Models;
-using ReasonMCP.Utilities;
 
 namespace ReasonMCP.Orchestration
 {
-    public class FileUpsertOrchestrator
+    public class KnowledgebaseRecordUpsertOrchestrator
     {
-        private readonly IFileIngestionService _ingestService;
+        private readonly IKnowledgebaseRecordIngestionService _ingestService;
         private readonly IChunkParsingUtility _chunkParser;
 
         private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
         private readonly IOptions<StorageConfig> _options;
-        private readonly ILogger<FileUpsertOrchestrator> _logger;
+        private readonly ILogger<KnowledgebaseRecordUpsertOrchestrator> _logger;
 
-        public FileUpsertOrchestrator(
-            IFileIngestionService ingestService,
+        public KnowledgebaseRecordUpsertOrchestrator(
+            IKnowledgebaseRecordIngestionService ingestService,
             IChunkParsingUtility chunkParser,
             IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
             IOptions<StorageConfig> options,
-            ILogger<FileUpsertOrchestrator> logger
+            ILogger<KnowledgebaseRecordUpsertOrchestrator> logger
         )
         {
             _ingestService = ingestService;
@@ -68,7 +64,7 @@ namespace ReasonMCP.Orchestration
         )
         {
             var convertedMarkdownPath = await ConvertToMarkdownPathAsync(filePath);
-            var recordsToLoad = new List<KnowledgeRecord>();
+            var recordsToLoad = new List<KnowledgebaseRecord>();
 
             //  record Upsert Success status.  If there was a failure
             //  original markdowns will not be moved
@@ -95,7 +91,7 @@ namespace ReasonMCP.Orchestration
 
                 record.Vector = generatedEmbeddings.First().Vector;
 
-                upsertSuccess = await _ingestService.IngestSingleEnrichedObjectAsync(record, cancellationToken);
+                upsertSuccess = await _ingestService.IngestEnrichedKnowledgeBaseRecordAsync(record, cancellationToken);
 
                 _logger.LogTrace("Record successfully upserted");
             }
@@ -117,7 +113,7 @@ namespace ReasonMCP.Orchestration
         {
             //  1.  Get all the files in the directory
             string[] files = Directory.GetFiles(filePath);
-            var recordsToLoad = new List<KnowledgeRecord>();
+            var recordsToLoad = new List<KnowledgebaseRecord>();
 
             //  record Upsert Success status.  If there was a failure
             //  original markdowns will not be moved
@@ -147,7 +143,7 @@ namespace ReasonMCP.Orchestration
 
                 record.Vector = generatedEmbeddings.First().Vector;
 
-                upsertSuccess = await _ingestService.IngestSingleEnrichedObjectAsync(record, cancellationToken);
+                upsertSuccess = await _ingestService.IngestEnrichedKnowledgeBaseRecordAsync(record, cancellationToken);
 
                 _logger.LogTrace("Record successfully upserted");
             }
@@ -183,8 +179,6 @@ namespace ReasonMCP.Orchestration
                 file.MoveTo(targetFilePath, overwrite: true);
             }
         }
-
-
 
         private async Task<string> ConvertToMarkdownPathAsync(string filePath)
         {

@@ -46,6 +46,7 @@ builder.AddReasonVectorStore();
 builder.AddOrchestrators();
 builder.AddStrategies();
 builder.AddFileServices();
+builder.AddAstChunkingService();
 
 //  Register the Background Service
 

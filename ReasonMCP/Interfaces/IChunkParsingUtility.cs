@@ -1,10 +1,10 @@
 using ReasonMCP.Models;
 
-namespace ReaconMCP.Interfaces
+namespace ReasonMCP.Interfaces
 {
     public interface IChunkParsingUtility
     {
-        Task<List<KnowledgeRecord>> ParseEnrichedMarkdownAsync(
+        Task<List<KnowledgebaseRecord>> ParseEnrichedMarkdownAsync(
             string filePath,
             CancellationToken cancellationToken = default
         );

@@ -8,7 +8,8 @@ using ReasonMCP.Models;
 
 namespace ReasonMCP.Extensions
 {
-    public static class ReasonVectorStoreExtensions
+    public static class
+    VectorStoreExtensions
     {
         public static IHostApplicationBuilder AddReasonVectorStore(
             this IHostApplicationBuilder builder
@@ -21,10 +22,10 @@ namespace ReasonMCP.Extensions
 
             builder.Services.AddSqliteVectorStore(_ => $"Data Source={dbPath}");
 
-            builder.Services.AddSingleton<VectorStoreCollection<string, KnowledgeRecord>>(sp =>
+            builder.Services.AddSingleton<VectorStoreCollection<string, KnowledgebaseRecord>>(sp =>
             {
                 var store = sp.GetRequiredService<VectorStore>();
-                return store.GetCollection<string, KnowledgeRecord>("ReasonContext");
+                return store.GetCollection<string, KnowledgebaseRecord>("ReasonContext");
             });
 
             return builder;
