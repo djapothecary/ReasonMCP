@@ -3,13 +3,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel;
 using ReasonMCP.Models;
 
 namespace ReasonMCP.Extensions
 {
-    public static class
-    VectorStoreExtensions
+    public static class VectorStoreExtensions
     {
         public static IHostApplicationBuilder AddReasonVectorStore(
             this IHostApplicationBuilder builder

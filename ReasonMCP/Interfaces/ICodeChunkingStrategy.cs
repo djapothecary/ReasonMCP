@@ -5,7 +5,7 @@ namespace ReasonMCP.Interfaces
     /// <summary>
     /// Service for chunking C# source code into semantic AST-based elements.
     /// </summary>
-    public interface IAstChunkingService
+    public interface ICodeChunkingStrategy
     {
         /// <summary>
         /// Chunks a C# source file asynchronously into semantic code chunks.

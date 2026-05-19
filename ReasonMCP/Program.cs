@@ -1,11 +1,16 @@
+using System.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using ReasonMCP.Configuration;
 using ReasonMCP.Data;
+using ReasonMCP.Endpoints;
 using ReasonMCP.Extensions;
+using ReasonMCP.Filters;
 using ReasonMCP.Models;
 using ReasonMCP.Tools;
 using ReasonMCP.Workers;
@@ -13,6 +18,7 @@ using ReasonMCP.Workers;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.UseUrls("http://127.0.0.1:5000");
+// builder.WebHost.UseUrls("http://127.0.0.1:11434");
 
 builder.Services.Configure<StorageConfig>(builder.Configuration.GetSection("StorageConfig"));
 builder.Services.Configure<TestingSettings>(builder.Configuration.GetSection("TestingSettings"));
@@ -48,6 +54,9 @@ builder.AddStrategies();
 builder.AddFileServices();
 builder.AddAstChunkingService();
 
+//  testing AI Agent chat interception
+builder.Services.AddSingleton<IFunctionInvocationFilter, ReasonChatInterceptor>();
+
 //  Register the Background Service
 
 //  DEPRECATED: This have been replaced by the Seperate Workers
@@ -63,9 +72,16 @@ builder.Services
     .WithTools<RandomNumberTools>()
     .WithTools<KnowledgeSearchTool>();
 
+builder.Services.AddKernel();
+
 var webHost = builder.Build();
 webHost.UseDeveloperExceptionPage();
 webHost.MapHealthEndpoints();
+// webHost.MapAiGatewayEndpoints();
+// webHost.MapAiTestInterceptEndpoints();
+webHost.MapReasonChatEndpoints();
+
+
 
 webHost.MapGet("/routes", (IEnumerable<EndpointDataSource> endpointSources) =>
 {

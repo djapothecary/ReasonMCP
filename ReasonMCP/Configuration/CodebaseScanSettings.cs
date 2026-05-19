@@ -9,6 +9,8 @@ namespace ReasonMCP.Configuration
         public string RootDirectory { get; set; } = string.Empty;
         public List<string> SubDirectories { get; set; } = [];
         public List<string> ExcludedDirectories { get; set; } = [];
+        public List<string> CSharpExtensions { get; set; } = [];
+        public List<string> TypeScriptExtensions { get; set; } = [];
         public List<string> SourceCodeExtensions { get; set; } = [];
         public List<string> MarkupExtensions { get; set; } = [];
         public List<string> ConfigExtensions { get; set; } = [];

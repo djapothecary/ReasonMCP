@@ -1,25 +1,26 @@
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.VectorData;
 using ReasonMCP.Configuration;
-using ReasonMCP.Interfaces;
-using ReasonMCP.Models;
-using ReasonMCP.Utilities;
+using ReasonMCP.Services;
 
 namespace ReasonMCP.Orchestration
 {
     public class KnowledgebaseScanOrchestrator
     {
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly KnowledgebaseScanSettings _settings;
         private readonly ILogger<KnowledgebaseScanOrchestrator> _logger;
 
         public KnowledgebaseScanOrchestrator(
+            IServiceScopeFactory scopeFactory,
             IOptions<KnowledgebaseScanSettings> options,
             ILogger<KnowledgebaseScanOrchestrator> logger
         )
         {
+            _scopeFactory = scopeFactory;
             _settings = options.Value;
             _logger = logger;
         }
@@ -69,6 +70,9 @@ namespace ReasonMCP.Orchestration
             if (subDirectories == null || !subDirectories.Any())
                 return;
 
+            var scope = _scopeFactory.CreateScope();
+            var dapperIngestionQueue = scope.ServiceProvider.GetRequiredService<DapperIngestionQueueService>();
+
             foreach (var subdirectory in subDirectories)
             {
                 _logger.LogTrace($"Processing Knowledgebase Document directory: {subdirectory.FullName}");
@@ -79,7 +83,7 @@ namespace ReasonMCP.Orchestration
                     //  Add files to IngestionQueue here
                     foreach (var file in files)
                     {
-
+                        await dapperIngestionQueue.UpsertToQueueAsync(file.FullName, "Documents", file.LastWriteTimeUtc, cancellationToken);
                         Console.WriteLine(file.FullName);
                     }
                 }

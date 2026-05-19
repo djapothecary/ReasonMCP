@@ -39,10 +39,10 @@ namespace ReasonMCP.Services
                     @Status,
                     @LastModified,
                     0
-                ) ON CONFLICT DO UPDATE SET
+                ) ON CONFLICT(FilePath) DO UPDATE SET
                     TargetStore = excluded.TargetStore,
                     Status = CASE WHEN excluded.LastModified > IngestionQueue.LastModified THEN 0 ELSE IngestionQueue.Status END,
-                    LastModified = CASE WHEN excluded.LastModified > IngestionQueue THEN excluded.LastModified ELSE IngestionQueue.LastModified END,
+                    LastModified = CASE WHEN excluded.LastModified > IngestionQueue.LastModified THEN excluded.LastModified ELSE IngestionQueue.LastModified END,
                     RetryCount = CASE WHEN excluded.LastModified > IngestionQueue.LastModified THEN 0 ELSE IngestionQueue.RetryCount END;";
 
             using var connection = _connectionFactory.CreateConnection();
@@ -52,7 +52,7 @@ namespace ReasonMCP.Services
                 FilePath = filePath,
                 TargetStore = targetStore,
                 Status = (int)IngestionStatus.Pending,
-                LastModified = lastModified.ToString("0") //    Store as ISO 8601 string
+                LastModified = lastModified.ToString("O") //    Store as ISO 8601 string
             });
         }
 

@@ -51,9 +51,20 @@ namespace ReasonMCP.Walkers
 
         // ============= Class Handling =============
 
+        public override void VisitClassDeclaration(ClassDeclarationSyntax node)
+        {
+            // REMOVED: ExtractTypeDeclaration() to prevent overlapping chunks!
+            // We only use the class to build the metadata path for its children.
+            _classPath.Push(node.Identifier.Text);
+            base.VisitClassDeclaration(node);
+            _classPath.Pop();
+        }
+
+        // ============= Interface Handling =============
+
         public override void VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)
         {
-            ExtractTypeDeclaration(node, node.Identifier.Text, "InterfaceDeclaration");
+            // REMOVED: ExtractTypeDeclaration()
             _classPath.Push(node.Identifier.Text);
             base.VisitInterfaceDeclaration(node);
             _classPath.Pop();
@@ -63,7 +74,7 @@ namespace ReasonMCP.Walkers
 
         public override void VisitStructDeclaration(StructDeclarationSyntax node)
         {
-            ExtractTypeDeclaration(node, node.Identifier.Text, "StructDeclaration");
+            // REMOVED: ExtractTypeDeclaration()
             _classPath.Push(node.Identifier.Text);
             base.VisitStructDeclaration(node);
             _classPath.Pop();

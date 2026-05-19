@@ -16,7 +16,7 @@ namespace ReasonMCP.Extensions
         {
             builder.Services.AddHttpClient("Alpacca", client =>
             {
-                client.BaseAddress = new Uri("http://127.0.0.1:11434");
+                client.BaseAddress = new Uri("http://127.0.0.1:5000/api/v1");
                 client.Timeout = TimeSpan.FromMinutes(5);
             })
             .RemoveAllLoggers()

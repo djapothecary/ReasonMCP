@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Models;
+using UglyToad.PdfPig.AcroForms.Fields;
 
 namespace ReasonMCP.Orchestration
 {
@@ -10,7 +11,6 @@ namespace ReasonMCP.Orchestration
     {
         private readonly IKnowledgebaseRecordIngestionService _ingestService;
         private readonly IChunkParsingUtility _chunkParser;
-
         private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
         private readonly IOptions<StorageConfig> _options;
         private readonly ILogger<KnowledgebaseRecordUpsertOrchestrator> _logger;
@@ -184,6 +184,7 @@ namespace ReasonMCP.Orchestration
         {
             var fileName = Path.GetFileName(filePath);
             var fileInfo = new FileInfo(filePath);
+            var fileExtension = fileInfo.Extension;
             var directoryPath = fileInfo.DirectoryName;  //  get the full path
 
             //  strip off "Temp" if this file was staged due to additional processing
@@ -203,7 +204,7 @@ namespace ReasonMCP.Orchestration
             }
 
             var convertedOutputRoot = directoryPath + @"\Markdowns";
-            var convertedOutputPath = Path.Combine(convertedOutputRoot, fileName.Replace(".txt", ".md"));
+            var convertedOutputPath = Path.Combine(convertedOutputRoot, fileName.Replace(fileExtension, ".md"));
 
             return convertedOutputPath;
         }

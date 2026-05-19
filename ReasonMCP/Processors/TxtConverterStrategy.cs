@@ -21,7 +21,7 @@ namespace ReasonMCP.Processors
             return false;
         }
 
-        public async Task<bool> ConvertToMarkdownAsync(string filePath)
+        public async Task<bool> ConvertForIngestionAsync(string filePath)
         {
             // no additional processing required, go straight to conversion
             return await _fileConverter.ConvertToMarkdown(filePath);

@@ -32,7 +32,7 @@ namespace ReasonMCP.Processors
             return _supportedExtensions.Contains(fileExtension, StringComparer.OrdinalIgnoreCase);
         }
 
-        public async Task<bool> ConvertToMarkdownAsync(string filePath)
+        public async Task<bool> ConvertForIngestionAsync(string filePath)
         {
             throw new NotImplementedException();
         }

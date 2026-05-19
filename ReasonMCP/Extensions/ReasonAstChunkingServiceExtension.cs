@@ -1,7 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ReasonMCP.Interfaces;
-using ReasonMCP.Services;
+using ReasonMCP.Processors;
+
 
 namespace ReasonMCP.Extensions
 {
@@ -11,7 +12,8 @@ namespace ReasonMCP.Extensions
             this IHostApplicationBuilder builder
         )
         {
-            builder.Services.AddSingleton<IAstChunkingService, RoslynAstChunkingService>();
+            builder.Services.AddScoped<ICodeChunkingStrategy, CSharpRoslynChunkingStrategy>();
+            builder.Services.AddScoped<ICodeChunkingStrategy, TypeScriptChunkingStrategy>();
 
             return builder;
         }

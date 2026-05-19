@@ -6,19 +6,19 @@ using ReasonMCP.Interfaces;
 using ReasonMCP.Records;
 using ReasonMCP.Walkers;
 
-namespace ReasonMCP.Services
+namespace ReasonMCP.Processors
 {
     /// <summary>
     /// High-performance C# service using Roslyn for semantic code chunking.
     /// Extracts logical AST nodes (classes, interfaces, structs, enums, methods) for vector embedding.
     /// </summary>
-    public class RoslynAstChunkingService : IAstChunkingService
+    public class CSharpRoslynChunkingStrategy : ICodeChunkingStrategy
     {
-        private readonly ILogger<RoslynAstChunkingService> _logger;
+        private readonly ILogger<CSharpRoslynChunkingStrategy> _logger;
 
-        public RoslynAstChunkingService
+        public CSharpRoslynChunkingStrategy
         (
-            ILogger<RoslynAstChunkingService> logger
+            ILogger<CSharpRoslynChunkingStrategy> logger
         )
         {
             _logger = logger;

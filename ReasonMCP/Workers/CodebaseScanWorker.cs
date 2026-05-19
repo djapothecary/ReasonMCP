@@ -3,6 +3,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReasonMCP.Configuration;
+using ReasonMCP.Interfaces;
+using ReasonMCP.Models;
 using ReasonMCP.Orchestration;
 using ReasonMCP.Tools;
 
@@ -11,16 +13,22 @@ namespace ReasonMCP.Workers
     public class CodebaseScanWorker : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IIngestionQueueService _ingestionQueue;
+        private readonly IEnumerable<IFileConverterStrategy> _strategies;
         private readonly CodebaseScanSettings _settings;
         private readonly ILogger<CodebaseScanWorker> _logger;
 
         public CodebaseScanWorker(
             IServiceScopeFactory scopeFactory,
+            IIngestionQueueService ingestionQueue,
+            IEnumerable<IFileConverterStrategy> strategies,
             IOptions<CodebaseScanSettings> options,
             ILogger<CodebaseScanWorker> logger
         )
         {
             _scopeFactory = scopeFactory;
+            _ingestionQueue = ingestionQueue;
+            _strategies = strategies;
             _settings = options.Value;
             _logger = logger;
         }
@@ -42,27 +50,45 @@ namespace ReasonMCP.Workers
                 var codebaseOrchestrator = scope.ServiceProvider.GetRequiredService<CodebaseScanOrchestrator>();
                 await codebaseOrchestrator.ScanCodebaseAsync(cancellationToken);
 
-                // var knowledgebaseOrchestrator = scope.ServiceProvider.GetRequiredService<KnowledgebaseScanOrchestrator>();
-                // await knowledgebaseOrchestrator.ScanKnowledgebaseAsync(cancellationToken);
-
                 _logger.LogTrace("Codebase scan complete. Sleeping ...");
             }
             catch (Exception ex)
             {
-
+                _logger.LogError("An error occurred while scanning Codebase directories: {Ex}", ex);
             }
 
-            // while (!cancellationToken.IsCancellationRequested)
-            // {
-            //     try
-            //     {
-            //         //  Run Dequeue here
-            //     }
-            //     catch (Exception whileEx)
-            //     {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var file = new FileIngestionRecord();
 
-            //     }
-            // }
+                try
+                {
+                    bool ingestSuccesss;
+
+                    //  1.  Get the next file to process by "TargetStore = "Codebase" "
+                    file = await _ingestionQueue.DequeueNextFileAsync("Codebase", cancellationToken);
+
+                    //  2.  Determine the file type and processor to use
+                    var strategy = _strategies.FirstOrDefault(s => s.CanConvert(file!.FilePath));
+
+                    ingestSuccesss = await strategy!
+                    .ConvertForIngestionAsync(file!.FilePath);
+
+                    if (ingestSuccesss)
+                    {
+                        await _ingestionQueue.MarkCompleteAsync(file!.FilePath!, cancellationToken);
+                    }
+                    else
+                    {
+                        await _ingestionQueue.MarkFailedAsync(file!.FilePath, "Upsert failed", cancellationToken);
+                    }
+                }
+                catch (Exception whileEx)
+                {
+                    _logger.LogError("An Error occurred during the Upsert for {File}", file!.FilePath);
+                    await _ingestionQueue.MarkFailedAsync(file!.FilePath, whileEx.Message, cancellationToken);
+                }
+            }
         }
     }
 }

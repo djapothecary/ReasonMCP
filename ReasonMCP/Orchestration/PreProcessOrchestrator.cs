@@ -68,7 +68,7 @@ namespace ReasonMCP.Orchestration
             var strategy = _strategies.FirstOrDefault(s => s.CanConvert(filePath));
 
             //  3.  Convert file to markdown
-            convertSuccesss = await strategy!.ConvertToMarkdownAsync(filePath);
+            convertSuccesss = await strategy!.ConvertForIngestionAsync(filePath);
 
             if (convertSuccesss)
                 await _fileConverter.ClearOriginalFile(filePath);
@@ -91,15 +91,15 @@ namespace ReasonMCP.Orchestration
             {
                 foreach (var file in files)
                 {
-                    bool convertSuccesss;
+                    bool ingestSuccesss;
 
                     //  2.1 Determine file type and what processor to use
                     var strategy = _strategies.FirstOrDefault(s => s.CanConvert(file));
 
-                    //  3.  Convert file to markdown
-                    convertSuccesss = await strategy!.ConvertToMarkdownAsync(file);
+                    //  3.  Prepare file for ingestion to vector store
+                    ingestSuccesss = await strategy!.ConvertForIngestionAsync(file);
 
-                    if (convertSuccesss)
+                    if (ingestSuccesss)
                         await _fileConverter.ClearOriginalFile(file);
                 }
             }

@@ -28,7 +28,7 @@ namespace ReasonMCP.Processors
             return false;
         }
 
-        public async Task<bool> ConvertToMarkdownAsync(string filePath)
+        public async Task<bool> ConvertForIngestionAsync(string filePath)
         {
             string? convertedPdfFile;
             //  0.  Determine the size of the file

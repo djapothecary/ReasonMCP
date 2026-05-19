@@ -27,7 +27,7 @@ namespace ReasonMCP.Processors
             return false;
         }
 
-        public async Task<bool> ConvertToMarkdownAsync(string filePath)
+        public async Task<bool> ConvertForIngestionAsync(string filePath)
         {
             // this file is already a markdown file, move straight to chunking/enrichment
             return true;

@@ -1,23 +1,25 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReasonMCP.Configuration;
 using ReasonMCP.Interfaces;
+using ReasonMCP.Records;
 
 namespace ReasonMCP.Processors
 {
     public class SourceCodeConverterStrategy : IFileConverterStrategy
     {
-        private readonly IFileConverterUtility _fileConverter;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly CodebaseScanSettings _settings;
         private readonly ILogger<SourceCodeConverterStrategy> _logger;
 
         public SourceCodeConverterStrategy(
-            IFileConverterUtility fileConverter,
+            IServiceScopeFactory scopeFactory,
             IOptions<CodebaseScanSettings> options,
             ILogger<SourceCodeConverterStrategy> logger
         )
         {
-            _fileConverter = fileConverter;
+            _scopeFactory = scopeFactory;
             _settings = options.Value;
             _logger = logger;
         }
@@ -29,9 +31,26 @@ namespace ReasonMCP.Processors
 
         }
 
-        public Task<bool> ConvertToMarkdownAsync(string filePath)
+        public async Task<bool> ConvertForIngestionAsync(string filePath)
         {
-            throw new NotImplementedException();
+            IEnumerable<CodeChunk> chunks = [];
+            var fileExtension = Path.GetExtension(filePath);
+            var scope = _scopeFactory.CreateScope();
+
+            if (_settings.CSharpExtensions.Contains(fileExtension))
+            {
+                var csharpRoslynStrategy = scope.ServiceProvider.GetService<CSharpRoslynChunkingStrategy>();
+                chunks = await csharpRoslynStrategy!.ChunkFileAsync(filePath);
+                return true;
+            }
+            else if (_settings.TypeScriptExtensions.Contains(fileExtension))
+            {
+                var typescriptStrategy = scope.ServiceProvider.GetService<TypeScriptChunkingStrategy>();
+                chunks = await typescriptStrategy!.ChunkFileAsync(filePath);
+                return true;
+            }
+
+            return false;
         }
     }
 }

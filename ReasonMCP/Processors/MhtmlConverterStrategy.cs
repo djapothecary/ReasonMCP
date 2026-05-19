@@ -33,7 +33,7 @@ namespace ReasonMCP.Processors
             return false;
         }
 
-        public async Task<bool> ConvertToMarkdownAsync(string filePath)
+        public async Task<bool> ConvertForIngestionAsync(string filePath)
         {
             // MHTML will require additional processing before being sent to mark down
 

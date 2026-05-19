@@ -1,24 +1,24 @@
-using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.VectorData;
 using ReasonMCP.Configuration;
-using ReasonMCP.Interfaces;
-using ReasonMCP.Models;
-using ReasonMCP.Utilities;
+using ReasonMCP.Services;
 
 namespace ReasonMCP.Orchestration
 {
     public class CodebaseScanOrchestrator
     {
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly CodebaseScanSettings _settings;
         private readonly ILogger<CodebaseScanOrchestrator> _logger;
 
         public CodebaseScanOrchestrator(
+            IServiceScopeFactory scopeFactory,
             IOptions<CodebaseScanSettings> options,
             ILogger<CodebaseScanOrchestrator> logger
         )
         {
+            _scopeFactory = scopeFactory;
             _settings = options.Value;
             _logger = logger;
         }
@@ -73,6 +73,9 @@ namespace ReasonMCP.Orchestration
             if (subDirectories == null || !subDirectories.Any())
                 return;
 
+            var scope = _scopeFactory.CreateScope();
+            var dapperIngestionQueue = scope.ServiceProvider.GetRequiredService<DapperIngestionQueueService>();
+
             foreach (var subdirectory in subDirectories)
             {
                 _logger.LogTrace($"Processing Codebase Project directory: {subdirectory.FullName}");
@@ -83,7 +86,7 @@ namespace ReasonMCP.Orchestration
                     //  Handle any "straggler files" for processing here
                     foreach (var file in files)
                     {
-
+                        await dapperIngestionQueue.UpsertToQueueAsync(file.FullName, "Codebase", file.LastWriteTimeUtc, cancellationToken);
                         Console.WriteLine(file.FullName);
                     }
                 }
