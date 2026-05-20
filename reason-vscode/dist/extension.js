@@ -49,6 +49,11 @@ function activate(context) {
         //	2.	UI Feedback: Shows a progress indicator
         response.progress('Reason is thinking ...');
         try {
+            //	prepare the chat history
+            const history = context.history.map(turn => ({
+                role: turn.participant === 'reasonmcp.chat' ? 'assistant' : 'user', //	map roles
+                content: turn.request ? turn.request.prompt : '' // simplification of the turn data
+            }));
             //	3.	Send the HTTP Post to the C# backend
             //	Using native fetch commands
             const res = await fetch('http://127.0.0.1:5000/api/v1/chat', {
@@ -57,7 +62,8 @@ function activate(context) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    prompt: request.prompt
+                    prompt: request.prompt,
+                    history: history
                 })
             });
             if (!res.ok) {

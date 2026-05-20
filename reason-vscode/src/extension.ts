@@ -16,6 +16,38 @@ export function activate(context: vscode.ExtensionContext) {
 			response.progress('Reason is thinking ...');
 
 			try {
+				//	prepare the chat history
+				const history = context.history.map(turn => ({
+					role: turn.participant === 'reasonmcp.chat' ? 'assistant' : 'user', //	map roles
+					content: turn.request ? turn.request.prompt : '' // simplification of the turn data
+				}));
+
+				const historyPayload: any[] = [];
+
+				for (const turn of context.history) {
+					if (turn instanceof vscode.ChatRequestTurn) {
+						//	it's a message from the user
+						historyPayload.push({
+							role: 'user',
+							content: turn.prompt
+						});
+					} else if (turn instanceof vscode.ChatResponseTurn) {
+						//	it's a message from Reason.  The response is an array of "parts".
+						//	we map them and extract the Markdown text.
+						const responseText = turn.response.map(part => {
+							if (part instanceof vscode.ChatResponseMarkdownPart) {
+								return part.value.value; //	the actual string content
+							}
+							return '';
+						}).join('');
+
+						historyPayload.push({
+							role: 'assistant',
+							content: responseText
+						});
+					}
+				}
+
 				//	3.	Send the HTTP Post to the C# backend
 				//	Using native fetch commands
 				const res = await fetch('http://127.0.0.1:5000/api/v1/chat', {
@@ -24,7 +56,8 @@ export function activate(context: vscode.ExtensionContext) {
 						'Content-Type': 'application/json'
 					},
 					body: JSON.stringify({
-						prompt: request.prompt
+						prompt: request.prompt,
+						history: historyPayload
 					})
 				});
 
