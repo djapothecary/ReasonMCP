@@ -1,9 +1,9 @@
 using ReasonMCP.DTOs;
 namespace ReasonMCP.DTOs
 {
-    public class ReasonChatRequest
+    public class ChatRequest
     {
         public string Prompt { get; set; } = string.Empty;
-        public List<ReasonChatMessage> History { get; set; } = new();
+        public List<ChatMessage> History { get; set; } = new();
     }
 }

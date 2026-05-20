@@ -5,7 +5,7 @@ using OllamaSharp;
 
 namespace ReasonMCP.Extensions
 {
-    public static class ReasonEmbedServiceExtensions
+    public static class EmbedServiceExtensions
     {
         public static IHostApplicationBuilder AddReasonNomicEmbedService(
             this IHostApplicationBuilder builder

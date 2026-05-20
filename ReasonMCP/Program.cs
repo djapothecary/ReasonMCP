@@ -55,7 +55,7 @@ builder.AddFileServices();
 builder.AddAstChunkingService();
 
 //  testing AI Agent chat interception
-builder.Services.AddSingleton<IFunctionInvocationFilter, ReasonChatInterceptor>();
+builder.Services.AddSingleton<IFunctionInvocationFilter, ChatInterceptor>();
 
 //  Register the Background Service
 

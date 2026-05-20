@@ -11,12 +11,12 @@ namespace ReasonMCP.Filters
     /// Intercepts Semantic Kernel AI invocations to enable Context Compression,
     /// LLM-as-a-Judge grading, and prompt reinforcement.
     /// </summary>
-    public class ReasonChatInterceptor : IFunctionInvocationFilter
+    public class ChatInterceptor : IFunctionInvocationFilter
     {
-        private readonly ILogger<ReasonChatInterceptor> _logger;
+        private readonly ILogger<ChatInterceptor> _logger;
 
-        public ReasonChatInterceptor(
-            ILogger<ReasonChatInterceptor> logger
+        public ChatInterceptor(
+            ILogger<ChatInterceptor> logger
         )
         {
             _logger = logger;

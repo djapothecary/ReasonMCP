@@ -7,7 +7,7 @@ using ReasonMCP.Data;
 
 namespace ReasonMCP.Extensions
 {
-    public static class ReasonVectorDbExtensions
+    public static class VectorDbExtensions
     {
         public static IHostApplicationBuilder AddReasonVectorDbService(
             this IHostApplicationBuilder builder

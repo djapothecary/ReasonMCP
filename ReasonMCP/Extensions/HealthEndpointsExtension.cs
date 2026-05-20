@@ -3,7 +3,7 @@ using ReasonMCP.Endpoints;
 
 namespace ReasonMCP.Extensions
 {
-    public static class ReasonEndpointsExtension
+    public static class EndpointsExtension
     {
         public static void MapHealthEndpoints(
             this IEndpointRouteBuilder app

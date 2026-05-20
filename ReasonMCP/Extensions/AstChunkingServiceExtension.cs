@@ -6,7 +6,7 @@ using ReasonMCP.Processors;
 
 namespace ReasonMCP.Extensions
 {
-    public static class ReasonAstChunkingServiceExtensions
+    public static class AstChunkingServiceExtensions
     {
         public static IHostApplicationBuilder AddAstChunkingService(
             this IHostApplicationBuilder builder

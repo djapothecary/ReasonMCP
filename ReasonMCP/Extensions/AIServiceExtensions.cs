@@ -8,7 +8,7 @@ using ReasonMCP.Handlers;
 
 namespace ReasonMCP.Extensions
 {
-    public static class ReasonAIServiceExtensions
+    public static class AIServiceExtensions
     {
         public static IHostApplicationBuilder AddReasonOllamaService(
             this IHostApplicationBuilder builder

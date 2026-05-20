@@ -11,7 +11,7 @@ using ReasonMCP.Utilities;
 
 namespace ReasonMCP.Extensions
 {
-    public static class ReasonServiceExtensions
+    public static class ServiceExtensions
     {
         public static IHostApplicationBuilder AddFileServices(
             this IHostApplicationBuilder builder
