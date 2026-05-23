@@ -1,8 +1,10 @@
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using OllamaSharp;
 using ReasonMCP.Handlers;
 
@@ -14,9 +16,9 @@ namespace ReasonMCP.Extensions
             this IHostApplicationBuilder builder
         )
         {
-            builder.Services.AddHttpClient("Alpacca", client =>
+            builder.Services.AddHttpClient("Alpaca", client =>
             {
-                client.BaseAddress = new Uri("http://127.0.0.1:5000/api/v1");
+                client.BaseAddress = new Uri("http://127.0.0.1:11434");
                 client.Timeout = TimeSpan.FromMinutes(5);
             })
             .RemoveAllLoggers()
@@ -30,6 +32,26 @@ namespace ReasonMCP.Extensions
                 options.CircuitBreaker.FailureRatio = 0.9;
                 options.CircuitBreaker.MinimumThroughput = 10;
                 options.Retry.MaxRetryAttempts = 1;
+            });
+
+            return builder;
+        }
+
+        public static IHostApplicationBuilder AddChatCompletionService(this IHostApplicationBuilder builder)
+        {
+            // We instantiate OllamaApiClient INLINE, directly returning the IChatCompletionService.
+            builder.Services.AddSingleton<IChatCompletionService>(sp =>
+            {
+                var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("Alpaca");
+
+                // Private instance just for chat
+                var ollamaClient = new OllamaApiClient(httpClient) { SelectedModel = "Reason" };
+
+                IChatClient chatClient = new ChatClientBuilder(ollamaClient)
+                    .UseFunctionInvocation()
+                    .Build();
+
+                return chatClient.AsChatCompletionService();
             });
 
             return builder;

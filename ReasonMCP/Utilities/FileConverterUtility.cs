@@ -90,6 +90,13 @@ namespace ReasonMCP.Utilities
 
             try
             {
+                //  null safety
+                if (!File.Exists(filePath))
+                {
+                    _logger.LogError("[FILE_CONVERSION_ERROR].  Path not found {fileName}.", fileName);
+                    return false;
+                }
+
                 await File.WriteAllTextAsync(convertedOutputPath, markdownBuilder.ToString());
                 return true;
             }
@@ -102,11 +109,13 @@ namespace ReasonMCP.Utilities
 
         public async Task ClearOriginalFile(string filePath)
         {
+            //  Preserve GeminiConsolidated workspace files
+            if (filePath.Contains("Gemini"))
+                return;
+
             //  Delete the original (source) file
             if (File.Exists(filePath))
-            {
                 File.Delete(filePath);
-            }
         }
     }
 }

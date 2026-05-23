@@ -1,7 +1,10 @@
 import * as vscode from 'vscode';
 
 export function activate(context: vscode.ExtensionContext) {
-	console.log('ReasonMCP client extension is now active!');
+	console.log(('ReasonMCP client extension is now active!'));
+
+	//	This output provides the VSCode "pop-up" window
+	// vscode.window.showInformationMessage('ReasonMCP client extension is now active!');
 
 	//	1.	Create the Chat Participant using the ID from package.json
 	const reasonParticipant = vscode.chat.createChatParticipant(
@@ -45,12 +48,22 @@ export function activate(context: vscode.ExtensionContext) {
 
 				//	3.	Send the HTTP Post to the C# backend
 				//	Using native fetch commands
+				const payload = {
+					prompt: request.prompt,
+					history: historyPayload
+				};
+
+				console.log("[TS PAYLOAD OUT]: " + JSON.stringify(payload, null, 2));
+				//	This output provides the VSCode "pop-up" window
+				// vscode.window.showInformationMessage("[TS PAYLOAD OUT]: " + JSON.stringify(payload, null, 2));
+
 				const res = await fetch('http://127.0.0.1:5000/api/v1/chat', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json'
 					},
 					body: JSON.stringify({
+						role: 'user', // this will alswys be the user sending a prompt to the API
 						prompt: request.prompt,
 						history: historyPayload
 					})

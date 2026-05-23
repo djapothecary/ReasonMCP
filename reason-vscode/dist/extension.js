@@ -43,27 +43,57 @@ exports.activate = activate;
 exports.deactivate = deactivate;
 const vscode = __importStar(__webpack_require__(1));
 function activate(context) {
-    console.log('ReasonMCP client extension is now active!');
+    console.log(('ReasonMCP client extension is now active!'));
+    //	This output provides the VSCode "pop-up" window
+    // vscode.window.showInformationMessage('ReasonMCP client extension is now active!');
     //	1.	Create the Chat Participant using the ID from package.json
     const reasonParticipant = vscode.chat.createChatParticipant('reasonmcp.chat', async (request, context, response, token) => {
         //	2.	UI Feedback: Shows a progress indicator
         response.progress('Reason is thinking ...');
         try {
-            //	prepare the chat history
-            const history = context.history.map(turn => ({
-                role: turn.participant === 'reasonmcp.chat' ? 'assistant' : 'user', //	map roles
-                content: turn.request ? turn.request.prompt : '' // simplification of the turn data
-            }));
+            //	prepare the chat history with proper role mapping
+            const historyPayload = [];
+            for (const turn of context.history) {
+                if (turn instanceof vscode.ChatRequestTurn) {
+                    //	it's a message from the user
+                    historyPayload.push({
+                        role: 'user',
+                        content: turn.prompt
+                    });
+                }
+                else if (turn instanceof vscode.ChatResponseTurn) {
+                    //	it's a message from Reason.  The response is an array of "parts".
+                    //	we map them and extract the Markdown text.
+                    const responseText = turn.response.map(part => {
+                        if (part instanceof vscode.ChatResponseMarkdownPart) {
+                            return part.value.value; //	the actual string content
+                        }
+                        return '';
+                    }).join('');
+                    historyPayload.push({
+                        role: 'assistant',
+                        content: responseText
+                    });
+                }
+            }
             //	3.	Send the HTTP Post to the C# backend
             //	Using native fetch commands
+            const payload = {
+                prompt: request.prompt,
+                history: historyPayload
+            };
+            console.log("[TS PAYLOAD OUT]: " + JSON.stringify(payload, null, 2));
+            //	This output provides the VSCode "pop-up" window
+            // vscode.window.showInformationMessage("[TS PAYLOAD OUT]: " + JSON.stringify(payload, null, 2));
             const res = await fetch('http://127.0.0.1:5000/api/v1/chat', {
-                method: 'POSt',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    role: 'user', // this will alswys be the user sending a prompt to the API
                     prompt: request.prompt,
-                    history: history
+                    history: historyPayload
                 })
             });
             if (!res.ok) {

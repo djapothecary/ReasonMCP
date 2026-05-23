@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ReasonMCP.Configuration;
+using ReasonMCP.Configurations;
 using ReasonMCP.Orchestration;
 
 namespace ReasonMCP.Workers

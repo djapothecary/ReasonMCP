@@ -7,14 +7,14 @@ using ReasonMCP.DTOs;
 
 namespace ReasonMCP.Endpoints
 {
-    public static class AiGatewayExtensions
+    public static class AiGatewayFallbackEndpoints
     {
         public static void MapAiGatewayEndpoints(this WebApplication app)
         {
             // This is the front door that VS Code will hit instead of Ollama
             // app.MapPost("/api/v1/chat", async (
             app.MapPost("/api/v1", async (
-                [FromBody] VSCodeChatPayload incomingPayload,
+                [FromBody] VSCodeChatPayloadDto incomingPayload,
                 [FromServices] Kernel kernel,
                 HttpContext context) =>
             {

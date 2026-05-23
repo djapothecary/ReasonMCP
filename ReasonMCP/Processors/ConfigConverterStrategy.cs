@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ReasonMCP.Configuration;
+using ReasonMCP.Configurations;
 using ReasonMCP.Interfaces;
 
 namespace ReasonMCP.Processors

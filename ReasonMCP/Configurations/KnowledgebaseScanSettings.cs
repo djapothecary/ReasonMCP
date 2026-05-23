@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace ReasonMCP.Configuration
+namespace ReasonMCP.Configurations
 {
     public class KnowledgebaseScanSettings
     {

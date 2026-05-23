@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using ReasonMCP.Configuration;
+using ReasonMCP.Configurations;
 using ReasonMCP.Data;
 using ReasonMCP.Endpoints;
 using ReasonMCP.Extensions;
@@ -46,6 +46,7 @@ builder.Logging.AddConsole();
 
 //  Add services from extensions
 builder.AddReasonOllamaService();
+builder.AddChatCompletionService();
 builder.AddReasonNomicEmbedService();
 builder.AddReasonVectorDbService();
 builder.AddReasonVectorStore();
@@ -53,6 +54,7 @@ builder.AddOrchestrators();
 builder.AddStrategies();
 builder.AddFileServices();
 builder.AddAstChunkingService();
+builder.AddAiGatewayService();
 
 //  testing AI Agent chat interception
 builder.Services.AddSingleton<IFunctionInvocationFilter, ChatInterceptor>();

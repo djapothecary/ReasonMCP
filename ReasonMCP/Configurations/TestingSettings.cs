@@ -1,4 +1,4 @@
-namespace ReasonMCP.Configuration
+namespace ReasonMCP.Configurations
 {
     public class TestingSettings
     {

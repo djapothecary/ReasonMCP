@@ -12,7 +12,14 @@ namespace ReasonMCP.Utilities
         {
             //  1.  Read the entire file.  Enriched Markdown files are small enough
             //  that this is safe
-            var fullText = await File.ReadAllTextAsync(filePath, cancellationToken);
+            var fullText = string.Empty;
+
+            //  Null safety check
+            //  TODO:   Enhancement:    add better logging, null handling
+            if (!File.Exists(filePath))
+                return new List<KnowledgebaseRecord>();
+
+            await File.ReadAllTextAsync(filePath, cancellationToken);
 
             //  2.  Structurally split the document by the chunk header.
             //  Sections[0] will ALWAYS be the Header MEtadata.

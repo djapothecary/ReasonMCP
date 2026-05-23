@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using ReverseMarkdown;
 
-namespace ReasonMCP.Configuration
+namespace ReasonMCP.Configurations
 {
     public class CodebaseScanSettings
     {

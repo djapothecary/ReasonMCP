@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ReasonMCP.Configuration;
+using ReasonMCP.Configurations;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Models;
 using ReasonMCP.Orchestration;
@@ -72,6 +72,10 @@ namespace ReasonMCP.Workers
                     file = await ingestionQueue.DequeueNextFileAsync("Documents", cancellationToken);
 
                     bool convertSuccesss;
+
+                    //  bail out now if file is null
+                    if (file == null)
+                        return;
 
                     //  4.  Determine file type and what processor to use
                     var strategy = _strategies.FirstOrDefault(s => s.CanConvert(file!.FilePath));

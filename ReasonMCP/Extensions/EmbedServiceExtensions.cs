@@ -7,25 +7,20 @@ namespace ReasonMCP.Extensions
 {
     public static class EmbedServiceExtensions
     {
-        public static IHostApplicationBuilder AddReasonNomicEmbedService(
-            this IHostApplicationBuilder builder
-        )
+        public static IHostApplicationBuilder AddReasonNomicEmbedService(this IHostApplicationBuilder builder)
         {
-            // Register the OllamaApiClient
-            builder.Services.AddSingleton<IOllamaApiClient>(sp =>
-            {
-                var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("Alpacca");
-                return new OllamaApiClient(httpClient) { SelectedModel = "nomic-embed-text:v1.5" };
-            });
-
-            // Register the embedding generator
             builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>>(sp =>
             {
-                var embedClient = sp.GetRequiredService<IOllamaApiClient>();
-                return (IEmbeddingGenerator<string, Embedding<float>>)embedClient;
+                var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("Alpaca");
+
+                // Private instance just for embedding
+                var ollamaClient = new OllamaApiClient(httpClient) { SelectedModel = "nomic-embed-text:v1.5" };
+
+                return ollamaClient;
             });
 
             return builder;
         }
+
     }
 }
