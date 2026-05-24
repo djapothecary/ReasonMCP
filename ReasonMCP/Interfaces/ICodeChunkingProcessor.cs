@@ -3,9 +3,9 @@ using ReasonMCP.Records;
 namespace ReasonMCP.Interfaces
 {
     /// <summary>
-    /// Service for chunking C# source code into semantic AST-based elements.
+    /// Processor for chunking C# source code into semantic AST-based elements.
     /// </summary>
-    public interface ICodeChunkingStrategy
+    public interface ICodeChunkingProcessor
     {
         /// <summary>
         /// Chunks a C# source file asynchronously into semantic code chunks.

@@ -53,7 +53,7 @@ builder.AddReasonVectorStore();
 builder.AddOrchestrators();
 builder.AddStrategies();
 builder.AddFileServices();
-builder.AddAstChunkingService();
+builder.AddCodeChunkingServices();
 builder.AddAiGatewayService();
 
 //  testing AI Agent chat interception

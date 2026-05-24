@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using ReasonMCP.Interfaces;
 
-namespace ReasonMCP.Processors
+namespace ReasonMCP.Strategies
 {
     public class MhtmlConverterStrategy : IFileConverterStrategy
     {

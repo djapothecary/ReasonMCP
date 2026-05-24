@@ -8,6 +8,7 @@ namespace ReasonMCP.Configurations
         public string RootDirectory { get; set; } = string.Empty;
         public List<string> SubDirectories { get; set; } = [];
         public List<string> ExcludedDirectories { get; set; } = [];
+        public List<string> ExcludeFilesContaining { get; set; } = [];
         public List<string> KnowledgeExtensions { get; set; } = [];
 
         //  Generated flat list

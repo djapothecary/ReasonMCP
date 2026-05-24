@@ -101,7 +101,7 @@ namespace ReasonMCP.Services
                 WHERE FilePath = @FilePath;";
 
             using var connection = _connectionFactory.CreateConnection();
-            await connection.ExecuteAsync(sql, new { FilePat = filePath, ErrorMessage = errorMessage });
+            await connection.ExecuteAsync(sql, new { FilePath = filePath, ErrorMessage = errorMessage });
         }
     }
 }

@@ -4,7 +4,7 @@ using ElBruno.MarkItDotNet.Converters;
 using Microsoft.Extensions.Logging;
 using ReasonMCP.Interfaces;
 
-namespace ReasonMCP.Processors
+namespace ReasonMCP.Strategies
 {
     public class PdfConverterStrategy : IFileConverterStrategy
     {

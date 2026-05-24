@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Models;
-using UglyToad.PdfPig.AcroForms.Fields;
 
 namespace ReasonMCP.Orchestration
 {
@@ -64,7 +63,7 @@ namespace ReasonMCP.Orchestration
         )
         {
             var convertedMarkdownPath = await ConvertToMarkdownPathAsync(filePath);
-            var recordsToLoad = new List<KnowledgebaseRecord>();
+            var recordsToLoad = new List<KnowledgebaseEntity>();
 
             //  record Upsert Success status.  If there was a failure
             //  original markdowns will not be moved
@@ -113,7 +112,7 @@ namespace ReasonMCP.Orchestration
         {
             //  1.  Get all the files in the directory
             string[] files = Directory.GetFiles(filePath);
-            var recordsToLoad = new List<KnowledgebaseRecord>();
+            var recordsToLoad = new List<KnowledgebaseEntity>();
 
             //  record Upsert Success status.  If there was a failure
             //  original markdowns will not be moved
@@ -146,6 +145,8 @@ namespace ReasonMCP.Orchestration
                 upsertSuccess = await _ingestService.IngestEnrichedKnowledgeBaseRecordAsync(record, cancellationToken);
 
                 _logger.LogTrace("Record successfully upserted");
+
+                Console.WriteLine($"Successfully upserted {record}", record);
             }
 
             if (upsertSuccess)

@@ -9,15 +9,15 @@ namespace ReasonMCP.Processors
     /// Chunking strategy for JS/TS/JSX/TSX files.
     /// Uses a semantic brace-counting parser to extract functions and classes cleanly.
     /// </summary>
-    public partial class TypeScriptChunkingStrategy : ICodeChunkingStrategy
+    public partial class TypeScriptChunkingProcessor : ICodeChunkingProcessor
     {
-        private readonly ILogger<TypeScriptChunkingStrategy> _logger;
+        private readonly ILogger<TypeScriptChunkingProcessor> _logger;
 
         // Regex to match function, class, and arrow function declarations
         [GeneratedRegex(@"(?:export\s+)?(?:async\s+)?(?:function|class)\s+(?<name>[a-zA-Z0-9_]+)\s*[\(\{]|(?:const|let|var)\s+(?<name>[a-zA-Z0-9_]+)\s*=\s*(?:async\s*)?(?:\([^\)]*\)|[a-zA-Z0-9_]+)\s*=>\s*\{")]
         private partial Regex TsDeclarationRegex();
 
-        public TypeScriptChunkingStrategy(ILogger<TypeScriptChunkingStrategy> logger)
+        public TypeScriptChunkingProcessor(ILogger<TypeScriptChunkingProcessor> logger)
         {
             _logger = logger;
         }
@@ -27,6 +27,12 @@ namespace ReasonMCP.Processors
             CancellationToken cancellationToken = default
         )
         {
+            if (!File.Exists(filePath))
+            {
+                _logger.LogWarning("File not found: {FilePath}", filePath);
+                return [];
+            }
+
             var sourceCode = await File.ReadAllTextAsync(filePath, cancellationToken);
             var chunks = new List<CodeChunk>();
             var lines = sourceCode.Split('\n');

@@ -7,5 +7,6 @@ namespace ReasonMCP.Models
         public string NewsLettersPath { get; set; } = string.Empty;
         public string ADRsPath { get; set; } = string.Empty;
         public string GeneralPath { get; set; } = string.Empty;
+        public bool ClearOriginalFile { get; set; }
     }
 }

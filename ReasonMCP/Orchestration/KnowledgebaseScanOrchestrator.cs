@@ -111,15 +111,25 @@ namespace ReasonMCP.Orchestration
 
         private List<FileInfo> GetIncludedFilteredFilesList(DirectoryInfo directoryPath)
         {
-            var includedList = new List<string>();
-            foreach (var include in _settings.AllKnowledgeExtensions)
-            {
-                includedList.Add(include);
-            }
+            // 1. Optimize lookup and fix case-sensitivity (".JSON" vs ".json")
+            // Using a HashSet makes the lookup O(1) instead of O(N), which matters for thousands of files.
+            var allowedExtensions = new HashSet<string>(
+                _settings.AllKnowledgeExtensions,
+                StringComparer.OrdinalIgnoreCase);
 
-            var projectFilesEnum = directoryPath.EnumerateFiles("*.*", SearchOption.TopDirectoryOnly).Where(f => includedList.Contains(f.Extension));
+            // 2. Safely grab your new exclusion list (assuming you named it ExcludedFileNames)
+            var excludedNames = _settings.ExcludeFilesContaining ?? new List<string>();
 
-            return [.. projectFilesEnum];
+            // 3. Chain the filters for maximum readability and single-pass execution
+            var filteredFiles = directoryPath.EnumerateFiles("*.*", SearchOption.TopDirectoryOnly)
+                // Rule 1: Must be an allowed extension
+                .Where(f => allowedExtensions.Contains(f.Extension))
+                // Rule 2: Must NOT contain any of the excluded strings in its file name
+                .Where(f => !excludedNames.Any(exclusion =>
+                    f.Name.Contains(exclusion, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+
+            return filteredFiles;
         }
     }
 }

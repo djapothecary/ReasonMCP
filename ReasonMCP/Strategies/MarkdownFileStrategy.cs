@@ -1,6 +1,6 @@
 using ReasonMCP.Interfaces;
 
-namespace ReasonMCP.Processors
+namespace ReasonMCP.Strategies
 {
     /// <summary>
     /// This class is SPECIFICALLY it's own unique class.

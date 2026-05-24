@@ -7,7 +7,7 @@ namespace ReasonMCP.Services
 {
     public class CodebaseRecordIngestionService : ICodebaseRecordIngestionService
     {
-        private readonly VectorStoreCollection<string, CodebaseRecord> _collection;
+        private readonly VectorStoreCollection<string, CodebaseEntity> _collection;
         private readonly ILogger<CodebaseRecordIngestionService> _logger;
 
         public CodebaseRecordIngestionService(
@@ -15,11 +15,11 @@ namespace ReasonMCP.Services
             ILogger<CodebaseRecordIngestionService> logger
         )
         {
-            _collection = vectorStore.GetCollection<string, CodebaseRecord>("ReasonContext");
+            _collection = vectorStore.GetCollection<string, CodebaseEntity>("ReasonContext");
             _logger = logger;
         }
 
-        public async Task<bool> IngestEnrichedCodebaseRecordAsync(CodebaseRecord record, CancellationToken cancellationToken = default)
+        public async Task<bool> IngestEnrichedCodebaseRecordAsync(CodebaseEntity record, CancellationToken cancellationToken = default)
         {
             try
             {

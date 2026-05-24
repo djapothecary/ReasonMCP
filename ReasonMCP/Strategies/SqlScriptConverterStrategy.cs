@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging;
 using ReasonMCP.Interfaces;
 
-namespace ReasonMCP.Processors
+namespace ReasonMCP.Strategies
 {
     /// <summary>
     /// This classintentionally uses Boilerplate constructors

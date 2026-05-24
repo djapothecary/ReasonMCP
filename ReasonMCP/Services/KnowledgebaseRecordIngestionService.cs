@@ -7,7 +7,7 @@ namespace ReasonMCP.Services
 {
     public class KnowledgebaseRecordIngestionService : IKnowledgebaseRecordIngestionService
     {
-        private readonly VectorStoreCollection<string, KnowledgebaseRecord> _collection;
+        private readonly VectorStoreCollection<string, KnowledgebaseEntity> _collection;
         private readonly ILogger<KnowledgebaseRecordIngestionService> _logger;
 
         public KnowledgebaseRecordIngestionService(
@@ -15,12 +15,12 @@ namespace ReasonMCP.Services
             ILogger<KnowledgebaseRecordIngestionService> logger
         )
         {
-            _collection = vectorStore.GetCollection<string, KnowledgebaseRecord>("ReasonContext");
+            _collection = vectorStore.GetCollection<string, KnowledgebaseEntity>("ReasonContext");
             _logger = logger;
         }
 
         public async Task<bool> IngestEnrichedKnowledgeBaseRecordAsync(
-            KnowledgebaseRecord record,
+            KnowledgebaseEntity record,
             CancellationToken cancellationToken)
         {
             try

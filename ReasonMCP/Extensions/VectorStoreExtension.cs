@@ -20,10 +20,10 @@ namespace ReasonMCP.Extensions
 
             builder.Services.AddSqliteVectorStore(_ => $"Data Source={dbPath}");
 
-            builder.Services.AddSingleton<VectorStoreCollection<string, KnowledgebaseRecord>>(sp =>
+            builder.Services.AddSingleton<VectorStoreCollection<string, KnowledgebaseEntity>>(sp =>
             {
                 var store = sp.GetRequiredService<VectorStore>();
-                return store.GetCollection<string, KnowledgebaseRecord>("ReasonContext");
+                return store.GetCollection<string, KnowledgebaseEntity>("ReasonContext");
             });
 
             return builder;

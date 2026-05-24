@@ -19,12 +19,12 @@ namespace ReasonMCP.Tools
     /// </summary>
     public class KnowledgeSearchTool
     {
-        private readonly VectorStoreCollection<string, KnowledgebaseRecord> _collection;
+        private readonly VectorStoreCollection<string, KnowledgebaseEntity> _collection;
         private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
         private readonly ILogger<KnowledgeSearchTool> _logger;
 
         public KnowledgeSearchTool(
-            VectorStoreCollection<string, KnowledgebaseRecord> collection,
+            VectorStoreCollection<string, KnowledgebaseEntity> collection,
             IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
             ILogger<KnowledgeSearchTool> logger
         )
@@ -68,7 +68,7 @@ namespace ReasonMCP.Tools
                 var searchVector = queryEmbedding.First().Vector;
 
                 //  3.  Configure the search options
-                var searchOptions = new VectorSearchOptions<KnowledgebaseRecord>
+                var searchOptions = new VectorSearchOptions<KnowledgebaseEntity>
                 {
                     //Top = maxResults,
                     //  We only need the text and metadata returned, not the massive float array
@@ -95,7 +95,7 @@ namespace ReasonMCP.Tools
 
         private static async Task<string> FormatResultsForLlmAsync(
             string query,
-            IAsyncEnumerable<VectorSearchResult<KnowledgebaseRecord>> searchResults,
+            IAsyncEnumerable<VectorSearchResult<KnowledgebaseEntity>> searchResults,
             CancellationToken cancellationToken
         )
         {

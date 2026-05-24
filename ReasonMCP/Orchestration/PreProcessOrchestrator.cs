@@ -14,7 +14,7 @@ namespace ReasonMCP.Orchestration
         private readonly IFileConverterUtility _fileConverter;
         private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
         private readonly VectorStore _vectorStore;
-        private readonly StorageConfig _options;
+        private readonly StorageConfig _settings;
         private readonly ILogger<PreProcessOrchestrator> _logger;
 
         public PreProcessOrchestrator(
@@ -30,13 +30,13 @@ namespace ReasonMCP.Orchestration
             _fileConverter = fileConverter;
             _embeddingGenerator = embeddingGenerator;
             _vectorStore = vectorStore;
-            _options = options.Value;
+            _settings = options.Value;
             _logger = logger;
         }
 
         public async Task ScanDirectory(CancellationToken cancellationToken)
         {
-            var baseDirectory = _options.KnowledgeBaseRootDirectory;
+            var baseDirectory = _settings.KnowledgeBaseRootDirectory;
 
             var childDirectoriesEnum = new DirectoryInfo(baseDirectory)
                 .EnumerateDirectories("*", SearchOption.TopDirectoryOnly) ?? null;
@@ -70,7 +70,7 @@ namespace ReasonMCP.Orchestration
             //  3.  Convert file to markdown
             convertSuccesss = await strategy!.ConvertForIngestionAsync(filePath);
 
-            if (convertSuccesss)
+            if (convertSuccesss && _settings.ClearOriginalFile)
                 await _fileConverter.ClearOriginalFile(filePath);
 
             //  TODO:   Feature:    Add Converter/Processor for images
@@ -99,7 +99,7 @@ namespace ReasonMCP.Orchestration
                     //  3.  Prepare file for ingestion to vector store
                     ingestSuccesss = await strategy!.ConvertForIngestionAsync(file);
 
-                    if (ingestSuccesss)
+                    if (ingestSuccesss && _settings.ClearOriginalFile)
                         await _fileConverter.ClearOriginalFile(file);
                 }
             }

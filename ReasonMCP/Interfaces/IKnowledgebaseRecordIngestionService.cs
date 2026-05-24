@@ -5,7 +5,7 @@ namespace ReasonMCP.Interfaces
     public interface IKnowledgebaseRecordIngestionService
     {
         Task<bool> IngestEnrichedKnowledgeBaseRecordAsync(
-            KnowledgebaseRecord record,
+            KnowledgebaseEntity record,
             CancellationToken cancellationToken = default
         );
     }
