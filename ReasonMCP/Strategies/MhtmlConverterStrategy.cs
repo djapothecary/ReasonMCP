@@ -7,6 +7,9 @@ using ReasonMCP.Interfaces;
 
 namespace ReasonMCP.Strategies
 {
+    //  TODO:   Refactor:   This Strategy needs to be converted to the new pattern
+    //  This strategy is not currently used
+    //  While it is referenced, the scan worker is "turned off"
     public class MhtmlConverterStrategy : IFileConverterStrategy
     {
         private readonly IMhtmlConverterUtility _mhtmlConverter;

@@ -8,18 +8,24 @@ namespace ReasonMCP.Services
     public class CodebaseRecordIngestionService : ICodebaseRecordIngestionService
     {
         private readonly VectorStoreCollection<string, CodebaseEntity> _collection;
+        private readonly IIngestionQueueService _ingestionQueue;
         private readonly ILogger<CodebaseRecordIngestionService> _logger;
 
         public CodebaseRecordIngestionService(
             VectorStore vectorStore,
+            IIngestionQueueService ingestionQueue,
             ILogger<CodebaseRecordIngestionService> logger
         )
         {
             _collection = vectorStore.GetCollection<string, CodebaseEntity>("ReasonContext");
+            _ingestionQueue = ingestionQueue;
             _logger = logger;
         }
 
-        public async Task<bool> IngestEnrichedCodebaseRecordAsync(CodebaseEntity record, CancellationToken cancellationToken = default)
+        public async Task<bool> IngestEnrichedCodebaseRecordAsync(
+            CodebaseEntity record,
+            CancellationToken cancellationToken = default
+        )
         {
             try
             {
@@ -34,6 +40,7 @@ namespace ReasonMCP.Services
             {
                 // Log specifically that the Vector DB rejected the upsert
                 _logger.LogError(vEx, "Vector database error during upsert for File {FilePath}", record?.Metadata?["source"]);
+                await _ingestionQueue.MarkFailedExceptionAsync(record!.FilePath!, "Upsert failed: " + vEx.Message, cancellationToken);
                 return false;
             }
 

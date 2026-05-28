@@ -1,4 +1,4 @@
-namespace ReasonMCP.Models
+namespace ReasonMCP.Configurations
 {
     public class StorageConfig
     {

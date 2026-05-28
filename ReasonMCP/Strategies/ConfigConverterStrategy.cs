@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using ReasonMCP.Configurations;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Orchestration;
-using ReasonMCP.Processors;
 using ReasonMCP.Records;
 
 namespace ReasonMCP.Strategies
@@ -12,19 +11,25 @@ namespace ReasonMCP.Strategies
     public class ConfigConverterStrategy : IFileConverterStrategy
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ConfigChunkingProcessor _configChunkingProcessor;
+        private readonly ICodeChunkingProcessor _configChunkingProcessor;
+        private readonly IIngestionQueueService _ingestionQueue;
+        private readonly IIngestionQueueUpdaterService _updaterService;
         private readonly CodebaseScanSettings _settings;
         private readonly ILogger<ConfigConverterStrategy> _logger;
 
         public ConfigConverterStrategy(
             IServiceScopeFactory scopeFactory,
-            ConfigChunkingProcessor configChunkingProcessor,
+            ICodeChunkingProcessor configChunkingProcessor,
+            IIngestionQueueService ingestionQueue,
+            IIngestionQueueUpdaterService updaterService,
             IOptions<CodebaseScanSettings> options,
             ILogger<ConfigConverterStrategy> logger
         )
         {
             _scopeFactory = scopeFactory;
             _configChunkingProcessor = configChunkingProcessor;
+            _ingestionQueue = ingestionQueue;
+            _updaterService = updaterService;
             _settings = options.Value;
             _logger = logger;
         }
@@ -45,8 +50,20 @@ namespace ReasonMCP.Strategies
             IEnumerable<CodeChunk> chunks = [];
             chunks = await _configChunkingProcessor.ChunkFileAsync(filePath, cancellationToken);
 
-            var codebaseUpsertOrchestratior = scope.ServiceProvider.GetRequiredService<CodebaseRecordUpsertOrchestrator>();
-            return await codebaseUpsertOrchestratior.CodebaseChunkUpsertAsync(chunks, cancellationToken);
+            bool chunkUpsertSuccess = false;
+            try
+            {
+                var codebaseUpsertOrchestratior = scope.ServiceProvider.GetRequiredService<CodebaseRecordUpsertOrchestrator>();
+                chunkUpsertSuccess = await codebaseUpsertOrchestratior.CodebaseChunkUpsertAsync(chunks, cancellationToken);
+
+                await _updaterService.MarkConversionStatus(filePath, chunkUpsertSuccess, cancellationToken);
+            }
+            catch (Exception conversionUpsertEx)
+            {
+                await _ingestionQueue.MarkFailedExceptionAsync(filePath, conversionUpsertEx.Message, cancellationToken);
+            }
+
+            return chunkUpsertSuccess;
         }
     }
 }

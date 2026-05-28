@@ -26,6 +26,12 @@ namespace ReasonMCP.Extensions
                 return store.GetCollection<string, KnowledgebaseEntity>("ReasonContext");
             });
 
+            builder.Services.AddSingleton<VectorStoreCollection<string, CodebaseEntity>>(sp =>
+            {
+                var store = sp.GetRequiredService<VectorStore>();
+                return store.GetCollection<string, CodebaseEntity>("ReasonContext");
+            });
+
             return builder;
         }
     }

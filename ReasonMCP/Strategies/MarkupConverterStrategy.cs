@@ -14,19 +14,25 @@ namespace ReasonMCP.Strategies
     public class MarkupConverterStrategy : IFileConverterStrategy
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly MarkupChunkingProcessor _markupChunkingProcessor;
+        private readonly ICodeChunkingProcessor _markupChunkingProcessor;
+        private readonly IIngestionQueueService _ingestionQueue;
+        private readonly IIngestionQueueUpdaterService _updaterService;
         private readonly CodebaseScanSettings _settings;
         private readonly ILogger<MarkupConverterStrategy> _logger;
 
         public MarkupConverterStrategy(
             IServiceScopeFactory scopeFactory,
-            MarkupChunkingProcessor markupChunkingProcessor,
+            ICodeChunkingProcessor markupChunkingProcessor,
+            IIngestionQueueService ingestionQueue,
+            IIngestionQueueUpdaterService updaterService,
             IOptions<CodebaseScanSettings> options,
             ILogger<MarkupConverterStrategy> logger
         )
         {
             _scopeFactory = scopeFactory;
             _markupChunkingProcessor = markupChunkingProcessor;
+            _ingestionQueue = ingestionQueue;
+            _updaterService = updaterService;
             _settings = options.Value;
             _logger = logger;
         }
@@ -46,8 +52,20 @@ namespace ReasonMCP.Strategies
             IEnumerable<CodeChunk> chunks = [];
             chunks = await _markupChunkingProcessor.ChunkFileAsync(filePath, cancellationToken);
 
-            var codebaseUpsertOrchestratior = scope.ServiceProvider.GetRequiredService<CodebaseRecordUpsertOrchestrator>();
-            return await codebaseUpsertOrchestratior.CodebaseChunkUpsertAsync(chunks, cancellationToken);
+            bool chunkUpsertSuccess = false;
+            try
+            {
+                var codebaseUpsertOrchestratior = scope.ServiceProvider.GetRequiredService<CodebaseRecordUpsertOrchestrator>();
+                chunkUpsertSuccess = await codebaseUpsertOrchestratior.CodebaseChunkUpsertAsync(chunks, cancellationToken);
+
+                await _updaterService.MarkConversionStatus(filePath, chunkUpsertSuccess, cancellationToken);
+            }
+            catch (Exception conversionUpsertEx)
+            {
+                await _ingestionQueue.MarkFailedExceptionAsync(filePath, conversionUpsertEx.Message, cancellationToken);
+            }
+
+            return chunkUpsertSuccess;
         }
     }
 }

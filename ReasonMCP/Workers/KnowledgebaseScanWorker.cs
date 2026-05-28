@@ -14,25 +14,31 @@ namespace ReasonMCP.Workers
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IIngestionQueueService _ingestionQueue;
+        private readonly IIngestionQueueUpdaterService _updaterService;
         private readonly IEnumerable<IFileConverterStrategy> _strategies;
         private readonly IFileConverterUtility _fileConverter;
         private readonly KnowledgebaseScanSettings _settings;
+        private readonly StorageConfig _storageSettings;
         private readonly ILogger<KnowledgebaseScanWorker> _logger;
 
         public KnowledgebaseScanWorker(
             IServiceScopeFactory scopeFactory,
             IIngestionQueueService ingestionQueue,
+            IIngestionQueueUpdaterService updaterService,
             IEnumerable<IFileConverterStrategy> strategies,
             IFileConverterUtility fileConverter,
             IOptions<KnowledgebaseScanSettings> options,
+            IOptions<StorageConfig> storageOptions,
             ILogger<KnowledgebaseScanWorker> logger
         )
         {
             _scopeFactory = scopeFactory;
             _ingestionQueue = ingestionQueue;
+            _updaterService = updaterService;
             _strategies = strategies;
             _fileConverter = fileConverter;
             _settings = options.Value;
+            _storageSettings = storageOptions.Value;
             _logger = logger;
         }
 
@@ -66,10 +72,8 @@ namespace ReasonMCP.Workers
                 var file = new FileIngestionRecord();
                 try
                 {
-                    var ingestionQueue = scope.ServiceProvider.GetRequiredService<DapperIngestionQueueService>();
-
                     //  3.  Get the next Knowledgebase document by TargetStore = Doscuments
-                    file = await ingestionQueue.DequeueNextFileAsync("Documents", cancellationToken);
+                    file = await _ingestionQueue.DequeueNextFileAsync("Documents", cancellationToken);
 
                     bool convertSuccesss;
 
@@ -83,14 +87,13 @@ namespace ReasonMCP.Workers
                     //  5.  Convert file to markdown
                     convertSuccesss = await strategy!.ConvertForIngestionAsync(file!.FilePath);
 
-                    if (convertSuccesss)
+                    //  Mark conversion status
+                    await _updaterService.MarkConversionStatus(file.FilePath, convertSuccesss, cancellationToken);
+
+                    //  Clear original files (or not)
+                    if (_storageSettings.ClearOriginalFile)
                     {
                         await _fileConverter.ClearOriginalFile(file!.FilePath);
-                        await _ingestionQueue.MarkCompleteAsync(file!.FilePath, cancellationToken);
-                    }
-                    else
-                    {
-                        await _ingestionQueue.MarkFailedAsync(file!.FilePath!, "Upsert failed", cancellationToken);
                     }
 
                     //  6.  Get the file for Upsert
@@ -99,13 +102,13 @@ namespace ReasonMCP.Workers
                     await fileUpsertOrchestrator.GetFileForUpsertFromIngestQueueAsync(file!.FilePath!, cancellationToken);
 
                     //  7.  Update the IngestionQueue to indicate that the process is complete
-                    await ingestionQueue.MarkCompleteAsync(file!.FilePath, cancellationToken);
+                    await _ingestionQueue.MarkCompleteAsync(file!.FilePath, cancellationToken);
 
                 }
                 catch (Exception whileEx)
                 {
                     _logger.LogError("An error occurred while performing Knowledgebase document ingestion: {whileEx}", whileEx);
-                    await _ingestionQueue.MarkFailedAsync(file!.FilePath, whileEx.Message, cancellationToken);
+                    await _ingestionQueue.MarkFailedExceptionAsync(file!.FilePath, whileEx.Message, cancellationToken);
                 }
             }
         }

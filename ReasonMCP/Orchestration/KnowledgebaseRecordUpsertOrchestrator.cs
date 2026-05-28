@@ -1,6 +1,7 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using ReasonMCP.Configurations;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Models;
 
@@ -94,6 +95,8 @@ namespace ReasonMCP.Orchestration
 
                 _logger.LogTrace("Record successfully upserted");
             }
+
+            //  Update ingestion status
 
             if (upsertSuccess)
                 await MoveMarkdownsToProcessedAsync();

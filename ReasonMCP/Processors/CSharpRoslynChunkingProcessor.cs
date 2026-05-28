@@ -12,7 +12,7 @@ namespace ReasonMCP.Processors
     /// High-performance C# service using Roslyn for semantic code chunking.
     /// Extracts logical AST nodes (classes, interfaces, structs, enums, methods) for vector embedding.
     /// </summary>
-    public class CSharpRoslynChunkingProcessor : ICodeChunkingProcessor
+    public class CSharpRoslynChunkingProcessor : ICSharpRoslynChunkingProcessor
     {
         private readonly ILogger<CSharpRoslynChunkingProcessor> _logger;
 

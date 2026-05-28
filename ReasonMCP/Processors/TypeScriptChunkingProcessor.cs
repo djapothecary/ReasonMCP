@@ -9,15 +9,17 @@ namespace ReasonMCP.Processors
     /// Chunking strategy for JS/TS/JSX/TSX files.
     /// Uses a semantic brace-counting parser to extract functions and classes cleanly.
     /// </summary>
-    public partial class TypeScriptChunkingProcessor : ICodeChunkingProcessor
+    public class TypeScriptChunkingProcessor : ICodeChunkingProcessor
     {
         private readonly ILogger<TypeScriptChunkingProcessor> _logger;
+        // Standard compiled Regex (Consistent with your other processors)
+        private static readonly Regex _tsDeclarationRegex = new Regex(
+            @"(?:export\s+)?(?:async\s+)?(?:function|class)\s+(?<name>[a-zA-Z0-9_]+)\s*[\(\{]|(?:const|let|var)\s+(?<name>[a-zA-Z0-9_]+)\s*=\s*(?:async\s*)?(?:\([^\)]*\)|[a-zA-Z0-9_]+)\s*=>\s*\{",
+            RegexOptions.Compiled);
 
-        // Regex to match function, class, and arrow function declarations
-        [GeneratedRegex(@"(?:export\s+)?(?:async\s+)?(?:function|class)\s+(?<name>[a-zA-Z0-9_]+)\s*[\(\{]|(?:const|let|var)\s+(?<name>[a-zA-Z0-9_]+)\s*=\s*(?:async\s*)?(?:\([^\)]*\)|[a-zA-Z0-9_]+)\s*=>\s*\{")]
-        private partial Regex TsDeclarationRegex();
-
-        public TypeScriptChunkingProcessor(ILogger<TypeScriptChunkingProcessor> logger)
+        public TypeScriptChunkingProcessor(
+            ILogger<TypeScriptChunkingProcessor> logger
+        )
         {
             _logger = logger;
         }
@@ -40,7 +42,7 @@ namespace ReasonMCP.Processors
             for (int i = 0; i < lines.Length; i++)
             {
                 var line = lines[i];
-                var match = TsDeclarationRegex().Match(line);
+                var match = _tsDeclarationRegex.Match(line);
 
                 if (match.Success && line.Contains('{'))
                 {
@@ -108,17 +110,6 @@ namespace ReasonMCP.Processors
 
             //  Fallback if the file ends weirdly
             return (string.Join('\n', blockContent).Trim(), lines.Length - 1);
-        }
-
-        /// <summary>
-        /// Intentionally not implemented for JS/TS chunking
-        /// </summary>
-        /// <param name="sourceCode"></param>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
-        public IEnumerable<CodeChunk> ChunkSourceCode(string sourceCode, string filePath)
-        {
-            throw new NotImplementedException();
         }
     }
 }

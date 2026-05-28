@@ -11,7 +11,7 @@ using ReasonMCP.Records;
 
 namespace ReasonMCP.Processors
 {
-    public class MarkupChunkingProcessor
+    public class MarkupChunkingProcessor : ICodeChunkingProcessor
     {
         private readonly ILogger<MarkupChunkingProcessor> _logger;
 

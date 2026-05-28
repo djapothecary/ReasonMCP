@@ -1,10 +1,7 @@
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.VectorData;
+using ReasonMCP.Configurations;
 using ReasonMCP.Interfaces;
-using ReasonMCP.Models;
-using ReasonMCP.Utilities;
 
 namespace ReasonMCP.Orchestration
 {
@@ -12,24 +9,18 @@ namespace ReasonMCP.Orchestration
     {
         private readonly IEnumerable<IFileConverterStrategy> _strategies;
         private readonly IFileConverterUtility _fileConverter;
-        private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
-        private readonly VectorStore _vectorStore;
         private readonly StorageConfig _settings;
         private readonly ILogger<PreProcessOrchestrator> _logger;
 
         public PreProcessOrchestrator(
             IEnumerable<IFileConverterStrategy> strategies,
             IFileConverterUtility fileConverter,
-            IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
-            VectorStore vectorStore,
             IOptions<StorageConfig> options,
             ILogger<PreProcessOrchestrator> logger
             )
         {
             _strategies = strategies;
             _fileConverter = fileConverter;
-            _embeddingGenerator = embeddingGenerator;
-            _vectorStore = vectorStore;
             _settings = options.Value;
             _logger = logger;
         }

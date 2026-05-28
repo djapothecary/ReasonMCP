@@ -1,25 +1,34 @@
-using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using ReasonMCP.Configurations;
 using ReasonMCP.Interfaces;
-using ReasonMCP.Models;
-using ReasonMCP.Utilities;
 
 namespace ReasonMCP.Utilities
 {
     public class FileConverterUtility : IFileConverterUtility
     {
-        private readonly IOptions<StorageConfig> _options;
+        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ICodeChunkingProcessor _configChunkingProcessor;
+        private readonly IIngestionQueueService _ingestionQueue;
+        private readonly IIngestionQueueUpdaterService _updaterService;
+        private readonly StorageConfig _settings;
         private readonly ILogger<FileConverterUtility> _logger;
 
         public FileConverterUtility(
+            IServiceScopeFactory scopeFactory,
+            IIngestionQueueService ingestionQueue,
+            IIngestionQueueUpdaterService updaterService,
             IOptions<StorageConfig> options,
             ILogger<FileConverterUtility> logger
         )
         {
-            _options = options;
+            _scopeFactory = scopeFactory;
+            _ingestionQueue = ingestionQueue;
+            _updaterService = updaterService;
+            _settings = options.Value;
             _logger = logger;
         }
 
@@ -47,7 +56,6 @@ namespace ReasonMCP.Utilities
 
             var convertedOutputRoot = directoryPath + @"\Markdowns";
             var convertedOutputPath = Path.Combine(convertedOutputRoot, fileName.Replace(".txt", ".md"));
-
 
             string rawText = await File.ReadAllTextAsync(filePath);
             var chunkUtility = new RAGChunkingUtility();
@@ -88,21 +96,31 @@ namespace ReasonMCP.Utilities
                 markdownBuilder.AppendLine("\n---\n");
             }
 
+            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+            var cancellationToken = cts.Token;
+
             try
             {
                 //  null safety
                 if (!File.Exists(filePath))
                 {
                     _logger.LogError("[FILE_CONVERSION_ERROR].  Path not found {fileName}.", fileName);
+                    await _ingestionQueue.MarkConversionFailedAsync(filePath, "[FILE_CONVERSION_ERROR].  Path not found", cancellationToken);
+
                     return false;
                 }
 
                 await File.WriteAllTextAsync(convertedOutputPath, markdownBuilder.ToString());
+
+                await _updaterService.MarkConversionStatus(filePath, true, cancellationToken);
+
                 return true;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[FILE_CONVERSION_ERROR].  An error occured converting {fileName} to Markdown.", fileName);
+                await _ingestionQueue.MarkFailedExceptionAsync(filePath, ex.Message, cancellationToken);
+
                 return false;
             }
         }

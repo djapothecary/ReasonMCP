@@ -80,14 +80,33 @@ namespace ReasonMCP.Services
             return await connection.QueryFirstOrDefaultAsync<FileIngestionRecord>(sql, new { TargetStore = targetStore });
         }
 
-        public async Task MarkCompleteAsync(string filePath, CancellationToken cancellationToken = default)
+        public async Task MarkConversionCompleteAsync(
+            string filePath,
+            CancellationToken cancellationToken = default
+        )
         {
-            const string sql = @"UPDATE IngestionQueue SET Status = 2 WHERE FilePath = @FilePath";
+            const string sql = @"
+                UPDATE IngestionQueue
+                SET Status = 3
+                WHERE FilePath = @FilePath";
             using var connection = _connectionFactory.CreateConnection();
             await connection.ExecuteAsync(sql, new { FilePath = filePath });
         }
 
-        public async Task MarkFailedAsync(
+        public async Task MarkCompleteAsync(
+            string filePath,
+            CancellationToken cancellationToken = default
+        )
+        {
+            const string sql = @"
+                UPDATE IngestionQueue
+                SET Status = 6
+                WHERE FilePath = @FilePath";
+            using var connection = _connectionFactory.CreateConnection();
+            await connection.ExecuteAsync(sql, new { FilePath = filePath });
+        }
+
+        public async Task MarkConversionFailedAsync(
             string filePath,
             string errorMessage,
             CancellationToken cancellationToken = default
@@ -95,7 +114,39 @@ namespace ReasonMCP.Services
         {
             const string sql = @"
                 UPDATE IngestionQueue
-                SET Status = 3,
+                SET Status = 2,
+                    ErrorMessage = @ErrorMessage,
+                    RetryCount = RetryCount + 1
+                WHERE FilePath = @FilePath;";
+
+            using var connection = _connectionFactory.CreateConnection();
+            await connection.ExecuteAsync(sql, new { FilePath = filePath, ErrorMessage = errorMessage });
+        }
+
+        public async Task MarkIngestionFailedAsync(
+            string filePath, string errorMessage,
+            CancellationToken cancellationToken = default
+        )
+        {
+            const string sql = @"
+                UPDATE IngestionQueue
+                SET Status = 5,
+                    ErrorMessage = @ErrorMessage,
+                    RetryCount = RetryCount + 1
+                WHERE FilePath = @FilePath;";
+
+            using var connection = _connectionFactory.CreateConnection();
+            await connection.ExecuteAsync(sql, new { FilePath = filePath, ErrorMessage = errorMessage });
+        }
+
+        public async Task MarkFailedExceptionAsync(
+            string filePath, string errorMessage,
+            CancellationToken cancellationToken = default
+        )
+        {
+            const string sql = @"
+                UPDATE IngestionQueue
+                SET Status = 7,
                     ErrorMessage = @ErrorMessage,
                     RetryCount = RetryCount + 1
                 WHERE FilePath = @FilePath;";

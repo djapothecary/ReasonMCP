@@ -18,11 +18,26 @@ namespace ReasonMCP.Interfaces
         /// <summary>
         /// Marks the file as successfully vector-embedded and complete.
         /// </summary>
+        Task MarkConversionCompleteAsync(string filePath, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Marks the file as successfully vector-embedded and complete.
+        /// </summary>
         Task MarkCompleteAsync(string filePath, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Marks the file as failed, increments retry count, and saves the error message.
+        /// Marks the file as Conversion failed, increments retry count, and saves the error message.
         /// </summary>
-        Task MarkFailedAsync(string filePath, string errorMessage, CancellationToken cancellationToken = default);
+        Task MarkConversionFailedAsync(string filePath, string errorMessage, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Marks the file as failed Ingestion, increments retry count, and saves the error message.
+        /// </summary>
+        Task MarkIngestionFailedAsync(string filePath, string errorMessage, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Marks the file as failed due to an exception, increments retry count, and saves the error message.
+        /// </summary>
+        Task MarkFailedExceptionAsync(string filePath, string errorMessage, CancellationToken cancellationToken = default);
     }
 }

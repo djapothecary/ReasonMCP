@@ -60,10 +60,16 @@ namespace ReasonMCP.Workers
             while (!cancellationToken.IsCancellationRequested)
             {
                 var file = new FileIngestionRecord();
+                if (file == null)
+                {
+                    await Task.Delay(5000, cancellationToken);
+                    continue;
+                }
+
 
                 try
                 {
-                    bool ingestSuccesss;
+                    bool conversionSuccesss;
 
                     //  1.  Get the next file to process by "TargetStore = "Codebase" "
                     file = await _ingestionQueue.DequeueNextFileAsync("Codebase", cancellationToken);
@@ -71,22 +77,22 @@ namespace ReasonMCP.Workers
                     //  2.  Determine the file type and processor to use
                     var strategy = _strategies.FirstOrDefault(s => s.CanConvert(file!.FilePath));
 
-                    ingestSuccesss = await strategy!
-                    .ConvertForIngestionAsync(file!.FilePath);
+                    conversionSuccesss = await strategy!
+                                    .ConvertForIngestionAsync(file!.FilePath);
 
-                    if (ingestSuccesss)
+                    if (conversionSuccesss)
                     {
-                        await _ingestionQueue.MarkCompleteAsync(file!.FilePath!, cancellationToken);
+                        await _ingestionQueue.MarkConversionCompleteAsync(file!.FilePath!, cancellationToken);
                     }
                     else
                     {
-                        await _ingestionQueue.MarkFailedAsync(file!.FilePath, "Upsert failed", cancellationToken);
+                        await _ingestionQueue.MarkConversionFailedAsync(file!.FilePath, "Upsert failed", cancellationToken);
                     }
                 }
                 catch (Exception whileEx)
                 {
                     _logger.LogError("An Error occurred during the Upsert for {File}", file!.FilePath);
-                    await _ingestionQueue.MarkFailedAsync(file!.FilePath, whileEx.Message, cancellationToken);
+                    await _ingestionQueue.MarkFailedExceptionAsync(file!.FilePath, whileEx.Message, cancellationToken);
                 }
             }
         }

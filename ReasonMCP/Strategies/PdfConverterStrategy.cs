@@ -28,6 +28,13 @@ namespace ReasonMCP.Strategies
             return false;
         }
 
+        /// <summary>
+        /// Converts raw PDF file to markdown and performs ingestion
+        /// Since the file conversion is handled directly by the ElBruno MarkIt
+        /// library, the structure of this class differs from other strategies
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public async Task<bool> ConvertForIngestionAsync(string filePath)
         {
             string? convertedPdfFile;

@@ -32,19 +32,6 @@ namespace ReasonMCP.Extensions
             return builder;
         }
 
-        public static IHostApplicationBuilder AddOrchestrators(
-            this IHostApplicationBuilder builder
-        )
-        {
-            builder.Services.AddScoped<CodebaseScanOrchestrator>();
-            builder.Services.AddScoped<KnowledgebaseScanOrchestrator>();
-            builder.Services.AddScoped<CodebaseRecordUpsertOrchestrator>();
-            builder.Services.AddScoped<KnowledgebaseRecordUpsertOrchestrator>();
-            builder.Services.AddScoped<PreProcessOrchestrator>();
-
-            return builder;
-        }
-
         public static IHostApplicationBuilder AddStrategies(
             this IHostApplicationBuilder builder
         )

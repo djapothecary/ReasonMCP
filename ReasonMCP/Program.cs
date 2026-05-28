@@ -53,6 +53,7 @@ builder.AddReasonVectorStore();
 builder.AddOrchestrators();
 builder.AddStrategies();
 builder.AddFileServices();
+builder.AddIngestionQueueServices();
 builder.AddCodeChunkingServices();
 builder.AddAiGatewayService();
 
