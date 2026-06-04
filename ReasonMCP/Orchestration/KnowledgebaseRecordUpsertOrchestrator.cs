@@ -93,6 +93,10 @@ namespace ReasonMCP.Orchestration
 
                 upsertSuccess = await _ingestService.IngestEnrichedKnowledgeBaseRecordAsync(record, cancellationToken);
 
+                int chunkCount = 1;
+                Console.WriteLine($"Successfully upserted {filePath}  Chunk Count: {chunkCount}", filePath, chunkCount);
+                chunkCount++;
+
                 _logger.LogTrace("Record successfully upserted");
             }
 

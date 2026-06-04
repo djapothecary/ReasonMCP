@@ -71,7 +71,9 @@ namespace ReasonMCP.Orchestration
                     upsertSuccess = await _ingestService.IngestEnrichedCodebaseRecordAsync(record, cancellationToken);
                     _logger.LogTrace($"Successfully upserted {record.NodeUri}", chunk.NodeUri);
 
-                    Console.WriteLine($"Successfully upserted {chunk.NodeUri}");
+                    int chunkCount = 1;
+                    Console.WriteLine($"Successfully upserted {chunkFilePath}  Chunk Count: {chunkCount}", chunkFilePath, chunkCount);
+                    chunkCount++;
                 }
             }
             catch (Exception ex)

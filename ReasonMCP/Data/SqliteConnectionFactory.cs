@@ -11,7 +11,7 @@ namespace ReasonMCP.Data
 
         public SqliteConnectionFactory(IOptions<StorageConfigSettings> config)
         {
-            _connectionString = $"Data Source={config.Value.VectorDbPath}";
+            _connectionString = $"Data Source={config.Value.VectorDbPath};Cache=Shared;Mode=ReadWriteCreate;";
         }
 
         public SqliteConnection CreateConnection()

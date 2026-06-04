@@ -35,6 +35,19 @@ namespace ReasonMCP.Extensions
                 var dataSource = $"Data Source={dbPath}";
                 var masterConnection = new SqliteConnection(dataSource);
                 masterConnection.Open();
+
+                //  Enable Write Ahead Logging (WAL) and Busy Timeout to prevent deadlocks
+                using (var command = masterConnection.CreateCommand())
+                {
+                    // 1. Enable Write-Ahead Logging
+                    command.CommandText = "PRAGMA journal_mode=WAL;";
+                    command.ExecuteNonQuery();
+
+                    // 2. Set busy timeout to 250 milliseconds (250 milliseconds)
+                    command.CommandText = "PRAGMA busy_timeout=250;";
+                    command.ExecuteNonQuery();
+                }
+
                 masterConnection.EnableExtensions(true);
 
                 //  Attempt to load the native binary
