@@ -19,7 +19,7 @@ namespace ReasonMCP.Utilities
             if (!File.Exists(filePath))
                 return new List<KnowledgebaseEntity>();
 
-            await File.ReadAllTextAsync(filePath, cancellationToken);
+            fullText = await File.ReadAllTextAsync(filePath, cancellationToken);
 
             //  2.  Structurally split the document by the chunk header.
             //  Sections[0] will ALWAYS be the Header MEtadata.

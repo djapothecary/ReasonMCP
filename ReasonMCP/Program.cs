@@ -20,7 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://127.0.0.1:5000");
 // builder.WebHost.UseUrls("http://127.0.0.1:11434");
 
-builder.Services.Configure<StorageConfig>(builder.Configuration.GetSection("StorageConfig"));
+builder.Services.Configure<StorageConfigSettings>(builder.Configuration.GetSection("StorageConfigSettings"));
 builder.Services.Configure<TestingSettings>(builder.Configuration.GetSection("TestingSettings"));
 builder.Services.Configure<CodebaseScanSettings>(builder.Configuration.GetSection("CodebaseScanSettings"));
 builder.Services.Configure<KnowledgebaseScanSettings>(builder.Configuration.GetSection("KnowledgebaseScanSettings"));
@@ -49,6 +49,7 @@ builder.AddReasonOllamaService();
 builder.AddChatCompletionService();
 builder.AddReasonNomicEmbedService();
 builder.AddReasonVectorDbService();
+// builder.AddVectorContexts();
 builder.AddReasonVectorStore();
 builder.AddOrchestrators();
 builder.AddStrategies();

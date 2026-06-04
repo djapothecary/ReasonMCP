@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,7 +15,7 @@ namespace ReasonMCP.Strategies
     public class SqlScriptConverterStrategy : IFileConverterStrategy
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private ICodeChunkingProcessor _sqlScriptChunkProcessor;
+        private SqlScriptChunkingProcessor _sqlScriptChunkProcessor;
         private readonly CodebaseScanSettings _settings;
         private readonly ILogger<SqlScriptConverterStrategy> _logger;
 
@@ -27,7 +26,7 @@ namespace ReasonMCP.Strategies
 
         public SqlScriptConverterStrategy(
             IServiceScopeFactory scopeFactory,
-            ICodeChunkingProcessor sqlScriptChunkProcessor,
+            SqlScriptChunkingProcessor sqlScriptChunkProcessor,
             IOptions<CodebaseScanSettings> options,
             ILogger<SqlScriptConverterStrategy> logger
         )

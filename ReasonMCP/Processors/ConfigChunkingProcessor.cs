@@ -1,4 +1,3 @@
-using Dapper;
 using Microsoft.Extensions.Logging;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Records;

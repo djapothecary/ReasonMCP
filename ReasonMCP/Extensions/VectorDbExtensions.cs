@@ -22,7 +22,7 @@ namespace ReasonMCP.Extensions
                 var config = sp.GetRequiredService<IConfiguration>();
                 var logger = sp.GetRequiredService<ILogger<SqliteConnection>>();
 
-                var dbPath = config.GetValue<string>("StorageConfig:VectorDbPath")
+                var dbPath = config.GetValue<string>("StorageConfigSettings:VectorDbPath")
                             ?? "ReasonContext.db";
 
                 var directory = Path.GetDirectoryName(dbPath);

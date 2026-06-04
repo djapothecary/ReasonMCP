@@ -3,6 +3,7 @@ using ElBruno.MarkItDotNet;
 using ElBruno.MarkItDotNet.Converters;
 using Microsoft.Extensions.Logging;
 using ReasonMCP.Interfaces;
+using ReasonMCP.Utilities;
 
 namespace ReasonMCP.Strategies
 {
@@ -66,7 +67,10 @@ namespace ReasonMCP.Strategies
                 convertedPdfFile = chunksStringBuilder.ToString();
             }
 
-            //  2.  Create a temp directory to store the file and read from
+            //  2.  Sanitize converted PDF file to remove double-spacing and preserve code block
+            var sanitizedPDF = PdfMarkupSanitizer.SanitizePdfMarkdown(convertedPdfFile);
+
+            //  3.  Create a temp directory to store the file and read from
             var fileName = Path.GetFileName(filePath);
 
             //  re-use fileInfo that was previously retrieved
@@ -79,9 +83,9 @@ namespace ReasonMCP.Strategies
                 Directory.CreateDirectory(tempFileRoot);
             }
 
-            File.WriteAllText(tempFilePath, convertedPdfFile);
+            File.WriteAllText(tempFilePath, sanitizedPDF);
 
-            return await _fileConverter.ConvertToMarkdown(tempFilePath);
+            return await _fileConverter.ChunkExistingMarkdown(tempFilePath);
         }
     }
 }

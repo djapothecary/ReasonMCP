@@ -17,7 +17,7 @@ namespace ReasonMCP.Services
             ILogger<KnowledgebaseRecordIngestionService> logger
         )
         {
-            _collection = vectorStore.GetCollection<string, KnowledgebaseEntity>("ReasonContext");
+            _collection = vectorStore.GetCollection<string, KnowledgebaseEntity>("DocumentsContext");
             _ingestionQueue = ingestionQueue;
             _logger = logger;
         }

@@ -1,6 +1,6 @@
 namespace ReasonMCP.Configurations
 {
-    public class StorageConfig
+    public class StorageConfigSettings
     {
         public string KnowledgeBaseRootDirectory { get; set; } = string.Empty;
         public string VectorDbPath { get; set; } = string.Empty;

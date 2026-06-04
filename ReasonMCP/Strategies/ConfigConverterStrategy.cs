@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using ReasonMCP.Configurations;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Orchestration;
+using ReasonMCP.Processors;
 using ReasonMCP.Records;
 
 namespace ReasonMCP.Strategies
@@ -11,7 +12,7 @@ namespace ReasonMCP.Strategies
     public class ConfigConverterStrategy : IFileConverterStrategy
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ICodeChunkingProcessor _configChunkingProcessor;
+        private readonly ConfigChunkingProcessor _configChunkingProcessor;
         private readonly IIngestionQueueService _ingestionQueue;
         private readonly IIngestionQueueUpdaterService _updaterService;
         private readonly CodebaseScanSettings _settings;
@@ -19,7 +20,7 @@ namespace ReasonMCP.Strategies
 
         public ConfigConverterStrategy(
             IServiceScopeFactory scopeFactory,
-            ICodeChunkingProcessor configChunkingProcessor,
+            ConfigChunkingProcessor configChunkingProcessor,
             IIngestionQueueService ingestionQueue,
             IIngestionQueueUpdaterService updaterService,
             IOptions<CodebaseScanSettings> options,
@@ -48,6 +49,8 @@ namespace ReasonMCP.Strategies
             var cancellationToken = cts.Token;
 
             IEnumerable<CodeChunk> chunks = [];
+            //  Gemini Help:  This is registering "_configChunkingProcessor" as ReasonMCP.Processors.TypeScriptProcessor
+            //  when it should be ReasonMCP.Processors.ConfigChunkingProcessor
             chunks = await _configChunkingProcessor.ChunkFileAsync(filePath, cancellationToken);
 
             bool chunkUpsertSuccess = false;

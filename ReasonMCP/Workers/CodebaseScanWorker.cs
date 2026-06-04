@@ -69,16 +69,21 @@ namespace ReasonMCP.Workers
 
                 try
                 {
+                    //  testing Delay to prevent database corruption
+                    await Task.Delay(250, cancellationToken);
                     bool conversionSuccesss;
 
                     //  1.  Get the next file to process by "TargetStore = "Codebase" "
                     file = await _ingestionQueue.DequeueNextFileAsync("Codebase", cancellationToken);
 
+                    //  preventing end of run exception
+                    if (file == null)
+                        return;
+
                     //  2.  Determine the file type and processor to use
                     var strategy = _strategies.FirstOrDefault(s => s.CanConvert(file!.FilePath));
 
-                    conversionSuccesss = await strategy!
-                                    .ConvertForIngestionAsync(file!.FilePath);
+                    conversionSuccesss = await strategy!.ConvertForIngestionAsync(file!.FilePath);
 
                     if (conversionSuccesss)
                     {

@@ -12,14 +12,14 @@ namespace ReasonMCP.Orchestration
         private readonly IKnowledgebaseRecordIngestionService _ingestService;
         private readonly IChunkParsingUtility _chunkParser;
         private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
-        private readonly IOptions<StorageConfig> _options;
+        private readonly IOptions<StorageConfigSettings> _options;
         private readonly ILogger<KnowledgebaseRecordUpsertOrchestrator> _logger;
 
         public KnowledgebaseRecordUpsertOrchestrator(
             IKnowledgebaseRecordIngestionService ingestService,
             IChunkParsingUtility chunkParser,
             IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
-            IOptions<StorageConfig> options,
+            IOptions<StorageConfigSettings> options,
             ILogger<KnowledgebaseRecordUpsertOrchestrator> logger
         )
         {
@@ -197,17 +197,7 @@ namespace ReasonMCP.Orchestration
                 directoryPath = directoryPath.Replace(@"\Temp", "");
             }
 
-            string? folderNameOnly;
-            if (fileInfo?.Directory?.Name == "Temp")
-            {
-                folderNameOnly = fileInfo?.Directory?.Parent?.Name;
-            }
-            else
-            {
-                folderNameOnly = fileInfo?.Directory?.Name;   //  just the name of the containing folder
-            }
-
-            var convertedOutputRoot = directoryPath + @"\Markdowns";
+            var convertedOutputRoot = directoryPath;
             var convertedOutputPath = Path.Combine(convertedOutputRoot, fileName.Replace(fileExtension, ".md"));
 
             return convertedOutputPath;

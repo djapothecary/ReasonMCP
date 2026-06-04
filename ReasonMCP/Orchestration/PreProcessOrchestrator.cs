@@ -9,13 +9,13 @@ namespace ReasonMCP.Orchestration
     {
         private readonly IEnumerable<IFileConverterStrategy> _strategies;
         private readonly IFileConverterUtility _fileConverter;
-        private readonly StorageConfig _settings;
+        private readonly StorageConfigSettings _settings;
         private readonly ILogger<PreProcessOrchestrator> _logger;
 
         public PreProcessOrchestrator(
             IEnumerable<IFileConverterStrategy> strategies,
             IFileConverterUtility fileConverter,
-            IOptions<StorageConfig> options,
+            IOptions<StorageConfigSettings> options,
             ILogger<PreProcessOrchestrator> logger
             )
         {

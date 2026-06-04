@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Org.BouncyCastle.Asn1.Cms;
 using ReasonMCP.Configurations;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Orchestration;
@@ -13,22 +12,22 @@ namespace ReasonMCP.Strategies
     public class SourceCodeConverterStrategy : IFileConverterStrategy
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ICSharpRoslynChunkingProcessor _csharpCodeChunkingProcessor;
-        private readonly ICodeChunkingProcessor _codeChunkingProcessor;
+        private readonly CSharpRoslynChunkingProcessor _csharpCodeChunkingProcessor;
+        private readonly TypeScriptChunkingProcessor _typeScriptChunkingProcessor;
         private readonly CodebaseScanSettings _settings;
         private readonly ILogger<SourceCodeConverterStrategy> _logger;
 
         public SourceCodeConverterStrategy(
             IServiceScopeFactory scopeFactory,
-            ICSharpRoslynChunkingProcessor csharpCodeChunkingProcessor,
-            ICodeChunkingProcessor codeChunkingProcessor,
+            CSharpRoslynChunkingProcessor csharpCodeChunkingProcessor,
+            TypeScriptChunkingProcessor typeScriptChunkingProcessor,
             IOptions<CodebaseScanSettings> options,
             ILogger<SourceCodeConverterStrategy> logger
         )
         {
             _scopeFactory = scopeFactory;
             _csharpCodeChunkingProcessor = csharpCodeChunkingProcessor;
-            _codeChunkingProcessor = codeChunkingProcessor;
+            _typeScriptChunkingProcessor = typeScriptChunkingProcessor;
             _settings = options.Value;
             _logger = logger;
         }
@@ -52,12 +51,8 @@ namespace ReasonMCP.Strategies
             }
             else // if (_settings.TypeScriptExtensions.Contains(fileExtension))
             {
-                chunks = await _codeChunkingProcessor.ChunkFileAsync(filePath);
+                chunks = await _typeScriptChunkingProcessor.ChunkFileAsync(filePath);
             }
-            // else if (_settings.ConfigExtensions.Contains(fileExtension))
-            // {
-            //     chunks = await _codeChunkingProcessor.ChunkFileAsync(filePath);
-            // }
 
             // Now send chunks off to Embedding
             using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));

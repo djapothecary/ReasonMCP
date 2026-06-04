@@ -1,10 +1,8 @@
-using DocumentFormat.OpenXml.VariantTypes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReasonMCP.Configurations;
 using ReasonMCP.Interfaces;
-using ReasonMCP.Models;
 using ReasonMCP.Orchestration;
 using ReasonMCP.Processors;
 using ReasonMCP.Records;
@@ -14,7 +12,7 @@ namespace ReasonMCP.Strategies
     public class MarkupConverterStrategy : IFileConverterStrategy
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ICodeChunkingProcessor _markupChunkingProcessor;
+        private readonly MarkupChunkingProcessor _markupChunkingProcessor;
         private readonly IIngestionQueueService _ingestionQueue;
         private readonly IIngestionQueueUpdaterService _updaterService;
         private readonly CodebaseScanSettings _settings;
@@ -22,7 +20,7 @@ namespace ReasonMCP.Strategies
 
         public MarkupConverterStrategy(
             IServiceScopeFactory scopeFactory,
-            ICodeChunkingProcessor markupChunkingProcessor,
+            MarkupChunkingProcessor markupChunkingProcessor,
             IIngestionQueueService ingestionQueue,
             IIngestionQueueUpdaterService updaterService,
             IOptions<CodebaseScanSettings> options,

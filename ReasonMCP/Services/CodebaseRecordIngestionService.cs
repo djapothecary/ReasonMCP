@@ -17,7 +17,7 @@ namespace ReasonMCP.Services
             ILogger<CodebaseRecordIngestionService> logger
         )
         {
-            _collection = vectorStore.GetCollection<string, CodebaseEntity>("ReasonContext");
+            _collection = vectorStore.GetCollection<string, CodebaseEntity>("CodebaseContext");
             _ingestionQueue = ingestionQueue;
             _logger = logger;
         }

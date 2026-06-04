@@ -15,11 +15,11 @@ namespace ReasonMCP.Extensions
             this IHostApplicationBuilder builder
         )
         {
-            builder.Services.AddScoped<CodebaseScanOrchestrator>();
-            builder.Services.AddScoped<KnowledgebaseScanOrchestrator>();
-            builder.Services.AddScoped<CodebaseRecordUpsertOrchestrator>();
-            builder.Services.AddScoped<KnowledgebaseRecordUpsertOrchestrator>();
-            builder.Services.AddScoped<PreProcessOrchestrator>();
+            builder.Services.AddTransient<CodebaseScanOrchestrator>();
+            builder.Services.AddTransient<KnowledgebaseScanOrchestrator>();
+            builder.Services.AddTransient<CodebaseRecordUpsertOrchestrator>();
+            builder.Services.AddTransient<KnowledgebaseRecordUpsertOrchestrator>();
+            builder.Services.AddTransient<PreProcessOrchestrator>();
 
             return builder;
         }
@@ -28,11 +28,11 @@ namespace ReasonMCP.Extensions
             this IHostApplicationBuilder builder
         )
         {
-            builder.Services.AddScoped<ICodeChunkingProcessor, ConfigChunkingProcessor>();
-            builder.Services.AddScoped<ICodeChunkingProcessor, MarkupChunkingProcessor>();
-            builder.Services.AddScoped<ICodeChunkingProcessor, SqlScriptChunkingProcessor>();
-            builder.Services.AddScoped<ICodeChunkingProcessor, TypeScriptChunkingProcessor>();
-            builder.Services.AddScoped<ICSharpRoslynChunkingProcessor, CSharpRoslynChunkingProcessor>();
+            builder.Services.AddTransient<ConfigChunkingProcessor>();
+            builder.Services.AddTransient<CSharpRoslynChunkingProcessor>();
+            builder.Services.AddTransient<MarkupChunkingProcessor>();
+            builder.Services.AddTransient<SqlScriptChunkingProcessor>();
+            builder.Services.AddTransient<TypeScriptChunkingProcessor>();
 
             return builder;
         }

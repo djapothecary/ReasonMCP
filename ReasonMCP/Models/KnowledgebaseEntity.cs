@@ -28,11 +28,11 @@ namespace ReasonMCP.Models
         [VectorStoreData(IsIndexed = true)]
         public string? GeneratedDate { get; set; }
 
+        public Dictionary<string, string>? Metadata { get; set; }
+
         //  MUST MATCH embedding model
         //  this is for nomic
         [VectorStoreVector(Dimensions: 768)]
         public ReadOnlyMemory<float> Vector { get; set; }
-
-        public Dictionary<string, string>? Metadata { get; set; }
     }
 }

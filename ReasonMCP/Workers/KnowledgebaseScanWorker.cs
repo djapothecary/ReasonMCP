@@ -18,7 +18,7 @@ namespace ReasonMCP.Workers
         private readonly IEnumerable<IFileConverterStrategy> _strategies;
         private readonly IFileConverterUtility _fileConverter;
         private readonly KnowledgebaseScanSettings _settings;
-        private readonly StorageConfig _storageSettings;
+        private readonly StorageConfigSettings _storageSettings;
         private readonly ILogger<KnowledgebaseScanWorker> _logger;
 
         public KnowledgebaseScanWorker(
@@ -28,7 +28,7 @@ namespace ReasonMCP.Workers
             IEnumerable<IFileConverterStrategy> strategies,
             IFileConverterUtility fileConverter,
             IOptions<KnowledgebaseScanSettings> options,
-            IOptions<StorageConfig> storageOptions,
+            IOptions<StorageConfigSettings> storageOptions,
             ILogger<KnowledgebaseScanWorker> logger
         )
         {
@@ -79,7 +79,10 @@ namespace ReasonMCP.Workers
 
                     //  bail out now if file is null
                     if (file == null)
-                        return;
+                    {
+                        await Task.Delay(500, cancellationToken);
+                        continue;
+                    }
 
                     //  4.  Determine file type and what processor to use
                     var strategy = _strategies.FirstOrDefault(s => s.CanConvert(file!.FilePath));
@@ -97,9 +100,26 @@ namespace ReasonMCP.Workers
                     }
 
                     //  6.  Get the file for Upsert
-                    //  This will handle the embeddings and Upsert to the vector store
-                    var fileUpsertOrchestrator = scope.ServiceProvider.GetRequiredService<KnowledgebaseRecordUpsertOrchestrator>();
-                    await fileUpsertOrchestrator.GetFileForUpsertFromIngestQueueAsync(file!.FilePath!, cancellationToken);
+
+                    if (convertSuccesss)
+                    {
+                        //  Since the file has been converted the extension has changed to ".md"
+                        //  and it's path is now in parent directory + "Markdowns"
+                        var tempFileRoot = Directory.GetParent(file.FilePath);
+                        var tempFileDirectory = tempFileRoot + @"\Markdowns\";
+
+                        //  ensure directory exists
+                        if (!Directory.Exists(tempFileDirectory))
+                            Directory.CreateDirectory(tempFileDirectory);
+
+                        var tempFileName = Path.GetFileName(file.FilePath);
+                        var tempFileExtension = Path.GetExtension(file.FilePath);
+                        var convertedTempFileFullName = tempFileDirectory + tempFileName.Replace(tempFileExtension, ".md");
+
+                        //  This will handle the embeddings and Upsert to the vector store
+                        var fileUpsertOrchestrator = scope.ServiceProvider.GetRequiredService<KnowledgebaseRecordUpsertOrchestrator>();
+                        await fileUpsertOrchestrator.GetFileForUpsertFromIngestQueueAsync(convertedTempFileFullName, cancellationToken);
+                    }
 
                     //  7.  Update the IngestionQueue to indicate that the process is complete
                     await _ingestionQueue.MarkCompleteAsync(file!.FilePath, cancellationToken);

@@ -9,7 +9,7 @@ namespace ReasonMCP.Data
     {
         private readonly string _connectionString;
 
-        public SqliteConnectionFactory(IOptions<StorageConfig> config)
+        public SqliteConnectionFactory(IOptions<StorageConfigSettings> config)
         {
             _connectionString = $"Data Source={config.Value.VectorDbPath}";
         }
