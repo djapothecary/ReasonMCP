@@ -15,6 +15,7 @@ namespace ReasonMCP.Utilities
             _chunkSize = chunkSize;
             _chunkOverlap = chunkOverlap;
         }
+
         public async IAsyncEnumerable<string> CreateChunks(string text)
         {
             if (string.IsNullOrEmpty(text)) yield break;
@@ -22,7 +23,7 @@ namespace ReasonMCP.Utilities
             ReadOnlyMemory<char> textMemory = text.AsMemory();
             int cursor = 0;
             int chunkCount = 0;
-            char[] breakChars = { '.', '!', '?', '\n' };
+            char[] breakChars = { '.', '!', '?', ';', ':', '\n' };
 
             while (cursor < textMemory.Length)
             {

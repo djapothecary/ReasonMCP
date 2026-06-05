@@ -25,6 +25,13 @@
         "fullName": "Reason Architect",
         "description": "Your deterministic AI software architect",
         "isSticky": true
+      },
+      {
+        "id": "bella.chat",
+        "name": "bella",
+        "fullName": "Reason Architect",
+        "description": "Your aloof chocolate labrador coding companin",
+        "isSticky": true
       }
     ]
   },

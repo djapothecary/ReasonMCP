@@ -7,28 +7,28 @@ using ReasonMCP.Orchestration;
 using ReasonMCP.Processors;
 using ReasonMCP.Records;
 
-namespace ReasonMCP.Strategies
+namespace ReasonMCP.Strategies.Converters
 {
-    public class ConfigConverterStrategy : IFileConverterStrategy
+    public class MarkupConverterStrategy : IFileConverterStrategy
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ConfigChunkingProcessor _configChunkingProcessor;
+        private readonly MarkupChunkingProcessor _markupChunkingProcessor;
         private readonly IIngestionQueueService _ingestionQueue;
         private readonly IIngestionQueueUpdaterService _updaterService;
         private readonly CodebaseScanSettings _settings;
-        private readonly ILogger<ConfigConverterStrategy> _logger;
+        private readonly ILogger<MarkupConverterStrategy> _logger;
 
-        public ConfigConverterStrategy(
+        public MarkupConverterStrategy(
             IServiceScopeFactory scopeFactory,
-            ConfigChunkingProcessor configChunkingProcessor,
+            MarkupChunkingProcessor markupChunkingProcessor,
             IIngestionQueueService ingestionQueue,
             IIngestionQueueUpdaterService updaterService,
             IOptions<CodebaseScanSettings> options,
-            ILogger<ConfigConverterStrategy> logger
+            ILogger<MarkupConverterStrategy> logger
         )
         {
             _scopeFactory = scopeFactory;
-            _configChunkingProcessor = configChunkingProcessor;
+            _markupChunkingProcessor = markupChunkingProcessor;
             _ingestionQueue = ingestionQueue;
             _updaterService = updaterService;
             _settings = options.Value;
@@ -38,20 +38,17 @@ namespace ReasonMCP.Strategies
         public bool CanConvert(string filePath)
         {
             var fileExtension = Path.GetExtension(filePath);
-            return _settings.ConfigExtensions.Contains(fileExtension, StringComparer.OrdinalIgnoreCase);
+            return _settings.MarkupExtensions.Contains(fileExtension, StringComparer.OrdinalIgnoreCase);
         }
 
         public async Task<bool> ConvertForIngestionAsync(string filePath)
         {
             var scope = _scopeFactory.CreateScope();
-            //  create Cancellation Token
             using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
             var cancellationToken = cts.Token;
 
             IEnumerable<CodeChunk> chunks = [];
-            //  Gemini Help:  This is registering "_configChunkingProcessor" as ReasonMCP.Processors.TypeScriptProcessor
-            //  when it should be ReasonMCP.Processors.ConfigChunkingProcessor
-            chunks = await _configChunkingProcessor.ChunkFileAsync(filePath, cancellationToken);
+            chunks = await _markupChunkingProcessor.ChunkFileAsync(filePath, cancellationToken);
 
             bool chunkUpsertSuccess = false;
             try

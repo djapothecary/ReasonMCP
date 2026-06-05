@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using ReasonMCP.Interfaces;
 
-namespace ReasonMCP.Strategies
+namespace ReasonMCP.Strategies.Converters
 {
     //  TODO:   Refactor:   This Strategy needs to be converted to the new pattern
     //  This strategy is not currently used

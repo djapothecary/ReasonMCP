@@ -1,6 +1,6 @@
 using ReasonMCP.Interfaces;
 
-namespace ReasonMCP.Strategies
+namespace ReasonMCP.Strategies.Converters
 {
     public class TxtConverterStrategy : IFileConverterStrategy
     {

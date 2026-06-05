@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using ReasonMCP.Interfaces;
 
-namespace ReasonMCP.Strategies
+namespace ReasonMCP.Strategies.Converters
 {
     /// <summary>
     /// This class is SPECIFICALLY it's own unique class.

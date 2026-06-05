@@ -4,7 +4,7 @@ using ReasonMCP.Data;
 using ReasonMCP.Handlers;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Services;
-using ReasonMCP.Strategies;
+using ReasonMCP.Strategies.Converters;
 using ReasonMCP.Tools;
 using ReasonMCP.Utilities;
 

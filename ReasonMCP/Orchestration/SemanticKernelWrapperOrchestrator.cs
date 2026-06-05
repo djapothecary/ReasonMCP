@@ -1,3 +1,4 @@
+using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
@@ -38,6 +39,11 @@ namespace ReasonMCP.Orchestration
             int summaryThreshold = 0;
 
             //  1.  Convert DTOs to SK ChatHistory
+            var skChathistory = new ChatHistory();
+
+            //  1a. Dynamic Persona routing
+            //  currently for testing
+            string testResponse = payload.AgentId.ToLower();
 
             //  2.  Check length -> call _contextMaintenance if needed
             if (payload.History.Count >= summaryThreshold)
@@ -50,7 +56,7 @@ namespace ReasonMCP.Orchestration
 
             //  4.  Return text
 
-            return string.Empty;
+            return testResponse;
         }
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Utilities;
 
-namespace ReasonMCP.Strategies
+namespace ReasonMCP.Strategies.Converters
 {
     public class PdfConverterStrategy : IFileConverterStrategy
     {

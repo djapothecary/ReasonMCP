@@ -32,7 +32,8 @@ namespace ReasonMCP.Endpoints
 
                 return Results.Ok(new
                 {
-                    response = $"**Ping-Pong Successful!** \n\nReason Backend received the prompt: *\"{payload.Prompt}\"*\n\nHistory contains {payload.History.Count} previous messages."
+                    // response = $"**Ping-Pong Successful!** \n\nReason Backend received the prompt: *\"{payload.Prompt}\"*\n\nHistory contains {payload.History.Count} previous messages."
+                    response
                 });
             });
         }

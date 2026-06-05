@@ -7,7 +7,7 @@ namespace ReasonMCP.Utilities
     public static class PdfMarkupSanitizer
     {
         //  Matches numbered lists like "1. ", "12. "
-        private static readonly Regex _numberedListRegex = new Regex(@"^\d\d+\.\s\s", RegexOptions.Compiled);
+        private static readonly Regex _numberedListRegex = new Regex(@"^\d+\.\s", RegexOptions.Compiled);
 
         public static string SanitizePdfMarkdown(string rawMarkdown)
         {

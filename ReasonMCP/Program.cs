@@ -49,7 +49,6 @@ builder.AddReasonOllamaService();
 builder.AddChatCompletionService();
 builder.AddReasonNomicEmbedService();
 builder.AddReasonVectorDbService();
-// builder.AddVectorContexts();
 builder.AddReasonVectorStore();
 builder.AddOrchestrators();
 builder.AddStrategies();
@@ -57,6 +56,9 @@ builder.AddFileServices();
 builder.AddIngestionQueueServices();
 builder.AddCodeChunkingServices();
 builder.AddAiGatewayService();
+
+//  Agent Services and Strategies
+builder.AddAgentChatStrategies();
 
 //  testing AI Agent chat interception
 builder.Services.AddSingleton<IFunctionInvocationFilter, ChatInterceptor>();

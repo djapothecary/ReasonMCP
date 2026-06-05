@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using ReasonMCP.Configurations;
-using ReasonMCP.DTOs;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Mappings;
 using ReasonMCP.Records;
@@ -31,35 +30,10 @@ namespace ReasonMCP.Services
             _logger = logger;
         }
 
-        public async Task<List<ChatMessageRecord>> LoadAgentHistoryAsync()
+        public async Task<List<ChatMessageRecord>> LoadCurrentChatContextByAgentAsync(
+            string fullPath
+        )
         {
-            var rootDirectory = _settings.RootDirectory;
-            var directory = _settings.AgentHistoryDirectory;
-            var fileName = _settings.AgentHistoryFilename;
-
-            //  Not using Path.Combine here as it will return only the last value
-            var fullPath = rootDirectory + directory + fileName;
-
-            if (!File.Exists(fullPath))
-                return [];
-
-            var json = await File.ReadAllTextAsync(fullPath);
-            var chatHistory = JsonSerializer.Deserialize<ChatHistory>(json);
-
-            //  Bridge ChatHistory to Reason ChatMessage using extension
-            return chatHistory?.ToReasonChatMessage() ?? [];
-
-        }
-
-        public async Task<List<ChatMessageRecord>> LoadChatHistoryAsync()
-        {
-            var rootDirectory = _settings.RootDirectory;
-            var directory = _settings.ChatHistoryDirectory;
-            var fileName = _settings.ChatHistoryFilename;
-
-            //  Not using Path.Combine here as it will return only the last value
-            var fullPath = rootDirectory + directory + fileName;
-
             if (!File.Exists(fullPath))
                 return [];
 
@@ -70,15 +44,10 @@ namespace ReasonMCP.Services
             return chatHistory?.ToReasonChatMessage() ?? [];
         }
 
-        public async Task<List<ChatMessageRecord>> LoadPlanHistoryAsync()
+        public async Task<List<ChatMessageRecord>> LoadChatHistoryByAgentAsync(
+            string fullPath
+        )
         {
-            var rootDirectory = _settings.RootDirectory;
-            var directory = _settings.PlanHistoryDirectory;
-            var fileName = _settings.PlanHistoryFilename;
-
-            //  Not using Path.Combine here as it will return only the last value
-            var fullPath = rootDirectory + directory + fileName;
-
             if (!File.Exists(fullPath))
                 return [];
 
@@ -89,14 +58,13 @@ namespace ReasonMCP.Services
             return chatHistory?.ToReasonChatMessage() ?? [];
         }
 
-        public async Task SaveAgentHistoryAsync(ChatMessageRecord agentHistory)
+        public async Task SaveCurrentChatContextByAgentAsync(
+            ChatMessageRecord agentHistory,
+            string fullPath
+        )
         {
-            var rootDirectory = _settings.RootDirectory;
-            var directory = _settings.AgentHistoryDirectory;
-            var fileName = _settings.AgentHistoryFilename;
-
-            //  Not using Path.Combine here as it will return only the last value
-            var fullPath = rootDirectory + directory + fileName;
+            if (!File.Exists(fullPath))
+                return;
 
             List<ChatMessageRecord> history = [];
 
@@ -114,14 +82,13 @@ namespace ReasonMCP.Services
 
         }
 
-        public async Task SaveChatHistory(ChatMessageRecord chatHistory)
+        public async Task SaveHistoryByAgentAsync(
+            ChatMessageRecord agentHistory,
+            string fullPath
+        )
         {
-            var rootDirectory = _settings.RootDirectory;
-            var directory = _settings.AgentHistoryDirectory;
-            var fileName = _settings.AgentHistoryFilename;
-
-            //  Not using Path.Combine here as it will return only the last value
-            var fullPath = rootDirectory + directory + fileName;
+            if (!File.Exists(fullPath))
+                return;
 
             List<ChatMessageRecord> history = [];
 
@@ -131,35 +98,12 @@ namespace ReasonMCP.Services
                 history = JsonSerializer.Deserialize<List<ChatMessageRecord>>(json) ?? [];
             }
 
-            history.Add(chatHistory);
+            history.Add(agentHistory);
             await File.WriteAllTextAsync(fullPath, JsonSerializer.Serialize(
                 history,
                 new JsonSerializerOptions { WriteIndented = true }
             ));
-        }
 
-        public async Task SavePlanHistoryAsync(ChatMessageRecord planHistory)
-        {
-            var rootDirectory = _settings.RootDirectory;
-            var directory = _settings.AgentHistoryDirectory;
-            var fileName = _settings.AgentHistoryFilename;
-
-            //  Not using Path.Combine here as it will return only the last value
-            var fullPath = rootDirectory + directory + fileName;
-
-            List<ChatMessageRecord> history = [];
-
-            if (File.Exists(fullPath))
-            {
-                var json = await File.ReadAllTextAsync(fullPath);
-                history = JsonSerializer.Deserialize<List<ChatMessageRecord>>(json) ?? [];
-            }
-
-            history.Add(planHistory);
-            await File.WriteAllTextAsync(fullPath, JsonSerializer.Serialize(
-                history,
-                new JsonSerializerOptions { WriteIndented = true }
-            ));
         }
     }
 }

@@ -7,7 +7,7 @@ using ReasonMCP.Orchestration;
 using ReasonMCP.Processors;
 using ReasonMCP.Records;
 
-namespace ReasonMCP.Strategies
+namespace ReasonMCP.Strategies.Converters
 {
     /// <summary>
     /// This classintentionally uses Boilerplate constructors

@@ -1,7 +1,8 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ([
-/* 0 */
+/* 0 */,
+/* 1 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -39,10 +40,9 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.activate = activate;
-exports.deactivate = deactivate;
-const vscode = __importStar(__webpack_require__(1));
-function activate(context) {
+exports.registerReasonParticipant = registerReasonParticipant;
+const vscode = __importStar(__webpack_require__(2));
+function registerReasonParticipant(context) {
     console.log(('ReasonMCP client extension is now active!'));
     //	This output provides the VSCode "pop-up" window
     // vscode.window.showInformationMessage('ReasonMCP client extension is now active!');
@@ -91,6 +91,7 @@ function activate(context) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    agentId: 'reason',
                     role: 'user', // this will alswys be the user sending a prompt to the API
                     prompt: request.prompt,
                     history: historyPayload
@@ -110,14 +111,119 @@ function activate(context) {
     //	Register it to the extension context
     context.subscriptions.push(reasonParticipant);
 }
-function deactivate() { }
 
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ ((module) => {
 
 module.exports = require("vscode");
+
+/***/ }),
+/* 3 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.registerBellaParticipant = registerBellaParticipant;
+const vscode = __importStar(__webpack_require__(2));
+function registerBellaParticipant(context) {
+    const bellaParticipant = vscode.chat.createChatParticipant('bella.chat', async (request, context, response, token) => {
+        response.progress('Bella is sniffing for answers...');
+        try {
+            //	prepare the chat history with proper role mapping
+            const historyPayload = [];
+            for (const turn of context.history) {
+                if (turn instanceof vscode.ChatRequestTurn) {
+                    //	it's a message from the user
+                    historyPayload.push({
+                        role: 'user',
+                        content: turn.prompt
+                    });
+                }
+                else if (turn instanceof vscode.ChatResponseTurn) {
+                    //	it's a message from Reason.  The response is an array of "parts".
+                    //	we map them and extract the Markdown text.
+                    const responseText = turn.response.map(part => {
+                        if (part instanceof vscode.ChatResponseMarkdownPart) {
+                            return part.value.value; //	the actual string content
+                        }
+                        return '';
+                    }).join('');
+                    historyPayload.push({
+                        role: 'assistant',
+                        content: responseText
+                    });
+                }
+            }
+            //	3.	Send the HTTP Post to the C# backend
+            //	Using native fetch commands
+            const payload = {
+                prompt: request.prompt,
+                history: historyPayload
+            };
+            console.log("[TS PAYLOAD OUT]: " + JSON.stringify(payload, null, 2));
+            //	This output provides the VSCode "pop-up" window
+            // vscode.window.showInformationMessage("[TS PAYLOAD OUT]: " + JSON.stringify(payload, null, 2));
+            const res = await fetch('http://127.0.0.1:5000/api/v1/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    agentId: 'bella',
+                    role: 'user', // this will alswys be the user sending a prompt to the API
+                    prompt: request.prompt,
+                    history: historyPayload
+                })
+            });
+            if (!res.ok) {
+                throw new Error(`C# Backend returned HTTP ${res.status}`);
+            }
+            const data = await res.json();
+            //	4.	Stream the response directly into the VS Code chat window
+            response.markdown(data.response || "No response received from Reason backend.");
+        }
+        catch (error) {
+            response.markdown(`*
+                    whimpers* Woof! I couldn't find the backend ... \n\nError: ${error.message}`);
+        }
+    });
+}
+
 
 /***/ })
 /******/ 	]);
@@ -147,13 +253,29 @@ module.exports = require("vscode");
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	
-/******/ 	// startup
-/******/ 	// Load entry module and return exports
-/******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __webpack_require__(0);
-/******/ 	module.exports = __webpack_exports__;
-/******/ 	
+var __webpack_exports__ = {};
+// This entry needs to be wrapped in an IIFE because it needs to be isolated against other modules in the chunk.
+(() => {
+var exports = __webpack_exports__;
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.activate = activate;
+exports.deactivate = deactivate;
+const reason_1 = __webpack_require__(1);
+const bella_1 = __webpack_require__(3);
+function activate(context) {
+    console.log('ReasonMCP Extension Suite is now active!');
+    //  Bootstrap the agents
+    (0, reason_1.registerReasonParticipant)(context);
+    (0, bella_1.registerBellaParticipant)(context);
+}
+function deactivate() {
+    //  Allow VS Code to handle cleanup automatically via conte
+}
+
+})();
+
+module.exports = __webpack_exports__;
 /******/ })()
 ;
 //# sourceMappingURL=extension.js.map
