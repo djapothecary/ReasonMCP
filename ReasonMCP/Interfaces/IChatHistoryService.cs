@@ -6,7 +6,14 @@ namespace ReasonMCP.Interfaces
     {
         Task<List<ChatMessageRecord>> LoadCurrentChatContextByAgentAsync(
             string fullPath);
-        Task<List<ChatMessageRecord>> LoadChatHistoryByAgentAsync(
+
+        /// <summary>
+        /// Load the JSON history
+        /// Agent is determined by file path
+        /// </summary>
+        /// <param name="fullPath"></param>
+        /// <returns></returns>
+        Task<List<ChatMessageRecord>> LoadChatHistoryFromFileByAgentAsync(
             string fullPath);
 
         Task SaveCurrentChatContextByAgentAsync(
@@ -16,5 +23,10 @@ namespace ReasonMCP.Interfaces
         Task SaveHistoryByAgentAsync(
             ChatMessageRecord agentHistory,
             string fullPath);
+
+        Task AppendToMasterHistoryAsync(
+            ChatMessageRecord agentHistory,
+            string fullPath
+        );
     }
 }

@@ -59,6 +59,8 @@ builder.AddAiGatewayService();
 
 //  Agent Services and Strategies
 builder.AddAgentChatStrategies();
+builder.AddAgents();
+builder.AddAgentServices();
 
 //  testing AI Agent chat interception
 builder.Services.AddSingleton<IFunctionInvocationFilter, ChatInterceptor>();
