@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Microsoft.SemanticKernel;
 using ModelContextProtocol.Server;
 
 /// <summary>
@@ -7,7 +8,8 @@ using ModelContextProtocol.Server;
 /// </summary>
 internal class RandomNumberTools
 {
-    [McpServerTool]
+    [McpServerTool(Name = "random_number")]
+    [KernelFunction("random_number")]
     [Description("Generates a random number between the specified minimum and maximum values.")]
     public int GetRandomNumber(
         [Description("Minimum value (inclusive)")] int min = 0,

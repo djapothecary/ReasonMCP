@@ -44,13 +44,13 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.8" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.6.0" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="10.6.0" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="1.68.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="1.68.0-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.77.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="1.74.0-preview" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.Ollama" Version="1.77.0-alpha" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="1.68.0-preview" />
-    <PackageReference Include="MimeKit" Version="4.16.0" />
-    <PackageReference Include="ModelContextProtocol" Version="1.3.0" />
-    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="1.3.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.SqliteVec" Version="1.74.0-preview" />
+    <PackageReference Include="MimeKit" Version="4.17.0" />
+    <PackageReference Include="ModelContextProtocol" Version="1.4.0" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="1.4.0" />
     <PackageReference Include="OllamaSharp" Version="5.4.25" />
     <PackageReference Include="OllamaSharp.ModelContextProtocol" Version="5.4.19" />
     <PackageReference Include="sqlite-vec" Version="0.1.7-alpha.2.1" />

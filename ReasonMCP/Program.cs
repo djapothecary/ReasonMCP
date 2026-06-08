@@ -22,11 +22,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://127.0.0.1:5000");
 // builder.WebHost.UseUrls("http://127.0.0.1:11434");
 
+//  TODO:   Refactor:   consider moving these to their related extension registration classes/methods
 builder.Services.Configure<StorageConfigSettings>(builder.Configuration.GetSection("StorageConfigSettings"));
 builder.Services.Configure<TestingSettings>(builder.Configuration.GetSection("TestingSettings"));
 builder.Services.Configure<CodebaseScanSettings>(builder.Configuration.GetSection("CodebaseScanSettings"));
 builder.Services.Configure<KnowledgebaseScanSettings>(builder.Configuration.GetSection("KnowledgebaseScanSettings"));
-
 
 builder.Services.AddCors(options =>
 {
@@ -44,7 +44,7 @@ builder.Logging.ClearProviders();
 //  Add the console forcing STDERR for everything
 //  Configure all logs to go to stderr (stdout is used for the MCP protocol messages).
 builder.Logging.AddConsole();
-// TODO:    Feature: Add a file logger to save/read logs without relying on Continue.dev's debug window
+// TODO:    Feature: Add a file logger to save/read logs
 // builder.Logging.AddFile("logs/reason-mcp.log");
 
 //  Add services from extensions
@@ -64,19 +64,17 @@ builder.AddAiGatewayService();
 builder.AddAgentChatStrategies();
 builder.AddAgents();
 builder.AddAgentServices();
+builder.AddAIPluginsAndTools();
 
 //  testing AI Agent chat interception
-builder.Services.AddSingleton<IFunctionInvocationFilter, ChatInterceptor>();
+// builder.Services.AddSingleton<IFunctionInvocationFilter, ChatInterceptor>();
 
-//  Register the Background Service
-
-//  DEPRECATED: This have been replaced by the Seperate Workers
-//builder.Services.AddHostedService<DocumentProcessingWorker>();
-
+//  Register the Background Services
+//  Scanners for Codebase and Documents/Knowledge
 builder.Services.AddHostedService<KnowledgebaseScanWorker>();
 builder.Services.AddHostedService<CodebaseScanWorker>();
 
-// Add the MCP services: the transport to use (stdio) and the tools to register.
+// Add the MCP services: the transport to use and the tools to register.
 builder.Services
     .AddMcpServer()
     .WithHttpTransport()
@@ -92,8 +90,6 @@ webHost.MapHealthEndpoints();
 // webHost.MapAiTestInterceptEndpoints();
 webHost.MapReasonChatEndpoints();
 
-
-
 webHost.MapGet("/routes", (IEnumerable<EndpointDataSource> endpointSources) =>
 {
     var endpoints = endpointSources.SelectMany(es => es.Endpoints).OfType<RouteEndpoint>();
@@ -103,7 +99,6 @@ webHost.MapGet("/routes", (IEnumerable<EndpointDataSource> endpointSources) =>
         Methods = e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods
     });
 });
-
 
 webHost.MapMcp();
 
@@ -119,7 +114,6 @@ using (var scope = webHost.Services.CreateAsyncScope())
     await dbInit.InitializeDatabaseAsync();
 
     logger.LogInformation("Ingestion complete. Start MCP Server loop ...");
-
 }
 
 await webHost.RunAsync();
