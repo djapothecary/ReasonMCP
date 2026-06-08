@@ -12,20 +12,14 @@ namespace ReasonMCP.Services
 {
     public class ChatHistoryService : IChatHistoryService
     {
-        private readonly Kernel _kernel;
-        private readonly ChatHistoryService _chatHistoryService;
         private readonly ChatSettings _settings;
         private readonly ILogger<ChatHistoryService> _logger;
 
         public ChatHistoryService(
-            Kernel kernel,
-            ChatHistoryService chatHistoryService,
             IOptions<ChatSettings> options,
             ILogger<ChatHistoryService> logger
         )
         {
-            _kernel = kernel;
-            _chatHistoryService = chatHistoryService;
             _settings = options.Value;
             _logger = logger;
         }
@@ -112,7 +106,16 @@ namespace ReasonMCP.Services
 
         }
 
-        public async Task AppendToMasterHistoryAsync(
+        /// <summary>
+        /// Appends the latest message to the chat history file
+        /// Used for both "master" history and "current context"
+        /// Agent and type ("master" or "current context") are
+        /// determined by fullPath
+        /// </summary>
+        /// <param name="agentHistory"></param>
+        /// <param name="fullPath"></param>
+        /// <returns></returns>
+        public async Task AppendToHistoryFileAsync(
             ChatMessageRecord agentHistory,
             string fullPath
         )
@@ -123,9 +126,13 @@ namespace ReasonMCP.Services
                 WriteIndented = false   //  MUST be false for JSONL so it stays on one line
             });
 
-            //  2.  Append it directly to the end of the file.
+            //  2.  Create the directory if it doesn't exist
+            var fileInfo = new FileInfo(fullPath);
+            fileInfo.Directory?.Create();
+
+            //  3.  Append it directly to the end of the file.
             //  If the file doesn't exist, this natively creates it.
-            //  This takes 1 millizecond and requires nearly zero RAM
+            //  This takes 1 millisecond and requires nearly zero RAM
             await File.AppendAllTextAsync(fullPath, jsonLine + Environment.NewLine);
         }
     }

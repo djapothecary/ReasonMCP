@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ReasonMCP.Configurations;
 using ReasonMCP.Data;
 using ReasonMCP.Handlers;
 using ReasonMCP.Interfaces;
@@ -16,10 +17,11 @@ namespace ReasonMCP.Extensions
             this IHostApplicationBuilder builder
         )
         {
+            builder.Services.Configure<DocumentsProcessing>(builder.Configuration.GetSection("DocumentProcessing"));
             builder.Services.AddSingleton<IDbConnectionFactory, SqliteConnectionFactory>();
             builder.Services.AddTransient<IIngestionQueueService, DapperIngestionQueueService>();
             builder.Services.AddTransient<LoggingDelegatingHandler>();
-            builder.Services.AddTransient<KnowledgeSearchTool>();
+            builder.Services.AddTransient<DocumentContextSearchTool>();
             builder.Services.AddTransient<IMhtmlConverterUtility, MhtmlConverterUtility>();
             builder.Services.AddScoped<IFileConverterUtility, FileConverterUtility>();
             builder.Services.AddScoped<IChunkParsingUtility, ChunkParsingUtility>();

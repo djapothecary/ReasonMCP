@@ -24,7 +24,7 @@ namespace ReasonMCP.Interfaces
             ChatMessageRecord agentHistory,
             string fullPath);
 
-        Task AppendToMasterHistoryAsync(
+        Task AppendToHistoryFileAsync(
             ChatMessageRecord agentHistory,
             string fullPath
         );

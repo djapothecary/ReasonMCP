@@ -1,47 +1,47 @@
-using Azure.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using ReasonMCP.Agents;
 using ReasonMCP.Configurations;
 using ReasonMCP.DTOs;
 using ReasonMCP.Interfaces;
+using ReasonMCP.Records;
 using ReasonMCP.Services;
 
 namespace ReasonMCP.Orchestration
 {
     public class SemanticKernelWrapperOrchestrator
     {
-        private readonly Kernel _kernel;
         private readonly IEnumerable<IChatStrategy> _strategies;
-        private readonly IContextMaintenanceService _contextMaintenance;
+        private readonly WarmupAgent _warmupAgent;
+        private readonly BellaAgent _bellaAgent;
         private readonly ChatSettings _settings;
         private readonly ILogger<SemanticKernelWrapperOrchestrator> _logger;
         private readonly CancellationToken cancellationToken;
 
         public SemanticKernelWrapperOrchestrator(
-            Kernel kernel,
             IEnumerable<IChatStrategy> strategies,
-            IContextMaintenanceService contextMaintenance,
+            WarmupAgent warmupAgent,
+            BellaAgent bellaAgent,
             IOptions<ChatSettings> options,
             ILogger<SemanticKernelWrapperOrchestrator> logger
         )
         {
-            _kernel = kernel;
             _strategies = strategies;
-            _contextMaintenance = contextMaintenance;
+            _warmupAgent = warmupAgent;
+            _bellaAgent = bellaAgent;
             _settings = options.Value;
             _logger = logger;
         }
 
         public async Task<string> ProcessChatAsync(
-            VSCodeChatPayloadDto payload,
-            string reasonAgentType
+            VSCodeChatPayloadDto payload
         )
         {
             //  1.  Convert DTOs to SK ChatHistory
             var skChathistory = new ChatHistory();
-            var currentChatSummary = new ChatHistory();
+            var currentChatContext = new ChatHistory();
 
             foreach (var turn in payload.History)
             {
@@ -53,7 +53,7 @@ namespace ReasonMCP.Orchestration
             var agentStrategy = _strategies.FirstOrDefault(s => s.GetAgentStrategy(agentId));
 
             //  3.  Add current message to "master" chat history regardless
-
+            await agentStrategy!.AppendToChathistory(new ChatMessageRecord("user", payload.Prompt));
 
             //  4. Determine if summary needed
             var turnCount = payload.History.Count(m => m.Role == "user");
@@ -62,14 +62,35 @@ namespace ReasonMCP.Orchestration
             if (shouldSummarize)
             {
                 //  perform current chat context summarization
-                currentChatSummary = await agentStrategy!.GetSummary(skChathistory);
+                currentChatContext = await agentStrategy!.GetSummary(skChathistory);
+            }
+            else
+            {
+                foreach (var message in payload.History)
+                {
+                    currentChatContext.Add(new ChatMessageContent(
+                        new AuthorRole(message.Role),
+                        message.Content
+                    ));
+                }
             }
 
-            //  3.  Call _kernel.InvokePromptAsync() or IChatCompletionService
+            //  FORCE the model awake
+            // await _warmupAgent.Wakeup();
+
+            //  5.Call _kernel.InvokePromptAsync() or IChatCompletionService
+            var agentResponse = await agentStrategy!.RunAgent(
+                                currentChatContext,
+                                payload.Prompt);
+
+            //  6.  Append agent response to to master history
+            await agentStrategy!.AppendToChathistory(new ChatMessageRecord(
+                                "assistant",
+                                agentResponse.First().Content));
 
             //  4.  Return text
 
-            return String.Empty;
+            return agentResponse.First().Content;
         }
     }
 }

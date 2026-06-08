@@ -77,5 +77,11 @@ export function registerBellaParticipant(context: vscode.ExtensionContext) {
                     whimpers* Woof! I couldn't find the backend ... \n\nError: ${error.message}`);
 			}
         }
-    )
+    );
+
+	// Give Bella a custom icon if you want!
+    // bellaParticipant.iconPath = vscode.Uri.joinPath(context.extensionUri, 'images', 'dog.png');
+
+    context.subscriptions.push(bellaParticipant);
+
 }

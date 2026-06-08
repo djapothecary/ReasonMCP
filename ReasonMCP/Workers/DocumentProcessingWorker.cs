@@ -55,7 +55,7 @@ namespace ReasonMCP.Workers
 
                     //  TODO:   Feature:    Make this into a "Test Harness" class
                     // //   this is just a simple test for verifying RAG data
-                    // var testKnowledge = scope.ServiceProvider.GetRequiredService<KnowledgeSearchTool>();
+                    // var testKnowledge = scope.ServiceProvider.GetRequiredService<DocumentContextSearchTool>();
                     // var resultString = await testKnowledge.SearchKnowledgeBaseASync("Find information about DeepSeaExpoloration.", 5, cancellationToken);
                 }
                 catch (Exception ex)

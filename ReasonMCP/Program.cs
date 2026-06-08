@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.Ollama;
 using ReasonMCP.Configurations;
 using ReasonMCP.Data;
 using ReasonMCP.Endpoints;
@@ -24,6 +26,7 @@ builder.Services.Configure<StorageConfigSettings>(builder.Configuration.GetSecti
 builder.Services.Configure<TestingSettings>(builder.Configuration.GetSection("TestingSettings"));
 builder.Services.Configure<CodebaseScanSettings>(builder.Configuration.GetSection("CodebaseScanSettings"));
 builder.Services.Configure<KnowledgebaseScanSettings>(builder.Configuration.GetSection("KnowledgebaseScanSettings"));
+
 
 builder.Services.AddCors(options =>
 {
@@ -78,7 +81,7 @@ builder.Services
     .AddMcpServer()
     .WithHttpTransport()
     .WithTools<RandomNumberTools>()
-    .WithTools<KnowledgeSearchTool>();
+    .WithTools<DocumentContextSearchTool>();
 
 builder.Services.AddKernel();
 
@@ -116,6 +119,7 @@ using (var scope = webHost.Services.CreateAsyncScope())
     await dbInit.InitializeDatabaseAsync();
 
     logger.LogInformation("Ingestion complete. Start MCP Server loop ...");
+
 }
 
 await webHost.RunAsync();
