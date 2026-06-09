@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { TextDecoder } from 'util';
 
 export function registerBellaParticipant(context: vscode.ExtensionContext) {
 
@@ -47,6 +48,39 @@ export function registerBellaParticipant(context: vscode.ExtensionContext) {
 					history: historyPayload
 				};
 
+				//	4.	Aray to hold our extracted files
+				const attachedFiles: { fileName: string, content: string }[] = [];
+
+				//	5.	Loop through VS Code's attached references
+				for (const reference of request.references) {
+					let fileUri: vscode.Uri | undefined;
+
+					//	References can be raw URIs or Location objects depending on how they were attached
+					if (reference.value instanceof vscode.Uri) {
+						fileUri = reference.value;
+					} else if (reference.value instanceof vscode.Location) {
+						fileUri = reference.value.uri;
+					}
+
+					if (fileUri) {
+						try {
+							// Read the file directly from the VS Code workspace filesystem
+							const fileData = await vscode.workspace.fs.readFile(fileUri);
+							const fileContent = new TextDecoder('utf-8').decode(fileData);
+
+							// Extract just the filename from the path
+							const fileName = fileUri.path.split('/').pop() || "UnknownFile.txt";
+
+							attachedFiles.push({
+								fileName: fileName,
+								content: fileContent
+							});
+						} catch (err) {
+							console.error(`Failed to read attached file $(fileUri.path)`, err);
+						}
+					}
+				}
+
 				console.log("[TS PAYLOAD OUT]: " + JSON.stringify(payload, null, 2));
 				//	This output provides the VSCode "pop-up" window
 				// vscode.window.showInformationMessage("[TS PAYLOAD OUT]: " + JSON.stringify(payload, null, 2));
@@ -60,7 +94,8 @@ export function registerBellaParticipant(context: vscode.ExtensionContext) {
                         agentId: 'bella',
 						role: 'user', // this will alswys be the user sending a prompt to the API
 						prompt: request.prompt,
-						history: historyPayload
+						history: historyPayload,
+						attachments: attachedFiles
 					})
 				});
 

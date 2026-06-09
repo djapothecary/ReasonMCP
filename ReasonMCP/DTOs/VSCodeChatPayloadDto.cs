@@ -17,6 +17,8 @@ namespace ReasonMCP.DTOs
         [JsonPropertyName("history")]
         public List<ChatTurn> History { get; set; } = [];
 
+        [JsonPropertyName("attachments")]
+        public List<FileAttachmentDto> Attachments { get; set; } = [];
     }
 
 }

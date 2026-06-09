@@ -8,6 +8,7 @@ using ReasonMCP.DTOs;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Records;
 using ReasonMCP.Services;
+using ReasonMCP.Utilities;
 
 namespace ReasonMCP.Orchestration
 {
@@ -52,8 +53,15 @@ namespace ReasonMCP.Orchestration
             string agentId = payload.AgentId.ToLower();
             var agentStrategy = _strategies.FirstOrDefault(s => s.GetAgentStrategy(agentId));
 
+            //  update the prompt for file attachments
+            //  if no files are attached the original prompt is returned
+            var augmentedPrompt = payload.ToAugmentedPrompt();
+
             //  3.  Add current message to "master" chat history regardless
-            await agentStrategy!.AppendToChathistory(new ChatMessageRecord("user", payload.Prompt));
+            await agentStrategy!.AppendToChathistory(new ChatMessageRecord("user", augmentedPrompt));
+
+            //  TODO:   Refactor:   need to work out logic of creating new currentContext file
+            // await agentStrategy!.AppendToCurrentContext(new ChatMessageRecord("user", augmentedPrompt));
 
             //  4. Determine if summary needed
             var turnCount = payload.History.Count(m => m.Role == "user");
@@ -75,13 +83,10 @@ namespace ReasonMCP.Orchestration
                 }
             }
 
-            //  FORCE the model awake
-            // await _warmupAgent.Wakeup();
-
             //  5.Call _kernel.InvokePromptAsync() or IChatCompletionService
             var agentResponse = await agentStrategy!.RunAgent(
                                 currentChatContext,
-                                payload.Prompt);
+                                augmentedPrompt);
 
             //  6.  Append agent response to to master history
             await agentStrategy!.AppendToChathistory(new ChatMessageRecord(
