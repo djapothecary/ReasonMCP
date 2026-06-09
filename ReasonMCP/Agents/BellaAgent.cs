@@ -32,21 +32,29 @@ namespace ReasonMCP.Agents
             _logger = logger;
         }
 
+        /// <summary>
+        /// Sends the completed prompt (and attachments if there are any)
+        /// to the Bella Agent
+        /// </summary>
+        /// <param name="agentProfile"></param>
+        /// <param name="currentContext"></param>
+        /// <param name="prompt"></param>
+        /// <returns></returns>
         public async Task<List<ChatMessageRecord>> SendPrompt(
             AgentProfile agentProfile,
             ChatHistory currentContext,
             string prompt
         )
         {
-            var agentresponseChatMessageRecord = new List<ChatMessageRecord>();
+            var agentResponseChatMessageRecord = new List<ChatMessageRecord>();
             try
             {
                 //  1.  Get available tools
-                var searchTool = _serviceProvider.GetRequiredService<DocumentContextSearchTool>();
+                var documentSearchTool = _serviceProvider.GetRequiredService<DocumentContextSearchTool>();
                 var randomNumberTool = _serviceProvider.GetRequiredService<RandomNumberTools>();
 
-                //  2.  Inject ools into the kernel
-                _kernel.Plugins.AddFromObject(searchTool, "DocumentSearch");
+                //  2.  Inject tools into the kernel
+                _kernel.Plugins.AddFromObject(documentSearchTool, "DocumentSearch");
                 _kernel.Plugins.AddFromObject(randomNumberTool, "RandomNumbers");
 
                 currentContext.AddUserMessage(prompt);
@@ -70,7 +78,7 @@ namespace ReasonMCP.Agents
                     _kernel
                 );
 
-                agentresponseChatMessageRecord.Add(new ChatMessageRecord("assistant", agentResponse.Content ?? "Bella's chasing squirrels ..."));
+                agentResponseChatMessageRecord.Add(new ChatMessageRecord("assistant", agentResponse.Content ?? "Bella's chasing squirrels ..."));
             }
             catch (System.Exception)
             {
@@ -78,7 +86,7 @@ namespace ReasonMCP.Agents
                 throw;
             }
 
-            return agentresponseChatMessageRecord;
+            return agentResponseChatMessageRecord;
         }
 
     }

@@ -2,12 +2,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using ReasonMCP.Agents;
 using ReasonMCP.Configurations;
 using ReasonMCP.DTOs;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Records;
-using ReasonMCP.Services;
 using ReasonMCP.Utilities;
 
 namespace ReasonMCP.Orchestration
@@ -15,23 +13,18 @@ namespace ReasonMCP.Orchestration
     public class SemanticKernelWrapperOrchestrator
     {
         private readonly IEnumerable<IChatStrategy> _strategies;
-        private readonly WarmupAgent _warmupAgent;
-        private readonly BellaAgent _bellaAgent;
         private readonly ChatSettings _settings;
         private readonly ILogger<SemanticKernelWrapperOrchestrator> _logger;
         private readonly CancellationToken cancellationToken;
 
-        public SemanticKernelWrapperOrchestrator(
+        public SemanticKernelWrapperOrchestrator
+        (
             IEnumerable<IChatStrategy> strategies,
-            WarmupAgent warmupAgent,
-            BellaAgent bellaAgent,
             IOptions<ChatSettings> options,
             ILogger<SemanticKernelWrapperOrchestrator> logger
         )
         {
             _strategies = strategies;
-            _warmupAgent = warmupAgent;
-            _bellaAgent = bellaAgent;
             _settings = options.Value;
             _logger = logger;
         }

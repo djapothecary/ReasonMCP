@@ -42,6 +42,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.registerReasonParticipant = registerReasonParticipant;
 const vscode = __importStar(__webpack_require__(2));
+const util_1 = __webpack_require__(3);
 function registerReasonParticipant(context) {
     console.log(('ReasonMCP client extension is now active!'));
     //	This output provides the VSCode "pop-up" window
@@ -82,6 +83,36 @@ function registerReasonParticipant(context) {
                 prompt: request.prompt,
                 history: historyPayload
             };
+            //	4.	Array to hold our extracted files
+            const attachedFiles = [];
+            //	5.	Loop through VS Code's attached references
+            for (const reference of request.references) {
+                let fileUri;
+                // References can be raw URIs or Location objects depending
+                // on how they were attached
+                if (reference.value instanceof vscode.Uri) {
+                    fileUri = reference.value;
+                }
+                else if (reference.value instanceof vscode.Location) {
+                    fileUri = reference.value.uri;
+                }
+                if (fileUri) {
+                    try {
+                        // Read the file directly from the VS Code workspace filesystem
+                        const fileData = await vscode.workspace.fs.readFile(fileUri);
+                        const fileContent = new util_1.TextDecoder('utf-8').decode(fileData);
+                        // Extract just the filename from the path
+                        const fileName = fileUri.path.split('/').pop() || "UnknownFile.txt";
+                        attachedFiles.push({
+                            fileName: fileName,
+                            content: fileContent
+                        });
+                    }
+                    catch (err) {
+                        console.error(`FAiled to read attached file ${fileUri.path}`, err);
+                    }
+                }
+            }
             console.log("[TS PAYLOAD OUT]: " + JSON.stringify(payload, null, 2));
             //	This output provides the VSCode "pop-up" window
             // vscode.window.showInformationMessage("[TS PAYLOAD OUT]: " + JSON.stringify(payload, null, 2));
@@ -94,7 +125,8 @@ function registerReasonParticipant(context) {
                     agentId: 'reason',
                     role: 'user', // this will alswys be the user sending a prompt to the API
                     prompt: request.prompt,
-                    history: historyPayload
+                    history: historyPayload,
+                    attachments: attachedFiles
                 })
             });
             if (!res.ok) {
@@ -121,6 +153,12 @@ module.exports = require("vscode");
 
 /***/ }),
 /* 3 */
+/***/ ((module) => {
+
+module.exports = require("util");
+
+/***/ }),
+/* 4 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -160,6 +198,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.registerBellaParticipant = registerBellaParticipant;
 const vscode = __importStar(__webpack_require__(2));
+const util_1 = __webpack_require__(3);
 function registerBellaParticipant(context) {
     const bellaParticipant = vscode.chat.createChatParticipant('bella.chat', async (request, context, response, token) => {
         response.progress('Bella is sniffing for answers...');
@@ -195,6 +234,36 @@ function registerBellaParticipant(context) {
                 prompt: request.prompt,
                 history: historyPayload
             };
+            //	4.	Array to hold our extracted files
+            const attachedFiles = [];
+            //	5.	Loop through VS Code's attached references
+            for (const reference of request.references) {
+                let fileUri;
+                //	References can be raw URIs or Location objects depending
+                // on how they were attached
+                if (reference.value instanceof vscode.Uri) {
+                    fileUri = reference.value;
+                }
+                else if (reference.value instanceof vscode.Location) {
+                    fileUri = reference.value.uri;
+                }
+                if (fileUri) {
+                    try {
+                        // Read the file directly from the VS Code workspace filesystem
+                        const fileData = await vscode.workspace.fs.readFile(fileUri);
+                        const fileContent = new util_1.TextDecoder('utf-8').decode(fileData);
+                        // Extract just the filename from the path
+                        const fileName = fileUri.path.split('/').pop() || "UnknownFile.txt";
+                        attachedFiles.push({
+                            fileName: fileName,
+                            content: fileContent
+                        });
+                    }
+                    catch (err) {
+                        console.error(`Failed to read attached file ${fileUri.path}`, err);
+                    }
+                }
+            }
             console.log("[TS PAYLOAD OUT]: " + JSON.stringify(payload, null, 2));
             //	This output provides the VSCode "pop-up" window
             // vscode.window.showInformationMessage("[TS PAYLOAD OUT]: " + JSON.stringify(payload, null, 2));
@@ -207,7 +276,8 @@ function registerBellaParticipant(context) {
                     agentId: 'bella',
                     role: 'user', // this will alswys be the user sending a prompt to the API
                     prompt: request.prompt,
-                    history: historyPayload
+                    history: historyPayload,
+                    attachments: attachedFiles
                 })
             });
             if (!res.ok) {
@@ -265,7 +335,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.activate = activate;
 exports.deactivate = deactivate;
 const reason_1 = __webpack_require__(1);
-const bella_1 = __webpack_require__(3);
+const bella_1 = __webpack_require__(4);
 function activate(context) {
     console.log('ReasonMCP Extension Suite is now active!');
     //  Bootstrap the agents

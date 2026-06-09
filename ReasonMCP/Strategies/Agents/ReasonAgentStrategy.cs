@@ -15,6 +15,7 @@ namespace ReasonMCP.Strategies.Agents
         private readonly ChatHistoryService _chatHistoryService;
         private readonly CurrentChatContextSummarizer _currentContextSummarizer;
         private readonly ReasonAgent _reasonAgent;
+        private readonly IAgentProfileService _agentProfileService;
         private ChatSettings _settings;
         private readonly ILogger<ReasonAgentStrategy> _logger;
 
@@ -35,6 +36,7 @@ namespace ReasonMCP.Strategies.Agents
             ChatHistoryService chatHistoryService,
             CurrentChatContextSummarizer currentContextSummarizer,
             ReasonAgent reasonAgent,
+            IAgentProfileService agentProfileService,
             IOptions<ChatSettings> options,
             ILogger<ReasonAgentStrategy> logger
         )
@@ -42,6 +44,7 @@ namespace ReasonMCP.Strategies.Agents
             _chatHistoryService = chatHistoryService;
             _currentContextSummarizer = currentContextSummarizer;
             _reasonAgent = reasonAgent;
+            _agentProfileService = agentProfileService;
             _settings = options.Value;
             _logger = logger;
 
@@ -169,7 +172,12 @@ namespace ReasonMCP.Strategies.Agents
             string prompt
         )
         {
-            var agentResponse = new List<ChatMessageRecord>();
+            var agentProfile = await _agentProfileService.LoadAgentProfileAsync(_settings.ReasonAgentProfilePath);
+            var agentResponse = await _reasonAgent.SendPrompt(
+                                agentProfile,
+                                currentContext,
+                                prompt);
+
             return agentResponse;
         }
     }

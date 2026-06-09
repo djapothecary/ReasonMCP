@@ -89,6 +89,7 @@ webHost.MapHealthEndpoints();
 // webHost.MapAiGatewayEndpoints();
 // webHost.MapAiTestInterceptEndpoints();
 webHost.MapReasonChatEndpoints();
+webHost.MapGradingEndpoints();
 
 webHost.MapGet("/routes", (IEnumerable<EndpointDataSource> endpointSources) =>
 {

@@ -48,14 +48,15 @@ export function registerBellaParticipant(context: vscode.ExtensionContext) {
 					history: historyPayload
 				};
 
-				//	4.	Aray to hold our extracted files
+				//	4.	Array to hold our extracted files
 				const attachedFiles: { fileName: string, content: string }[] = [];
 
 				//	5.	Loop through VS Code's attached references
 				for (const reference of request.references) {
 					let fileUri: vscode.Uri | undefined;
 
-					//	References can be raw URIs or Location objects depending on how they were attached
+					//	References can be raw URIs or Location objects depending
+					// on how they were attached
 					if (reference.value instanceof vscode.Uri) {
 						fileUri = reference.value;
 					} else if (reference.value instanceof vscode.Location) {
@@ -76,7 +77,7 @@ export function registerBellaParticipant(context: vscode.ExtensionContext) {
 								content: fileContent
 							});
 						} catch (err) {
-							console.error(`Failed to read attached file $(fileUri.path)`, err);
+							console.error(`Failed to read attached file ${fileUri.path}`, err);
 						}
 					}
 				}

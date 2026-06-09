@@ -6,12 +6,12 @@ using Microsoft.SemanticKernel;
 using ReasonMCP.DTOs;
 using ReasonMCP.Orchestration;
 
-
 namespace ReasonMCP.Endpoints
 {
     public static class ChatEndpoints
     {
-        public static void MapReasonChatEndpoints(this WebApplication app)
+        public static void MapReasonChatEndpoints(
+            this WebApplication app)
         {
             app.MapPost("/api/v1/chat", async (
                 [FromBody] VSCodeChatPayloadDto payload,

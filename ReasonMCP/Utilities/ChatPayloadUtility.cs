@@ -18,7 +18,7 @@ namespace ReasonMCP.Utilities
                 return payload.Prompt;
 
             var augmentedPrompt = new StringBuilder();
-            augmentedPrompt.AppendLine("Here are the provided reference files:");
+            augmentedPrompt.AppendLine("The provided reference files contents are inside the <file></file> tags:");
 
             foreach (var file in payload.Attachments)
             {
