@@ -16,8 +16,7 @@ namespace ReasonMCP.Extensions
             // builder.Services.Configure<ChatSettings>(builder.Configuration.GetSection("ChatSettings"));
             // builder.Services.Configure<GatewaySettings>(builder.Configuration.GetSection("GatewaySettings"));
 
-            // builder.Services.AddScoped<IChatHistoryService, ChatHistoryService>();
-            builder.Services.AddScoped<GradingOrchestrator>();
+            builder.Services.AddScoped<IChatHistoryService, ChatHistoryService>();
             builder.Services.AddScoped<SemanticKernelWrapperOrchestrator>();
             builder.Services.AddScoped<IContextMaintenanceService, ContextMaintenanceService>();
 

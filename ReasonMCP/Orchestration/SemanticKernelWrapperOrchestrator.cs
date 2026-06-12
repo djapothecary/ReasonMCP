@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using ReasonMCP.Agents;
 using ReasonMCP.Configurations;
 using ReasonMCP.DTOs;
 using ReasonMCP.Interfaces;
@@ -13,6 +14,8 @@ namespace ReasonMCP.Orchestration
     public class SemanticKernelWrapperOrchestrator
     {
         private readonly IEnumerable<IChatStrategy> _strategies;
+        private readonly IMnemosyne _mnemosyneAgent;
+        private readonly IChatHistoryService _chatHistoryService;
         private readonly ChatSettings _settings;
         private readonly ILogger<SemanticKernelWrapperOrchestrator> _logger;
         private readonly CancellationToken cancellationToken;
@@ -20,11 +23,15 @@ namespace ReasonMCP.Orchestration
         public SemanticKernelWrapperOrchestrator
         (
             IEnumerable<IChatStrategy> strategies,
+            IMnemosyne mnemosyneAgent,
+            IChatHistoryService chathistoryService,
             IOptions<ChatSettings> options,
             ILogger<SemanticKernelWrapperOrchestrator> logger
         )
         {
             _strategies = strategies;
+            _mnemosyneAgent = mnemosyneAgent;
+            _chatHistoryService = chathistoryService;
             _settings = options.Value;
             _logger = logger;
         }
@@ -50,11 +57,17 @@ namespace ReasonMCP.Orchestration
             //  if no files are attached the original prompt is returned
             var augmentedPrompt = payload.ToAugmentedPrompt();
 
+            //  add user prompt to the prompt log if enabled
+            if (_settings.EnablePromptLogging)
+                await _chatHistoryService.AppendToPromptHistoryFileAsync(payload);
+
             //  3.  Add current message to "master" chat history regardless
             await agentStrategy!.AppendToChathistory(new ChatMessageRecord("user", augmentedPrompt));
 
-            //  TODO:   Refactor:   need to work out logic of creating new currentContext file
-            // await agentStrategy!.AppendToCurrentContext(new ChatMessageRecord("user", augmentedPrompt));
+            //  Append to current context
+            await agentStrategy!.AppendToCurrentContext(new ChatMessageRecord(
+                                "user", augmentedPrompt),
+                                payload);
 
             //  4. Determine if summary needed
             var turnCount = payload.History.Count(m => m.Role == "user");
@@ -63,7 +76,9 @@ namespace ReasonMCP.Orchestration
             if (shouldSummarize)
             {
                 //  perform current chat context summarization
-                currentChatContext = await agentStrategy!.GetSummary(skChathistory);
+                currentChatContext = await _mnemosyneAgent.CreateSummary(
+                    payload,
+                    currentChatContext);
             }
             else
             {
@@ -78,6 +93,7 @@ namespace ReasonMCP.Orchestration
 
             //  5.Call _kernel.InvokePromptAsync() or IChatCompletionService
             var agentResponse = await agentStrategy!.RunAgent(
+                                payload,
                                 currentChatContext,
                                 augmentedPrompt);
 
@@ -86,7 +102,13 @@ namespace ReasonMCP.Orchestration
                                 "assistant",
                                 agentResponse.First().Content));
 
-            //  4.  Return text
+            //  Append to current context
+            await agentStrategy!.AppendToCurrentContext(new ChatMessageRecord(
+                                "assistant",
+                                agentResponse.First().Content),
+                                payload);
+
+            //  7.  Return text
 
             return agentResponse.First().Content;
         }

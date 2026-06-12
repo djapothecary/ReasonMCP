@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -11,7 +12,7 @@ namespace ReasonMCP.Services
 
         public CurrentChatContextSummarizer
         (
-            IChatCompletionService chatService,
+            [FromKeyedServices("MnemosyneService")] IChatCompletionService chatService,
             ILogger<CurrentChatContextSummarizer> logger
         )
         {

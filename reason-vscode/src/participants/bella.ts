@@ -1,9 +1,13 @@
 import * as vscode from 'vscode';
+import * as crypto from 'crypto';
 import { TextDecoder } from 'util';
 
 export function registerBellaParticipant(context: vscode.ExtensionContext) {
 
-    const bellaParticipant = vscode.chat.createChatParticipant(
+    //	1.	Hold the active session ID in memory on the client
+	let activeSessionId = crypto.randomUUID();
+
+	const bellaParticipant = vscode.chat.createChatParticipant(
         'bella.chat',
         async (
             request: vscode.ChatRequest,
@@ -12,6 +16,11 @@ export function registerBellaParticipant(context: vscode.ExtensionContext) {
             token: vscode.CancellationToken
         ) => {
             response.progress('Bella is sniffing for answers...');
+
+			//	2.	If history is empty reset the session
+			if (context.history.length === 0) {
+				activeSessionId = crypto.randomUUID();
+			}
 
             try {
 				//	prepare the chat history with proper role mapping
@@ -92,6 +101,7 @@ export function registerBellaParticipant(context: vscode.ExtensionContext) {
 						'Content-Type': 'application/json'
 					},
 					body: JSON.stringify({
+						sessionId: activeSessionId,
                         agentId: 'bella',
 						role: 'user', // this will alswys be the user sending a prompt to the API
 						prompt: request.prompt,

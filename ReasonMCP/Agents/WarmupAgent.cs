@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -15,7 +16,7 @@ namespace ReasonMCP.Agents
         public WarmupAgent
         (
             Kernel kernel,
-            IChatCompletionService chatCompletionService,
+            [FromKeyedServices("Reason")] IChatCompletionService chatCompletionService,
             ILogger<WarmupAgent> logger
         )
         {

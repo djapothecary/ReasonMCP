@@ -4,26 +4,13 @@ using ReasonMCP.Interfaces;
 using ReasonMCP.Orchestration;
 using ReasonMCP.Processors;
 using ReasonMCP.Services;
+using ReasonMCP.Workers;
 
 
 namespace ReasonMCP.Extensions
 {
     public static class CodeChunkingServiceExtensions
     {
-
-        public static IHostApplicationBuilder AddOrchestrators(
-            this IHostApplicationBuilder builder
-        )
-        {
-            builder.Services.AddTransient<CodebaseScanOrchestrator>();
-            builder.Services.AddTransient<KnowledgebaseScanOrchestrator>();
-            builder.Services.AddTransient<CodebaseRecordUpsertOrchestrator>();
-            builder.Services.AddTransient<KnowledgebaseRecordUpsertOrchestrator>();
-            builder.Services.AddTransient<PreProcessOrchestrator>();
-
-            return builder;
-        }
-
         public static IHostApplicationBuilder AddCodeChunkingServices(
             this IHostApplicationBuilder builder
         )

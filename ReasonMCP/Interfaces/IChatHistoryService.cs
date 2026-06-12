@@ -1,3 +1,4 @@
+using ReasonMCP.DTOs;
 using ReasonMCP.Records;
 
 namespace ReasonMCP.Interfaces
@@ -27,6 +28,10 @@ namespace ReasonMCP.Interfaces
         Task AppendToHistoryFileAsync(
             ChatMessageRecord agentHistory,
             string fullPath
+        );
+
+        Task AppendToPromptHistoryFileAsync(
+            VSCodeChatPayloadDto payload
         );
     }
 }

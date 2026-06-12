@@ -42,13 +42,18 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.registerReasonParticipant = registerReasonParticipant;
 const vscode = __importStar(__webpack_require__(2));
-const util_1 = __webpack_require__(3);
+const crypto = __importStar(__webpack_require__(3));
+const util_1 = __webpack_require__(4);
 function registerReasonParticipant(context) {
     console.log(('ReasonMCP client extension is now active!'));
+    let activeSessionId = crypto.randomUUID();
     //	This output provides the VSCode "pop-up" window
     // vscode.window.showInformationMessage('ReasonMCP client extension is now active!');
     //	1.	Create the Chat Participant using the ID from package.json
     const reasonParticipant = vscode.chat.createChatParticipant('reasonmcp.chat', async (request, context, response, token) => {
+        if (context.history.length === 0) {
+            activeSessionId = crypto.randomUUID();
+        }
         //	2.	UI Feedback: Shows a progress indicator
         response.progress('Reason is thinking ...');
         try {
@@ -122,6 +127,7 @@ function registerReasonParticipant(context) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    sessionId: activeSessionId,
                     agentId: 'reason',
                     role: 'user', // this will alswys be the user sending a prompt to the API
                     prompt: request.prompt,
@@ -155,10 +161,16 @@ module.exports = require("vscode");
 /* 3 */
 /***/ ((module) => {
 
-module.exports = require("util");
+module.exports = require("crypto");
 
 /***/ }),
 /* 4 */
+/***/ ((module) => {
+
+module.exports = require("util");
+
+/***/ }),
+/* 5 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -198,10 +210,17 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.registerBellaParticipant = registerBellaParticipant;
 const vscode = __importStar(__webpack_require__(2));
-const util_1 = __webpack_require__(3);
+const crypto = __importStar(__webpack_require__(3));
+const util_1 = __webpack_require__(4);
 function registerBellaParticipant(context) {
+    //	1.	Hold the active session ID in memory on the client
+    let activeSessionId = crypto.randomUUID();
     const bellaParticipant = vscode.chat.createChatParticipant('bella.chat', async (request, context, response, token) => {
         response.progress('Bella is sniffing for answers...');
+        //	2.	If history is empty reset the session
+        if (context.history.length === 0) {
+            activeSessionId = crypto.randomUUID();
+        }
         try {
             //	prepare the chat history with proper role mapping
             const historyPayload = [];
@@ -273,6 +292,7 @@ function registerBellaParticipant(context) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    sessionId: activeSessionId,
                     agentId: 'bella',
                     role: 'user', // this will alswys be the user sending a prompt to the API
                     prompt: request.prompt,
@@ -335,7 +355,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.activate = activate;
 exports.deactivate = deactivate;
 const reason_1 = __webpack_require__(1);
-const bella_1 = __webpack_require__(4);
+const bella_1 = __webpack_require__(5);
 function activate(context) {
     console.log('ReasonMCP Extension Suite is now active!');
     //  Bootstrap the agents

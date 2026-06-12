@@ -41,7 +41,7 @@ namespace ReasonMCP.Extensions
         public static IHostApplicationBuilder AddChatCompletionService(this IHostApplicationBuilder builder)
         {
             // We instantiate OllamaApiClient INLINE, directly returning the IChatCompletionService.
-            builder.Services.AddSingleton<IChatCompletionService>(sp =>
+            builder.Services.AddKeyedSingleton<IChatCompletionService>("Reason", (sp, key) =>
             {
                 var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("Alpaca");
 
@@ -50,6 +50,23 @@ namespace ReasonMCP.Extensions
 
                 IChatClient chatClient = new ChatClientBuilder(ollamaClient)
                     .UseFunctionInvocation()
+                    .Build();
+
+                return chatClient.AsChatCompletionService();
+            });
+
+            return builder;
+        }
+
+        public static IHostApplicationBuilder AddMnemosyneSummaryService(this IHostApplicationBuilder builder)
+        {
+            builder.Services.AddKeyedSingleton<IChatCompletionService>("MnemosyneService", (sp, key) =>
+            {
+                var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("Alpaca");
+
+                var ollamaClient = new OllamaApiClient(httpClient) { SelectedModel = "Mnemosyne" };
+
+                IChatClient chatClient = new ChatClientBuilder(ollamaClient)
                     .Build();
 
                 return chatClient.AsChatCompletionService();

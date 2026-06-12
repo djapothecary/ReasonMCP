@@ -29,6 +29,7 @@ namespace ReasonMCP.Extensions
             builder.Services.AddScoped<ICodebaseRecordIngestionService, CodebaseRecordIngestionService>();
             builder.Services.AddScoped<IKnowledgebaseRecordIngestionService, KnowledgebaseRecordIngestionService>();
             builder.Services.AddScoped<DapperIngestionQueueService>();
+            builder.Services.AddScoped<SessionContextManager>();
 
             return builder;
         }

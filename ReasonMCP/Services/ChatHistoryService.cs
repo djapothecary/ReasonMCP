@@ -4,8 +4,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using ReasonMCP.Configurations;
+using ReasonMCP.DTOs;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Mappings;
+using ReasonMCP.Models;
 using ReasonMCP.Records;
 
 namespace ReasonMCP.Services
@@ -133,6 +135,30 @@ namespace ReasonMCP.Services
             //  3.  Append it directly to the end of the file.
             //  If the file doesn't exist, this natively creates it.
             //  This takes 1 millisecond and requires nearly zero RAM
+            await File.AppendAllTextAsync(fullPath, jsonLine + Environment.NewLine);
+        }
+
+        public async Task AppendToPromptHistoryFileAsync(
+            VSCodeChatPayloadDto payload
+        )
+        {
+            var prompSummary = new PromptLog
+            {
+                AgentId = payload.AgentId,
+                Created = DateTime.UtcNow,
+                Content = payload.Prompt
+            };
+
+            var jsonLine = JsonSerializer.Serialize(prompSummary, new JsonSerializerOptions
+            {
+                WriteIndented = false
+            });
+
+            var fullPath = $"{_settings.RootDirectory}{_settings.PromptLogPath}{_settings.FileExtension}";
+            var fileInfo = new FileInfo(fullPath);
+
+            fileInfo.Directory?.Create();
+
             await File.AppendAllTextAsync(fullPath, jsonLine + Environment.NewLine);
         }
     }

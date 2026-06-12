@@ -1,8 +1,11 @@
 import * as vscode from 'vscode';
+import * as crypto from 'crypto';
 import { TextDecoder } from 'util';
 
 export function registerReasonParticipant(context: vscode.ExtensionContext) {
     console.log(('ReasonMCP client extension is now active!'));
+
+	let activeSessionId = crypto.randomUUID();
 
 	//	This output provides the VSCode "pop-up" window
 	// vscode.window.showInformationMessage('ReasonMCP client extension is now active!');
@@ -16,6 +19,11 @@ export function registerReasonParticipant(context: vscode.ExtensionContext) {
 			response: vscode.ChatResponseStream,
 			token: vscode.CancellationToken
 		) => {
+
+			if (context.history.length === 0) {
+				activeSessionId = crypto.randomUUID();
+			}
+
 			//	2.	UI Feedback: Shows a progress indicator
 			response.progress('Reason is thinking ...');
 
@@ -98,6 +106,7 @@ export function registerReasonParticipant(context: vscode.ExtensionContext) {
 						'Content-Type': 'application/json'
 					},
 					body: JSON.stringify({
+						sessionId: activeSessionId,
                         agentId: 'reason',
 						role: 'user', // this will alswys be the user sending a prompt to the API
 						prompt: request.prompt,

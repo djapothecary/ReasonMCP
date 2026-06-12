@@ -4,6 +4,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using ReasonMCP.Agents;
 using ReasonMCP.Configurations;
+using ReasonMCP.DTOs;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Records;
 using ReasonMCP.Services;
@@ -15,13 +16,14 @@ namespace ReasonMCP.Strategies.Agents
         private readonly ChatHistoryService _chatHistoryService;
         private readonly CurrentChatContextSummarizer _currentContextSummarizer;
         private readonly MozzieAgent _mozzieAgent;
-        private ChatSettings _settings;
+        private readonly IAgentProfileService _agentProfileService;
+        private readonly SessionContextManager _sessionContextManager;
+        private readonly ChatSettings _settings;
         private readonly ILogger<MozzieAgentStrategy> _logger;
 
         //  File settings
         private readonly string _rootDirectory;
         private readonly string _historyDirectory;
-        private readonly string _contextFileName;
         private readonly string _masterHistoryFilename;
         private readonly string _fileExtension;
 
@@ -35,6 +37,8 @@ namespace ReasonMCP.Strategies.Agents
             ChatHistoryService chatHistoryService,
             CurrentChatContextSummarizer currentContextSummarizer,
             MozzieAgent mozzieAgent,
+            IAgentProfileService agentProfileService,
+            SessionContextManager sessionContextManager,
             IOptions<ChatSettings> options,
             ILogger<MozzieAgentStrategy> logger
         )
@@ -42,32 +46,22 @@ namespace ReasonMCP.Strategies.Agents
             _chatHistoryService = chatHistoryService;
             _currentContextSummarizer = currentContextSummarizer;
             _mozzieAgent = mozzieAgent;
+            _agentProfileService = agentProfileService;
             _settings = options.Value;
             _logger = logger;
 
             //  Setup files
             _rootDirectory = _settings.RootDirectory;
-            _historyDirectory = _settings.MozzieHistoryDirectory;
-            _contextFileName = _settings.MozzieCurrentContextFilename;
-            _masterHistoryFilename = _settings.MozzieHistoryFilename;
-            _fileExtension = _settings.HistoryFileExtension;
+            _historyDirectory = _settings.ChatHistoryDirectory;
+            _masterHistoryFilename = _settings.ChatHistoryFilename;
+            _fileExtension = _settings.FileExtension;
 
             //  Agent Identity
-            _self = _settings.MozzieParticipantId;
-            _agentId = _settings.MozzieParticipantId;
-        }
+            _self = _settings.Agents["mozzie"].ParticipantId;
+            _agentId = _settings.Agents["mozzie"].ParticipantId;
 
-        public string GenerateCurrentContextFilePath()
-        {
-            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
-            var shortGuid = Guid.NewGuid().ToString("N").Substring(0, 8); // 8 char hex
-
-            //  Builds: "MozzieContext_2026_06_06_143800_a1b2c3d4.jsonl"
-            var currentContextFilename = $"{_contextFileName}_{timestamp}_{shortGuid}{_fileExtension}";
-
-            //  Can't use Path.Combine() because literal paths always return the last path
-            // return Path.Combine(_rootDirectory, _historyDirectory, currentContextFilename);
-            return _rootDirectory + _historyDirectory + currentContextFilename;
+            //  Initialize session context manager for this strategy instance
+            _sessionContextManager = sessionContextManager;
         }
 
         public string GetMasterHistoryFilePath()
@@ -82,12 +76,12 @@ namespace ReasonMCP.Strategies.Agents
 
         public bool GetAgentStrategy(string agent)
         {
-            return agent.Equals(_settings.MozzieParticipantId, StringComparison.OrdinalIgnoreCase);
+            return agent.Equals(_self, StringComparison.OrdinalIgnoreCase);
         }
 
         public bool ShouldSummarize(int turnCount)
         {
-            return turnCount > _settings.MozzieSummarizationThreshold;
+            return turnCount > _settings.ChatSummarizationThreshold;
         }
 
         public async Task AppendToChathistory(
@@ -103,10 +97,14 @@ namespace ReasonMCP.Strategies.Agents
         }
 
         public async Task AppendToCurrentContext(
-            ChatMessageRecord record
+            ChatMessageRecord record,
+            VSCodeChatPayloadDto payload
         )
         {
-            var fullPath = GenerateCurrentContextFilePath();
+            var fullPath = _sessionContextManager.GetCurrentContextFilePath(
+                payload.AgentId,
+                payload.SessionId
+            );
 
             await _chatHistoryService
                     .AppendToHistoryFileAsync(
@@ -135,21 +133,11 @@ namespace ReasonMCP.Strategies.Agents
             return await Task.FromResult(chatHistoryFromFile);
         }
 
-        public async Task SaveCurrentChatContextAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task SaveChatHistoryAsync()
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<ChatHistory> GetSummary(
             ChatHistory currentChatContext
         )
         {
-            var summaryThreshold = _settings.MozzieSummarizationThreshold;
+            var summaryThreshold = _settings.ChatSummarizationThreshold;
 
             //  TODO:   get system prompt from individual agent YAML file
             var systemPrompt = new ChatMessageContent(
@@ -165,6 +153,7 @@ namespace ReasonMCP.Strategies.Agents
         }
 
         public async Task<List<ChatMessageRecord>> RunAgent(
+            VSCodeChatPayloadDto payload,
             ChatHistory currentContext,
             string prompt
         )

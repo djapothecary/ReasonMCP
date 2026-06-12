@@ -20,7 +20,6 @@ namespace ReasonMCP.Extensions
             builder.Services.AddScoped<IChatStrategy, BellaAgentStrategy>();
             builder.Services.AddScoped<IChatStrategy, DozerAgentStrategy>();
             builder.Services.AddScoped<IChatStrategy, MozzieAgentStrategy>();
-            builder.Services.AddScoped<IChatStrategy, PlanAgentStrategy>();
             builder.Services.AddScoped<IChatStrategy, ReasonAgentStrategy>();
             builder.Services.AddScoped<IChatStrategy, SeraphAgentStrategy>();
             builder.Services.AddScoped<IChatStrategy, TankAgentStrategy>();
@@ -36,7 +35,6 @@ namespace ReasonMCP.Extensions
             builder.Services.AddScoped<BellaAgent>();
             builder.Services.AddScoped<DozerAgent>();
             builder.Services.AddScoped<MozzieAgent>();
-            builder.Services.AddScoped<PlanAgent>();
             builder.Services.AddScoped<ReasonAgent>();
             builder.Services.AddScoped<SeraphAgent>();
             builder.Services.AddScoped<TankAgent>();
@@ -51,6 +49,7 @@ namespace ReasonMCP.Extensions
             builder.Services.AddScoped<ChatHistoryService>();
             builder.Services.AddScoped<CurrentChatContextSummarizer>();
             builder.Services.AddScoped<IAgentProfileService, AgentProfileService>();
+            builder.Services.AddScoped<IMnemosyne, MnemosyneAgent>();
 
             return builder;
         }

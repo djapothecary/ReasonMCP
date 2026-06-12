@@ -1,8 +1,10 @@
 using System.Data;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -23,6 +25,9 @@ builder.WebHost.UseUrls("http://127.0.0.1:5000");
 // builder.WebHost.UseUrls("http://127.0.0.1:11434");
 
 //  TODO:   Refactor:   consider moving these to their related extension registration classes/methods
+builder.Configuration.AddJsonFile("chatsettings.json", optional: false, reloadOnChange: true);
+builder.Services.Configure<ChatSettings>(builder.Configuration.GetSection("ChatSettings"));
+builder.Services.Configure<AgentTaskWorkerSettings>(builder.Configuration.GetSection("AgentTaskWorkerSettings"));
 builder.Services.Configure<StorageConfigSettings>(builder.Configuration.GetSection("StorageConfigSettings"));
 builder.Services.Configure<TestingSettings>(builder.Configuration.GetSection("TestingSettings"));
 builder.Services.Configure<CodebaseScanSettings>(builder.Configuration.GetSection("CodebaseScanSettings"));
@@ -50,6 +55,7 @@ builder.Logging.AddConsole();
 //  Add services from extensions
 builder.AddReasonOllamaService();
 builder.AddChatCompletionService();
+builder.AddMnemosyneSummaryService();
 builder.AddReasonNomicEmbedService();
 builder.AddReasonVectorDbService();
 builder.AddReasonVectorStore();
@@ -74,6 +80,9 @@ builder.AddAIPluginsAndTools();
 builder.Services.AddHostedService<KnowledgebaseScanWorker>();
 builder.Services.AddHostedService<CodebaseScanWorker>();
 
+builder.Services.AddSingleton(Channel.CreateUnbounded<object>());
+//builder.Services.AddHostedService<AgentTaskWorker>();
+
 // Add the MCP services: the transport to use and the tools to register.
 builder.Services
     .AddMcpServer()
@@ -90,6 +99,7 @@ webHost.MapHealthEndpoints();
 // webHost.MapAiTestInterceptEndpoints();
 webHost.MapReasonChatEndpoints();
 webHost.MapGradingEndpoints();
+// webHost.MapTroubleshootingEndpoints();
 
 webHost.MapGet("/routes", (IEnumerable<EndpointDataSource> endpointSources) =>
 {

@@ -1,5 +1,7 @@
+using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
@@ -11,22 +13,28 @@ namespace ReasonMCP.Agents
 {
     public class ReasonAgent
     {
+        private readonly Channel<dynamic> _agentTaskChannel;
         private readonly Kernel _kernel;
         private readonly IServiceProvider _serviceProvider;
         private readonly IChatCompletionService _chatCompletionService;
+        private readonly ChatSettings _settings;
         private readonly ILogger<ReasonAgent> _logger;
 
         public ReasonAgent
         (
+            Channel<dynamic> agentTaskChannel,
             Kernel kernel,
             IServiceProvider serviceProvider,
-            IChatCompletionService chatCompletionService,
+            [FromKeyedServices("Reason")] IChatCompletionService chatCompletionService,
+            IOptions<ChatSettings> options,
             ILogger<ReasonAgent> logger
         )
         {
+            _agentTaskChannel = agentTaskChannel;
             _kernel = kernel;
             _serviceProvider = serviceProvider;
             _chatCompletionService = chatCompletionService;
+            _settings = options.Value;
             _logger = logger;
         }
 
@@ -41,9 +49,12 @@ namespace ReasonMCP.Agents
         public async Task<List<ChatMessageRecord>> SendPrompt(
             AgentProfile agentProfile,
             ChatHistory currentContext,
-            string prompt
+            string prompt,
+            string currentContextFilePath
         )
         {
+            var reasonAgent = _settings.Agents["reason"];
+
             var agentResponseChatMessageRecord = new List<ChatMessageRecord>();
             try
             {
@@ -76,6 +87,15 @@ namespace ReasonMCP.Agents
                 );
 
                 agentResponseChatMessageRecord.Add(new ChatMessageRecord("assistant", agentResponse.Content ?? "Reason took SnowCrash.  Friend's don't let friends do SnowCrash ..."));
+
+                var turnCount = currentContext.Count(m => m.Role == AuthorRole.User);
+                if (turnCount > _settings.ChatSummarizationThreshold)
+                {
+                    _agentTaskChannel.Writer.TryWrite(new AgentTask(
+                        "GradeResponse",
+                        currentContextFilePath
+                    ));
+                }
             }
             catch (System.Exception)
             {

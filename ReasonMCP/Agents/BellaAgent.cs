@@ -1,34 +1,40 @@
+using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
 using ReasonMCP.Configurations;
-using ReasonMCP.Interfaces;
 using ReasonMCP.Records;
 using ReasonMCP.Tools;
-using SQLitePCL;
 
 namespace ReasonMCP.Agents
 {
     public class BellaAgent
     {
+        private readonly Channel<dynamic> _agentTaskChannel;
         private readonly Kernel _kernel;
         private readonly IServiceProvider _serviceProvider;
         private readonly IChatCompletionService _chatCompletionService;
+        private readonly ChatSettings _settings;
         private readonly ILogger<BellaAgent> _logger;
 
         public BellaAgent
         (
+            Channel<dynamic> agentTaskChannel,
             Kernel kernel,
             IServiceProvider serviceProvider,
-            IChatCompletionService chatCompletionService,
+            [FromKeyedServices("Reason")] IChatCompletionService chatCompletionService,
+            IOptions<ChatSettings> options,
             ILogger<BellaAgent> logger
         )
         {
+            _agentTaskChannel = agentTaskChannel;
             _kernel = kernel;
             _serviceProvider = serviceProvider;
             _chatCompletionService = chatCompletionService;
+            _settings = options.Value;
             _logger = logger;
         }
 
@@ -43,12 +49,15 @@ namespace ReasonMCP.Agents
         public async Task<List<ChatMessageRecord>> SendPrompt(
             AgentProfile agentProfile,
             ChatHistory currentContext,
-            string prompt
+            string prompt,
+            string currentContextFilePath
         )
         {
             var agentResponseChatMessageRecord = new List<ChatMessageRecord>();
             try
             {
+                var bellaSettings = _settings.Agents["bella"];
+
                 //  1.  Get available tools
                 var documentSearchTool = _serviceProvider.GetRequiredService<DocumentContextSearchTool>();
                 var randomNumberTool = _serviceProvider.GetRequiredService<RandomNumberTools>();
@@ -78,16 +87,26 @@ namespace ReasonMCP.Agents
                     _kernel
                 );
 
-                agentResponseChatMessageRecord.Add(new ChatMessageRecord("assistant", agentResponse.Content ?? "Bella's chasing squirrels ..."));
-            }
-            catch (System.Exception)
-            {
+                agentResponseChatMessageRecord.Add(
+                    new ChatMessageRecord("assistant",
+                        agentResponse.Content
+                        ?? "Bella's chasing squirrels ..."));
 
+                var turnCount = currentContext.Count(m => m.Role == AuthorRole.User);
+                if (turnCount > _settings.ChatSummarizationThreshold)
+                {
+                    _agentTaskChannel.Writer.TryWrite(new AgentTask(
+                        "PlayFetch",
+                        currentContextFilePath
+                    ));
+                }
+            }
+            catch (Exception ex)
+            {
                 throw;
             }
 
             return agentResponseChatMessageRecord;
         }
-
     }
 }

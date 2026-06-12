@@ -4,6 +4,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using ReasonMCP.Agents;
 using ReasonMCP.Configurations;
+using ReasonMCP.DTOs;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Records;
 using ReasonMCP.Services;
@@ -16,13 +17,13 @@ namespace ReasonMCP.Strategies.Agents
         private readonly CurrentChatContextSummarizer _currentContextSummarizer;
         private readonly BellaAgent _bellaAgent;
         private readonly IAgentProfileService _agentProfileService;
-        private ChatSettings _settings;
+        private readonly SessionContextManager _sessionContextManager;
+        private readonly ChatSettings _settings;
         private readonly ILogger<BellaAgentStrategy> _logger;
 
         //  File settings
         private readonly string _rootDirectory;
         private readonly string _historyDirectory;
-        private readonly string _contextFileName;
         private readonly string _masterHistoryFilename;
         private readonly string _fileExtension;
 
@@ -37,6 +38,7 @@ namespace ReasonMCP.Strategies.Agents
             CurrentChatContextSummarizer currentContextSummarizer,
             BellaAgent bellaAgent,
             IAgentProfileService agentProfileService,
+            SessionContextManager sessionContextManager,
             IOptions<ChatSettings> options,
             ILogger<BellaAgentStrategy> logger
         )
@@ -50,27 +52,16 @@ namespace ReasonMCP.Strategies.Agents
 
             //  Setup files
             _rootDirectory = _settings.RootDirectory;
-            _historyDirectory = _settings.BellaHistoryDirectory;
-            _contextFileName = _settings.BellaCurrentContextFilename;
-            _masterHistoryFilename = _settings.BellaHistoryFilename;
-            _fileExtension = _settings.HistoryFileExtension;
+            _historyDirectory = _settings.ChatHistoryDirectory;
+            _masterHistoryFilename = _settings.Agents["bella"].HistoryFilename;
+            _fileExtension = _settings.FileExtension;
 
             //  Agent Identity
-            _self = _settings.BellaParticipantId;
-            _agentId = _settings.BellaParticipantId;
-        }
+            _self = _settings.Agents["bella"].ParticipantId;
+            _agentId = _settings.Agents["bella"].ParticipantId;
 
-        public string GenerateCurrentContextFilePath()
-        {
-            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
-            var shortGuid = Guid.NewGuid().ToString("N").Substring(0, 8); // 8 char hex
-
-            //  Builds: "BellaContext_2026_06_06_143800_a1b2c3d4.jsonl"
-            var currentContextFilename = $"{_contextFileName}_{timestamp}_{shortGuid}{_fileExtension}";
-
-            //  Can't use Path.Combine() because literal paths always return the last path
-            // return Path.Combine(_rootDirectory, _historyDirectory, currentContextFilename);
-            return _rootDirectory + _historyDirectory + currentContextFilename;
+            //  Initialize session context manager for this strategy instance
+            _sessionContextManager = sessionContextManager;
         }
 
         public string GetMasterHistoryFilePath()
@@ -85,19 +76,19 @@ namespace ReasonMCP.Strategies.Agents
 
         public bool GetAgentStrategy(string agent)
         {
-            return agent.Equals(_settings.BellaParticipantId, StringComparison.OrdinalIgnoreCase);
+            return agent.Equals(_self, StringComparison.OrdinalIgnoreCase);
         }
 
         public bool ShouldSummarize(int turnCount)
         {
-            return turnCount > _settings.BellaSummarizationThreshold;
+            return turnCount > _settings.ChatSummarizationThreshold;
         }
 
         public async Task AppendToChathistory(
             ChatMessageRecord record
         )
         {
-            var fullPath = GetMasterHistoryFilePath();
+            var fullPath = GetMasterHistoryFilePath();  // Uses session-persisted file
 
             await _chatHistoryService
                     .AppendToHistoryFileAsync(
@@ -106,10 +97,14 @@ namespace ReasonMCP.Strategies.Agents
         }
 
         public async Task AppendToCurrentContext(
-            ChatMessageRecord record
+            ChatMessageRecord record,
+            VSCodeChatPayloadDto payload
         )
         {
-            var fullPath = GenerateCurrentContextFilePath();
+            var fullPath = _sessionContextManager.GetCurrentContextFilePath(
+                payload.AgentId,
+                payload.SessionId
+            );
 
             await _chatHistoryService
                     .AppendToHistoryFileAsync(
@@ -138,21 +133,11 @@ namespace ReasonMCP.Strategies.Agents
             return await Task.FromResult(chatHistoryFromFile);
         }
 
-        public async Task SaveCurrentChatContextAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task SaveChatHistoryAsync()
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<ChatHistory> GetSummary(
             ChatHistory currentChatContext
         )
         {
-            var summaryThreshold = _settings.BellaSummarizationThreshold;
+            var summaryThreshold = _settings.ChatSummarizationThreshold;
 
             //  TODO:   get system prompt from individual agent YAML file
             var systemPrompt = new ChatMessageContent(
@@ -168,15 +153,22 @@ namespace ReasonMCP.Strategies.Agents
         }
 
         public async Task<List<ChatMessageRecord>> RunAgent(
+            VSCodeChatPayloadDto payload,
             ChatHistory currentContext,
             string prompt
         )
         {
-            var agentProfile = await _agentProfileService.LoadAgentProfileAsync(_settings.BellaAgentProfilePath);
+            var currentContextFilepath = _sessionContextManager.GetCurrentContextFilePath(
+                payload.AgentId,
+                payload.SessionId
+            );
+
+            var agentProfile = await _agentProfileService.LoadAgentProfileAsync(_settings.Agents["bella"].AgentProfilePath);
             var agentResponse = await _bellaAgent.SendPrompt(
                                 agentProfile,
                                 currentContext,
-                                prompt);
+                                prompt,
+                                currentContextFilepath);
 
             return agentResponse;
         }
