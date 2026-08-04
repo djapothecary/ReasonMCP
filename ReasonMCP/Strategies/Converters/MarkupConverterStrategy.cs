@@ -3,9 +3,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReasonMCP.Configurations;
 using ReasonMCP.Interfaces;
-using ReasonMCP.Orchestration;
 using ReasonMCP.Processors;
 using ReasonMCP.Records;
+using ReasonMCP.Services.Enrichment;
 
 namespace ReasonMCP.Strategies.Converters
 {
@@ -14,7 +14,6 @@ namespace ReasonMCP.Strategies.Converters
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly MarkupChunkingProcessor _markupChunkingProcessor;
         private readonly IIngestionQueueService _ingestionQueue;
-        private readonly IIngestionQueueUpdaterService _updaterService;
         private readonly CodebaseScanSettings _settings;
         private readonly ILogger<MarkupConverterStrategy> _logger;
 
@@ -22,7 +21,6 @@ namespace ReasonMCP.Strategies.Converters
             IServiceScopeFactory scopeFactory,
             MarkupChunkingProcessor markupChunkingProcessor,
             IIngestionQueueService ingestionQueue,
-            IIngestionQueueUpdaterService updaterService,
             IOptions<CodebaseScanSettings> options,
             ILogger<MarkupConverterStrategy> logger
         )
@@ -30,7 +28,6 @@ namespace ReasonMCP.Strategies.Converters
             _scopeFactory = scopeFactory;
             _markupChunkingProcessor = markupChunkingProcessor;
             _ingestionQueue = ingestionQueue;
-            _updaterService = updaterService;
             _settings = options.Value;
             _logger = logger;
         }
@@ -41,11 +38,11 @@ namespace ReasonMCP.Strategies.Converters
             return _settings.MarkupExtensions.Contains(fileExtension, StringComparer.OrdinalIgnoreCase);
         }
 
-        public async Task<bool> ConvertForIngestionAsync(string filePath)
+        public async Task<bool> ConvertForIngestionAsync(
+            string filePath,
+            CancellationToken cancellationToken = default)
         {
             var scope = _scopeFactory.CreateScope();
-            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
-            var cancellationToken = cts.Token;
 
             IEnumerable<CodeChunk> chunks = [];
             chunks = await _markupChunkingProcessor.ChunkFileAsync(filePath, cancellationToken);
@@ -53,14 +50,28 @@ namespace ReasonMCP.Strategies.Converters
             bool chunkUpsertSuccess = false;
             try
             {
-                var codebaseUpsertOrchestratior = scope.ServiceProvider.GetRequiredService<CodebaseRecordUpsertOrchestrator>();
-                chunkUpsertSuccess = await codebaseUpsertOrchestratior.CodebaseChunkUpsertAsync(chunks, cancellationToken);
+                var codebaseRecordIngestService = scope
+                    .ServiceProvider
+                    .GetRequiredService<CodebaseRecordIngestService>();
 
-                await _updaterService.MarkConversionStatus(filePath, chunkUpsertSuccess, cancellationToken);
+                chunkUpsertSuccess = await codebaseRecordIngestService
+                    .CodebaseChunkUpsertAsync(
+                        chunks,
+                        cancellationToken
+                    );
+
+                await _ingestionQueue.MarkConversionCompleteAsync(
+                    filePath,
+                    cancellationToken
+                );
             }
             catch (Exception conversionUpsertEx)
             {
-                await _ingestionQueue.MarkFailedExceptionAsync(filePath, conversionUpsertEx.Message, cancellationToken);
+                await _ingestionQueue.MarkFailedExceptionAsync(
+                    filePath,
+                    conversionUpsertEx.Message,
+                    cancellationToken
+                );
             }
 
             return chunkUpsertSuccess;

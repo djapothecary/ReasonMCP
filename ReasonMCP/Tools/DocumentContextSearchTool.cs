@@ -15,12 +15,12 @@ namespace ReasonMCP.Tools
     /// </summary>
     public class DocumentContextSearchTool
     {
-        private readonly VectorStoreCollection<string, KnowledgebaseEntity> _collection;
+        private readonly VectorStoreCollection<string, DocumentVectorModel> _collection;
         private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
         private readonly ILogger<DocumentContextSearchTool> _logger;
 
         public DocumentContextSearchTool(
-            VectorStoreCollection<string, KnowledgebaseEntity> collection,
+            VectorStoreCollection<string, DocumentVectorModel> collection,
             IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
             ILogger<DocumentContextSearchTool> logger
         )
@@ -65,7 +65,7 @@ namespace ReasonMCP.Tools
                 var searchVector = queryEmbedding.First().Vector;
 
                 //  3.  Configure the search options
-                var searchOptions = new VectorSearchOptions<KnowledgebaseEntity>
+                var searchOptions = new VectorSearchOptions<DocumentVectorModel>
                 {
                     //Top = maxResults,
                     //  We only need the text and metadata returned, not the massive float array
@@ -81,7 +81,11 @@ namespace ReasonMCP.Tools
                 );
 
                 //  5.  Format the output deterministically for the LLLM
-                return await FormatResultsForLlmAsync(query, searchResults, cancellationToken);
+                return await FormatResultsForLlmAsync(
+                    query,
+                    searchResults,
+                    cancellationToken
+                );
             }
             catch (Exception ex)
             {
@@ -92,7 +96,7 @@ namespace ReasonMCP.Tools
 
         private static async Task<string> FormatResultsForLlmAsync(
             string query,
-            IAsyncEnumerable<VectorSearchResult<KnowledgebaseEntity>> searchResults,
+            IAsyncEnumerable<VectorSearchResult<DocumentVectorModel>> searchResults,
             CancellationToken cancellationToken
         )
         {

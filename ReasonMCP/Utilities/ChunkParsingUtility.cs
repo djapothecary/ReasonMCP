@@ -5,7 +5,7 @@ namespace ReasonMCP.Utilities
 {
     public class ChunkParsingUtility : IChunkParsingUtility
     {
-        public async Task<List<KnowledgebaseEntity>> ParseEnrichedMarkdownAsync(
+        public async Task<List<CodebaseVectorModel>> ParseEnrichedCodebaseMarkdownAsync(
             string filePath,
             CancellationToken cancellationToken = default
         )
@@ -17,7 +17,7 @@ namespace ReasonMCP.Utilities
             //  Null safety check
             //  TODO:   Enhancement:    add better logging, null handling
             if (!File.Exists(filePath))
-                return new List<KnowledgebaseEntity>();
+                return new List<CodebaseVectorModel>();
 
             fullText = await File.ReadAllTextAsync(filePath, cancellationToken);
 
@@ -27,7 +27,7 @@ namespace ReasonMCP.Utilities
             var sections = fullText.Split("## Chunk ", StringSplitOptions.RemoveEmptyEntries);
 
             if (sections.Length == 0)
-                return new List<KnowledgebaseEntity>();
+                return new List<CodebaseVectorModel>();
 
             //  3.  Extract Metadata ONCE from the header block
             var headerBlock = sections[0];
@@ -37,14 +37,124 @@ namespace ReasonMCP.Utilities
             string generatedDate = ExtractMetadata(headerBlock, "Generated Date");
             string version = ExtractMetadata(headerBlock, "Version");
 
-            var records = new List<KnowledgebaseEntity>();
+            var records = new List<CodebaseVectorModel>();
 
             //  4.  Process the remaining blocks using a simple mapping loop
             for (int i = 1; i < sections.Length; i++)
             {
                 var chunkBlock = sections[i];
 
-                records.Add(new KnowledgebaseEntity
+                records.Add(new CodebaseVectorModel
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Source = source,
+                    Topic = topic,
+                    HeaderContext = headerContext,
+                    ChunkIndex = ExtractChunkIndex(chunkBlock),
+                    Text = ExtractFencedContent(chunkBlock),
+                    GeneratedDate = generatedDate,
+                    Version = version
+                });
+            }
+
+            return records;
+        }
+
+        public async Task<List<DocumentVectorModel>> ParseEnrichedDocumentMarkdownAsync(
+            string filePath,
+            CancellationToken cancellationToken = default
+        )
+        {
+            //  1.  Read the entire file.  Enriched Markdown files are small enough
+            //  that this is safe
+            var fullText = string.Empty;
+
+            //  Null safety check
+            //  TODO:   Enhancement:    add better logging, null handling
+            if (!File.Exists(filePath))
+                return new List<DocumentVectorModel>();
+
+            fullText = await File.ReadAllTextAsync(filePath, cancellationToken);
+
+            //  2.  Structurally split the document by the chunk header.
+            //  Sections[0] will ALWAYS be the Header MEtadata.
+            //  Sections[1 ... n] will be the individual chunks.
+            var sections = fullText.Split("## Chunk ", StringSplitOptions.RemoveEmptyEntries);
+
+            if (sections.Length == 0)
+                return new List<DocumentVectorModel>();
+
+            //  3.  Extract Metadata ONCE from the header block
+            var headerBlock = sections[0];
+            string source = ExtractMetadata(headerBlock, "Source");
+            string topic = ExtractMetadata(headerBlock, "Topic");
+            string headerContext = ExtractMetadata(headerBlock, "Header Context");
+            string generatedDate = ExtractMetadata(headerBlock, "Generated Date");
+            string version = ExtractMetadata(headerBlock, "Version");
+
+            var records = new List<DocumentVectorModel>();
+
+            //  4.  Process the remaining blocks using a simple mapping loop
+            for (int i = 1; i < sections.Length; i++)
+            {
+                var chunkBlock = sections[i];
+
+                records.Add(new DocumentVectorModel
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Source = source,
+                    Topic = topic,
+                    HeaderContext = headerContext,
+                    ChunkIndex = ExtractChunkIndex(chunkBlock),
+                    Text = ExtractFencedContent(chunkBlock),
+                    GeneratedDate = generatedDate,
+                    Version = version
+                });
+            }
+
+            return records;
+        }
+
+        public async Task<List<ReferenceVectorModel>> ParseEnrichedReferenceMarkdownAsync(
+            string filePath,
+            CancellationToken cancellationToken = default
+        )
+        {
+            //  1.  Read the entire file.  Enriched Markdown files are small enough
+            //  that this is safe
+            var fullText = string.Empty;
+
+            //  Null safety check
+            //  TODO:   Enhancement:    add better logging, null handling
+            if (!File.Exists(filePath))
+                return new List<ReferenceVectorModel>();
+
+            fullText = await File.ReadAllTextAsync(filePath, cancellationToken);
+
+            //  2.  Structurally split the document by the chunk header.
+            //  Sections[0] will ALWAYS be the Header MEtadata.
+            //  Sections[1 ... n] will be the individual chunks.
+            var sections = fullText.Split("## Chunk ", StringSplitOptions.RemoveEmptyEntries);
+
+            if (sections.Length == 0)
+                return new List<ReferenceVectorModel>();
+
+            //  3.  Extract Metadata ONCE from the header block
+            var headerBlock = sections[0];
+            string source = ExtractMetadata(headerBlock, "Source");
+            string topic = ExtractMetadata(headerBlock, "Topic");
+            string headerContext = ExtractMetadata(headerBlock, "Header Context");
+            string generatedDate = ExtractMetadata(headerBlock, "Generated Date");
+            string version = ExtractMetadata(headerBlock, "Version");
+
+            var records = new List<ReferenceVectorModel>();
+
+            //  4.  Process the remaining blocks using a simple mapping loop
+            for (int i = 1; i < sections.Length; i++)
+            {
+                var chunkBlock = sections[i];
+
+                records.Add(new ReferenceVectorModel
                 {
                     Id = Guid.NewGuid().ToString(),
                     Source = source,

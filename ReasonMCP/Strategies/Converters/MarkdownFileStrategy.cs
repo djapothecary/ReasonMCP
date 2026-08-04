@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using ReasonMCP.Interfaces;
 
 namespace ReasonMCP.Strategies.Converters
@@ -10,15 +9,12 @@ namespace ReasonMCP.Strategies.Converters
     /// </summary>
     public class MarkdownFileStrategy : IFileConverterStrategy
     {
-        private readonly IServiceScopeFactory _scopeFactory;
         private readonly IIngestionQueueService _ingestionQueue;
 
         public MarkdownFileStrategy(
-            IServiceScopeFactory scopeFactory,
             IIngestionQueueService ingestionQueue
         )
         {
-            _scopeFactory = scopeFactory;
             _ingestionQueue = ingestionQueue;
         }
 
@@ -31,11 +27,11 @@ namespace ReasonMCP.Strategies.Converters
             return false;
         }
 
-        public async Task<bool> ConvertForIngestionAsync(string filePath)
+        public async Task<bool> ConvertForIngestionAsync(
+            string filePath,
+            CancellationToken cancellationToken
+        )
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
-            var cancellationToken = cts.Token;
-
             await _ingestionQueue.MarkConversionCompleteAsync(filePath, cancellationToken);
 
             // this file is already a markdown file, move straight to chunking/enrichment

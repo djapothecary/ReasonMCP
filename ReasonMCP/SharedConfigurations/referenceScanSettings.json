@@ -1,0 +1,45 @@
+{
+    "ReferenceScanSettings": {
+        "Enabled": true,
+        "RunFilScan": true,
+        "ProcessFiles": true,
+        "GenerateEmbeddings": true,
+        "RootDirectories": [
+            "C:\\Source"
+        ],
+        "SubDirectories": [
+            "\\GeminiConsolidation",
+            "\\ReasonData",
+            "\\dotnet.aspnetcore",
+            "\\dotnet.core",
+            "\\dotnet.csharplang",
+            "\\dotnet.docs-aspire",
+            "\\dotnet.dotnet-api-docs",
+            "\\dotnet.efcore",
+            "\\dotnet.roslyn",
+            "\\dotnet.runtime",
+            "\\dotnet.sdk",
+            "\\dotnet.vscode-csharp",
+            "\\dotnet.winforms"
+        ],
+        "ExcludedDirectories": [
+            "\\RuleSets",
+            "\\Temp",
+            "\\Processed",
+            "\\Broken"
+        ],
+        "ExcludeFilesContaining": [
+            "package-lock.json",
+            "yarn.lock",
+            ".min.js",
+            ".min.css",
+            "swagger.json"
+        ],
+        "ReferenceExtensions": [
+            ".html",
+            ".md",
+            ".pdf",
+            ".txt"
+        ]
+    }
+}

@@ -24,14 +24,28 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://127.0.0.1:5000");
 // builder.WebHost.UseUrls("http://127.0.0.1:11434");
 
-//  TODO:   Refactor:   consider moving these to their related extension registration classes/methods
-builder.Configuration.AddJsonFile("chatsettings.json", optional: false, reloadOnChange: true);
-builder.Services.Configure<ChatSettings>(builder.Configuration.GetSection("ChatSettings"));
+builder.Configuration.SetBasePath(@"C:\Source\ReasonMCP\ReasonMCP\SharedConfigurations")
+    .AddJsonFile("agentTaskWorkerSettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("chatSettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("codebaseScanSettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("documentScanSettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("gatewaySettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("knowledgebaseScanSettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("referenceScanSettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("storageConfigSettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("testingSettings.json", optional: false, reloadOnChange: true)
+    .Build();
+
 builder.Services.Configure<AgentTaskWorkerSettings>(builder.Configuration.GetSection("AgentTaskWorkerSettings"));
+builder.Services.Configure<ChatSettings>(builder.Configuration.GetSection("ChatSettings"));
+builder.Services.Configure<CodebaseScanSettings>(builder.Configuration.GetSection("CodebaseScanSettings"));
+builder.Services.Configure<DocumentScanSettings>(builder.Configuration.GetSection("DocumentsScanSettings"));
+builder.Services.Configure<GatewaySettings>(builder.Configuration.GetSection("GatewaySettings"));
+builder.Services.Configure<KnowledgebaseScanSettings>(builder.Configuration.GetSection("KnowledgebaseScanSettings"));
+builder.Services.Configure<ReferenceScanSettings>(builder.Configuration.GetSection("ReferenceScanSettings"));
 builder.Services.Configure<StorageConfigSettings>(builder.Configuration.GetSection("StorageConfigSettings"));
 builder.Services.Configure<TestingSettings>(builder.Configuration.GetSection("TestingSettings"));
-builder.Services.Configure<CodebaseScanSettings>(builder.Configuration.GetSection("CodebaseScanSettings"));
-builder.Services.Configure<KnowledgebaseScanSettings>(builder.Configuration.GetSection("KnowledgebaseScanSettings"));
+
 
 builder.Services.AddCors(options =>
 {
@@ -52,17 +66,24 @@ builder.Logging.AddConsole();
 // TODO:    Feature: Add a file logger to save/read logs
 // builder.Logging.AddFile("logs/reason-mcp.log");
 
+//  Add DB Factories and Initializers
+builder.AddDbInitializers();
+builder.AddDbFactories();
+builder.AddCodebaseVectorStore();
+builder.AddDocumentsVectorStore();
+builder.AddReferenceVectorStore();
+
 //  Add services from extensions
 builder.AddReasonOllamaService();
 builder.AddChatCompletionService();
 builder.AddMnemosyneSummaryService();
 builder.AddReasonNomicEmbedService();
-builder.AddReasonVectorDbService();
-builder.AddReasonVectorStore();
-builder.AddOrchestrators();
+builder.AddIngestionQueueService();
+builder.AddCodebaseVectorDbService();
+builder.AddDocumentsVectorDbService();
+builder.AddReferenceVectorDbService();
 builder.AddStrategies();
 builder.AddFileServices();
-builder.AddIngestionQueueServices();
 builder.AddCodeChunkingServices();
 builder.AddAiGatewayService();
 
@@ -72,13 +93,17 @@ builder.AddAgents();
 builder.AddAgentServices();
 builder.AddAIPluginsAndTools();
 
+//  Enrichment Extensions
+builder.AddWorkflows();
+builder.AddEnrichmentServices();
+
 //  testing AI Agent chat interception
 // builder.Services.AddSingleton<IFunctionInvocationFilter, ChatInterceptor>();
 
 //  Register the Background Services
 //  Scanners for Codebase and Documents/Knowledge
-builder.Services.AddHostedService<KnowledgebaseScanWorker>();
-builder.Services.AddHostedService<CodebaseScanWorker>();
+builder.Services.AddHostedService<EnrichmentWorker>();
+builder.Services.AddHostedService<AgentTaskWorker>();
 
 builder.Services.AddSingleton(Channel.CreateUnbounded<object>());
 //builder.Services.AddHostedService<AgentTaskWorker>();
@@ -121,8 +146,17 @@ using (var scope = webHost.Services.CreateAsyncScope())
     logger.LogInformation("Initializing ReasonMCP pre-flight ingestion ...");
 
     //  This gaurantees the vec0 tables exist BEFORE the background worker wakes up!
-    var dbInit = services.GetRequiredService<DatabaseInitializer>();
-    await dbInit.InitializeDatabaseAsync();
+    var dbCodebaseInit = services.GetRequiredService<CodebaseVectorDbInitializer>();
+    await dbCodebaseInit.InitializeCodebaseDbAsync();
+
+    var dbDocumentsInit = services.GetRequiredService<DocumentsVectorDbInitializer>();
+    await dbDocumentsInit.InitializeDocumentsDbAsync();
+
+    var dbReferenceInit = services.GetRequiredService<ReferenceVectorDbInitializer>();
+    await dbReferenceInit.InitializeReferenceDbAsync();
+
+    var dbIngestionQueueInit = services.GetRequiredService<IngestionQueueDbInitializer>();
+    await dbIngestionQueueInit.InitializeIngestionQueueDbAsync();
 
     logger.LogInformation("Ingestion complete. Start MCP Server loop ...");
 }

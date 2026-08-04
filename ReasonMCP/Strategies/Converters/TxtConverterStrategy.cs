@@ -21,10 +21,16 @@ namespace ReasonMCP.Strategies.Converters
             return false;
         }
 
-        public async Task<bool> ConvertForIngestionAsync(string filePath)
+        public async Task<bool> ConvertForIngestionAsync(
+            string filePath,
+            CancellationToken cancellationToken = default
+        )
         {
             // no additional processing required, go straight to conversion
-            return await _fileConverter.ConvertToMarkdown(filePath);
+            return await _fileConverter.ConvertToMarkdown(
+                filePath,
+                cancellationToken
+            );
         }
     }
 }

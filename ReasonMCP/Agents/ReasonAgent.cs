@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.Connectors.Ollama;
 using ReasonMCP.Configurations;
 using ReasonMCP.Records;
 using ReasonMCP.Tools;
+using ReasonMCP.Utilities;
 
 namespace ReasonMCP.Agents
 {
@@ -86,7 +87,12 @@ namespace ReasonMCP.Agents
                     _kernel
                 );
 
-                agentResponseChatMessageRecord.Add(new ChatMessageRecord("assistant", agentResponse.Content ?? "Reason took SnowCrash.  Friend's don't let friends do SnowCrash ..."));
+                var cleandedAgentResponse = ProcessJsonResponseUtility.TryParseChatMessageContent(agentResponse);
+
+                agentResponseChatMessageRecord.Add(
+                    new ChatMessageRecord("assistant",
+                    cleandedAgentResponse
+                    ?? "Reason took SnowCrash.  Friend's don't let friends do SnowCrash ..."));
 
                 var turnCount = currentContext.Count(m => m.Role == AuthorRole.User);
                 if (turnCount > _settings.ChatSummarizationThreshold)

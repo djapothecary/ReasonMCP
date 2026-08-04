@@ -53,8 +53,19 @@
     <PackageReference Include="ModelContextProtocol.AspNetCore" Version="1.4.0" />
     <PackageReference Include="OllamaSharp" Version="5.4.25" />
     <PackageReference Include="OllamaSharp.ModelContextProtocol" Version="5.4.19" />
+    <PackageReference Include="Spectre.Console" Version="0.55.2" />
+    <PackageReference Include="Spectre.Console.Cli" Version="1.0.0-alpha.0.12" />
+    <PackageReference Include="Spectre.Console.ImageSharp" Version="0.54.1-alpha.0.32" />
+    <PackageReference Include="Spectre.Console.Json" Version="0.54.1-alpha.0.31" />
     <PackageReference Include="sqlite-vec" Version="0.1.7-alpha.2.1" />
     <PackageReference Include="YamlDotNet" Version="18.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="ReasonMCP\SharedConfigurations\chatSettings.json"
+      Condition="Exists('ReasonMCP\SharedConfigurations\chatSettings.json')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <Target Name="killReasonMCP" BeforeTargets="PreBuildEvent" Condition="'$(OS)' == 'Windows_NT'">

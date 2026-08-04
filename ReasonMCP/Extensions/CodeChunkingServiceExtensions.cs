@@ -23,13 +23,5 @@ namespace ReasonMCP.Extensions
 
             return builder;
         }
-        public static IHostApplicationBuilder AddIngestionQueueServices(
-            this IHostApplicationBuilder builder
-        )
-        {
-            builder.Services.AddScoped<IIngestionQueueUpdaterService, IngestionQueueUpdaterService>();
-
-            return builder;
-        }
     }
 }

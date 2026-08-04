@@ -6,6 +6,6 @@ namespace ReasonMCP.Configurations
         public string ServiceId { get; set; } = "Alpaca";
         public float Temperature { get; set; } = 0.7f;
         public float TopP { get; set; } = 0.9f;
-        public int MakTokens { get; set; } = 4096;
+        public int MaxTokens { get; set; } = 4096;
     }
 }

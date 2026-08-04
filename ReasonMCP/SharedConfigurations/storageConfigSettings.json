@@ -1,0 +1,16 @@
+{
+    "StorageConfigSettings": {
+        "CodebaseRootDirectory": "C:\\Source\\ReasonData",
+        "DocumentsRootDirectory": "C:\\Source\\ReasonData",
+        "ReferenceRootDirectory": "C:\\Source\\ReasonData",
+        "CodebaseDbPath": "C:\\Source\\ReasonMCP\\VectorDb\\codebase.db",
+        "DocumentsDbPath": "C:\\Source\\ReasonMCP\\VectorDb\\documents.db",
+        "IngestionQueueDbPath": "C:\\Source\\ReasonMCP\\VectorDb\\ingestionQueue.db",
+        "ReferenceDbPath": "C:\\Source\\ReasonMCP\\VectorDb\\reference.db",
+        "NewsLettersPath": "\\Newsletters",
+        "ADRsPath": "\\ADRs",
+        "GeneralPath": "\\General",
+        "DotNetDocs": "\\DotnetDocs",
+        "ClearOriginalFiles": false
+    }
+}

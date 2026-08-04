@@ -1,0 +1,15 @@
+{
+    "DocumentScanSettings": {
+        "Enabled": true,
+        "RunFileScan": true,
+        "ProcessFiles": true,
+        "GenerateEmbeddings": true,
+        "RootDirectories": [
+            "C:\\Source\\ReasonData"
+        ],
+        "SubDirectories": [],
+        "ExcludedDirectories": [
+            "\\DotNetDocs"
+        ]
+    }
+}

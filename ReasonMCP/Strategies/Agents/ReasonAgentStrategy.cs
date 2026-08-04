@@ -54,7 +54,7 @@ namespace ReasonMCP.Strategies.Agents
             //  Setup files
             _rootDirectory = _settings.RootDirectory;
             _historyDirectory = _settings.ChatHistoryDirectory;
-            _masterHistoryFilename = _settings.ChatHistoryFilename;
+            _masterHistoryFilename = _settings.Agents["reason"].HistoryFilename;
             _fileExtension = _settings.FileExtension;
 
             //  Agent Identity
@@ -132,25 +132,6 @@ namespace ReasonMCP.Strategies.Agents
         {
             var chatHistoryFromFile = new List<ChatMessageRecord>();
             return await Task.FromResult(chatHistoryFromFile);
-        }
-
-        public async Task<ChatHistory> GetSummary(
-            ChatHistory currentChatContext
-        )
-        {
-            var summaryThreshold = _settings.ChatSummarizationThreshold;
-
-            //  TODO:   get system prompt from individual agent YAML file
-            var systemPrompt = new ChatMessageContent(
-                                AuthorRole.System, "You are a helpful assistant.");
-            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
-            var cancellationToken = cts.Token;
-
-            return await _currentContextSummarizer.SummarizeCurrentChatContext(
-                systemPrompt,
-                currentChatContext,
-                cancellationToken
-            );
         }
 
         public async Task<List<ChatMessageRecord>> RunAgent(

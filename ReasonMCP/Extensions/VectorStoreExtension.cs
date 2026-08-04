@@ -9,46 +9,61 @@ namespace ReasonMCP.Extensions
 {
     public static class VectorStoreExtensions
     {
-        public static IHostApplicationBuilder AddReasonVectorStore(
+        public static IHostApplicationBuilder AddCodebaseVectorStore(
             this IHostApplicationBuilder builder
         )
         {
             var config = builder.Configuration;
 
-            var dbPath = config.GetValue<string>("StorageConfigSettings:VectorDbPath")
-                        ?? "ReasonContext.db";
+            var dbPath = config.GetValue<string>("StorageConfigSettings:CodebaseDbPath")
+                        ?? "codebase.db";
 
             builder.Services.AddSqliteVectorStore(_ => $"Data Source={dbPath}");
 
-            builder.Services.AddSingleton<VectorStoreCollection<string, KnowledgebaseEntity>>(sp =>
+            builder.Services.AddSingleton<VectorStoreCollection<string, CodebaseVectorModel>>(sp =>
             {
                 var store = sp.GetRequiredService<VectorStore>();
-                return store.GetCollection<string, KnowledgebaseEntity>("DocumentsContext");
-            });
-
-            builder.Services.AddSingleton<VectorStoreCollection<string, CodebaseEntity>>(sp =>
-            {
-                var store = sp.GetRequiredService<VectorStore>();
-                return store.GetCollection<string, CodebaseEntity>("CodebaseContext");
+                return store.GetCollection<string, CodebaseVectorModel>("Codebase");
             });
 
             return builder;
         }
 
-        public static IHostApplicationBuilder AddVectorContexts(
+        public static IHostApplicationBuilder AddDocumentsVectorStore(
             this IHostApplicationBuilder builder
         )
         {
-            builder.Services.AddSingleton(sp =>
+            var config = builder.Configuration;
+
+            var dbPath = config.GetValue<string>("StorageConfigSettings:DocumentsDbPath")
+                        ?? "documents.db";
+
+            builder.Services.AddSqliteVectorStore(_ => $"Data Source={dbPath}");
+
+            builder.Services.AddSingleton<VectorStoreCollection<string, DocumentVectorModel>>(sp =>
             {
-                var vectorStore = sp.GetRequiredService<VectorStore>();
-                return vectorStore.GetCollection<string, KnowledgebaseEntity>("DocumentsContext");
+                var store = sp.GetRequiredService<VectorStore>();
+                return store.GetCollection<string, DocumentVectorModel>("Documents");
             });
 
-            builder.Services.AddSingleton(sp =>
+            return builder;
+        }
+
+        public static IHostApplicationBuilder AddReferenceVectorStore(
+            this IHostApplicationBuilder builder
+        )
+        {
+            var config = builder.Configuration;
+
+            var dbPath = config.GetValue<string>("StorageConfigSettings:ReferenceDbPath")
+                        ?? "reference.db";
+
+            builder.Services.AddSqliteVectorStore(_ => $"Data Source={dbPath}");
+
+            builder.Services.AddSingleton<VectorStoreCollection<string, ReferenceVectorModel>>(sp =>
             {
-                var vectorStore = sp.GetRequiredService<VectorStore>();
-                return vectorStore.GetCollection<string, CodebaseEntity>("CodebaseContext");
+                var store = sp.GetRequiredService<VectorStore>();
+                return store.GetCollection<string, ReferenceVectorModel>("Reference");
             });
 
             return builder;

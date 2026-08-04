@@ -1,7 +1,5 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Dapper;
+using DocumentFormat.OpenXml.Spreadsheet;
 using ReasonMCP.Enums;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Models;
@@ -10,9 +8,9 @@ namespace ReasonMCP.Services
 {
     public class DapperIngestionQueueService : IIngestionQueueService
     {
-        private readonly IDbConnectionFactory _connectionFactory;
+        private readonly IIngestionQueueDbConnectionFactory _connectionFactory;
 
-        public DapperIngestionQueueService(IDbConnectionFactory connectionFactory)
+        public DapperIngestionQueueService(IIngestionQueueDbConnectionFactory connectionFactory)
         {
             _connectionFactory = connectionFactory;
         }
@@ -67,9 +65,16 @@ namespace ReasonMCP.Services
                 UPDATE IngestionQueue
                 SET Status = 1
                 WHERE FilePath = (
-                    SELECT FilePath FROM IngestionQueue
-                    WHERE Status = 0 AND TargetStore = @TargetStore
-                    ORDER BY LastModified DESC
+                    SELECT
+                        FilePath
+                    FROM
+                        IngestionQueue
+                    WHERE
+                        Status = 0
+                    AND
+                        TargetStore = @TargetStore
+                    ORDER BY
+                        LastModified DESC
                     LIMIT 1
                 )
                 RETURNING *;";
@@ -77,7 +82,44 @@ namespace ReasonMCP.Services
             using var connection = _connectionFactory.CreateConnection();
 
             //  QueryFirstOrDefaultAsync automatically maps the returned columns back to the model
-            return await connection.QueryFirstOrDefaultAsync<FileIngestionRecord>(sql, new { TargetStore = targetStore });
+            return await connection.QueryFirstOrDefaultAsync<FileIngestionRecord>(sql, new
+            {
+                TargetStore = targetStore
+            });
+        }
+
+        public async Task<FileIngestionRecord?> DequeueNextFileToEmbedAsync(
+            string targetStore,
+            CancellationToken cancellationToken = default
+        )
+        {
+            //  The Atomic Dequeue:  Finds the first pending record, sets it to Processing (1),
+            //  and returns the updated record in a SINGLE, lock-free query.
+            const string sql = @"
+                UPDATE IngestionQueue
+                SET Status = 1
+                WHERE FilePath = (
+                    SELECT
+                        FilePath
+                    FROM
+                        IngestionQueue
+                    WHERE
+                        Status = 3
+                    AND
+                        TargetStore = @TargetStore
+                    ORDER BY
+                        LastModified DESC
+                    LIMIT 1
+                )
+                RETURNING *;";
+
+            using var connection = _connectionFactory.CreateConnection();
+
+            //  QueryFirstOrDefaultAsync automatically maps the returned columns back to the model
+            return await connection.QueryFirstOrDefaultAsync<FileIngestionRecord>(sql, new
+            {
+                TargetStore = targetStore
+            });
         }
 
         public async Task MarkConversionCompleteAsync(
@@ -140,7 +182,8 @@ namespace ReasonMCP.Services
         }
 
         public async Task MarkFailedExceptionAsync(
-            string filePath, string errorMessage,
+            string filePath,
+            string errorMessage,
             CancellationToken cancellationToken = default
         )
         {
@@ -153,6 +196,52 @@ namespace ReasonMCP.Services
 
             using var connection = _connectionFactory.CreateConnection();
             await connection.ExecuteAsync(sql, new { FilePath = filePath, ErrorMessage = errorMessage });
+        }
+
+        public async Task<int> GetCountIngestedRecordsAsync(
+            string targetStore,
+            CancellationToken cancellationToken = default
+        )
+        {
+            const string sql = @"
+                SELECT
+                    COUNT(*)
+                FROM
+                    IngestionQueue
+                WHERE
+                    Status = 0
+                AND
+                    TargetStore = @TargetStore;
+            ";
+
+            using var connection = _connectionFactory.CreateConnection();
+            return await connection.ExecuteScalarAsync<int>(sql, new
+            {
+                TargetStore = targetStore
+            });
+        }
+
+        public async Task<int> GetCountConvertedRecordsAsync(
+            string targetStore,
+            CancellationToken cancellationToken = default
+        )
+        {
+            const string sql = @"
+                SELECT
+                    COUNT(*)
+                FROM
+                    IngestionQueue
+                WHERE
+                    Status = 3
+                AND
+                    TargetStore = @TargetStore;
+            ";
+
+            using var connection = _connectionFactory.CreateConnection();
+            return await connection.ExecuteScalarAsync<int>(sql, new
+            {
+                TargetStore = targetStore
+            });
         }
     }
 }

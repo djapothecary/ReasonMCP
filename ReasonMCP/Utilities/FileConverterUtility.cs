@@ -11,28 +11,27 @@ namespace ReasonMCP.Utilities
     public class FileConverterUtility : IFileConverterUtility
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ICodeChunkingProcessor _configChunkingProcessor;
         private readonly IIngestionQueueService _ingestionQueue;
-        private readonly IIngestionQueueUpdaterService _updaterService;
         private readonly StorageConfigSettings _settings;
         private readonly ILogger<FileConverterUtility> _logger;
 
         public FileConverterUtility(
             IServiceScopeFactory scopeFactory,
             IIngestionQueueService ingestionQueue,
-            IIngestionQueueUpdaterService updaterService,
             IOptions<StorageConfigSettings> options,
             ILogger<FileConverterUtility> logger
         )
         {
             _scopeFactory = scopeFactory;
             _ingestionQueue = ingestionQueue;
-            _updaterService = updaterService;
             _settings = options.Value;
             _logger = logger;
         }
 
-        public async Task<bool> ConvertToMarkdown(string filePath)
+        public async Task<bool> ConvertToMarkdown(
+            string filePath,
+            CancellationToken cancellationToken = default
+        )
         {
             var fileName = Path.GetFileName(filePath);
             var fileInfo = new FileInfo(filePath);
@@ -96,9 +95,6 @@ namespace ReasonMCP.Utilities
                 markdownBuilder.AppendLine("\n---\n");
             }
 
-            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
-            var cancellationToken = cts.Token;
-
             try
             {
                 //  null safety
@@ -110,22 +106,36 @@ namespace ReasonMCP.Utilities
                     return false;
                 }
 
-                await File.WriteAllTextAsync(convertedOutputPath, markdownBuilder.ToString());
+                await File.WriteAllTextAsync(
+                    convertedOutputPath,
+                    markdownBuilder.ToString(),
+                    cancellationToken
+                );
 
-                await _updaterService.MarkConversionStatus(filePath, true, cancellationToken);
+                await _ingestionQueue.MarkConversionCompleteAsync(
+                    filePath,
+                    cancellationToken
+                );
 
                 return true;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[FILE_CONVERSION_ERROR].  An error occured converting {fileName} to Markdown.", fileName);
-                await _ingestionQueue.MarkFailedExceptionAsync(filePath, ex.Message, cancellationToken);
+                await _ingestionQueue.MarkFailedExceptionAsync(
+                    filePath,
+                    ex.Message,
+                    cancellationToken
+                );
 
                 return false;
             }
         }
 
-        public async Task<bool> ChunkExistingMarkdown(string filePath)
+        public async Task<bool> ChunkExistingMarkdown(
+            string filePath,
+            CancellationToken cancellationToken = default
+        )
         {
             var fileName = Path.GetFileName(filePath);
             var fileInfo = new FileInfo(filePath);
@@ -189,23 +199,30 @@ namespace ReasonMCP.Utilities
                 markdownBuilder.AppendLine("\n---\n");
             }
 
-            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
-            var cancellationToken = cts.Token;
-
             try
             {
                 //  null safety
                 if (!File.Exists(filePath))
                 {
                     _logger.LogError("[FILE_CONVERSION_ERROR].  Path not found {fileName}.", fileName);
-                    await _ingestionQueue.MarkConversionFailedAsync(filePath, "[FILE_CONVERSION_ERROR].  Path not found", cancellationToken);
+                    await _ingestionQueue.MarkConversionFailedAsync(
+                        filePath,
+                        "[FILE_CONVERSION_ERROR].  Path not found",
+                        cancellationToken
+                    );
 
                     return false;
                 }
 
-                await File.WriteAllTextAsync(convertedOutputPath, markdownBuilder.ToString());
+                await File.WriteAllTextAsync(
+                    convertedOutputPath,
+                    markdownBuilder.ToString()
+                );
 
-                await _updaterService.MarkConversionStatus(filePath, true, cancellationToken);
+                await _ingestionQueue.MarkConversionCompleteAsync(
+                    filePath,
+                    cancellationToken
+                );
 
                 //  Clear the "temp" file
                 await ClearOriginalFile(filePath);
@@ -215,7 +232,11 @@ namespace ReasonMCP.Utilities
             catch (Exception ex)
             {
                 _logger.LogError(ex, "[FILE_CONVERSION_ERROR].  An error occured converting {fileName} to Markdown.", fileName);
-                await _ingestionQueue.MarkFailedExceptionAsync(filePath, ex.Message, cancellationToken);
+                await _ingestionQueue.MarkFailedExceptionAsync(
+                    filePath,
+                    ex.Message,
+                    cancellationToken
+                );
 
                 return false;
             }

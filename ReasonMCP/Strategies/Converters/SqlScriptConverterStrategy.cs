@@ -3,9 +3,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReasonMCP.Configurations;
 using ReasonMCP.Interfaces;
-using ReasonMCP.Orchestration;
 using ReasonMCP.Processors;
 using ReasonMCP.Records;
+using ReasonMCP.Services.Enrichment;
 
 namespace ReasonMCP.Strategies.Converters
 {
@@ -43,17 +43,27 @@ namespace ReasonMCP.Strategies.Converters
             return _supportedExtensions.Contains(fileExtension, StringComparer.OrdinalIgnoreCase);
         }
 
-        public async Task<bool> ConvertForIngestionAsync(string filePath)
+        public async Task<bool> ConvertForIngestionAsync(
+            string filePath,
+            CancellationToken cancellationToken = default)
         {
             var scope = _scopeFactory.CreateScope();
-            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
-            var cancellationToken = cts.Token;
 
             IEnumerable<CodeChunk> chunks = [];
-            chunks = await _sqlScriptChunkProcessor.ChunkFileAsync(filePath, cancellationToken);
+            chunks = await _sqlScriptChunkProcessor.ChunkFileAsync(
+                filePath,
+                cancellationToken
+            );
 
-            var codebaseUpsertOrchestratior = scope.ServiceProvider.GetRequiredService<CodebaseRecordUpsertOrchestrator>();
-            return await codebaseUpsertOrchestratior.CodebaseChunkUpsertAsync(chunks, cancellationToken);
+            var codebaseRecordIngestService = scope
+                .ServiceProvider
+                .GetRequiredService<CodebaseRecordIngestService>();
+
+            return await codebaseRecordIngestService
+                .CodebaseChunkUpsertAsync(
+                    chunks,
+                    cancellationToken
+            );
         }
     }
 }

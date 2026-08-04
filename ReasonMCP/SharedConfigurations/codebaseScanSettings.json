@@ -1,0 +1,103 @@
+{
+    "CodebaseScanSettings": {
+        "Enabled": true,
+        "RunFileScan": true,
+        "ProcessFiles": true,
+        "GenerateEmbeddings": true,
+        "RootDirectories": [
+            "C:\\Source\\ReasonData\\DotNetDocs",
+            "C:\\Source\\ReasonMCP",
+            "C:\\Source\\ProjectYuki"
+        ],
+        "SubDirectories": [
+            "\\dotnet.aspnetcore",
+            "\\dotnet.core",
+            "\\dotnet.csharplang",
+            "\\dotnet.docs-aspire",
+            "\\dotnet.dotnet-api-docs",
+            "\\dotnet.efcore",
+            "\\dotnet.roslyn",
+            "\\dotnet.runtime",
+            "\\dotnet.sdk",
+            "\\dotnet.vscode-csharp",
+            "\\dotnet.winforms"
+        ],
+        "ExcludedDirectories": [
+            "\\bin",
+            "\\obj",
+            "\\Debug",
+            "\\Release",
+            "\\.aspire",
+            "\\.vs",
+            "\\.vscode",
+            "\\.continue",
+            "\\.mcp",
+            "\\ProjRefFiles",
+            "\\mcp-dist",
+            "\\dist",
+            "\\node_modules",
+            "\\.git",
+            "\\.gitHub",
+            "\\packages",
+            "\\TestResults",
+            "\\Markdowns",
+            "\\TrainingTexts",
+            "\\ProcessedWebResults",
+            "\\shared_data",
+            "\\Migrations",
+            "\\ProjectYuki.CyberpunkAnime",
+            "\\FPP16Onnx",
+            "\\TrainigTexts",
+            "\\Markdowns",
+            "\\ProcessedWebResults_archived",
+            "\\Intelligence_Dossier",
+            "\\ProjectYuki.FP16Onnx",
+            "\\ProjectYuki.CyberPunkAnime"
+        ],
+        "ExcludeFilesContaining": [
+            "package-lock.json",
+            "yarn.lock",
+            ".min.js",
+            ".min.css",
+            "swagger.json",
+            "chat_history.json",
+            "normal_convo.json",
+            "nudge_history.json",
+            "rpp_history.json",
+            "visionEnrichment.json"
+        ],
+        "CSharpExtensions": [
+            ".cs"
+        ],
+        "TypeScriptExtensions": [
+            ".js",
+            ".jsx",
+            ".ts",
+            ".tsx"
+        ],
+        "SourceCodeExtensions": [
+            ".cs",
+            ".js",
+            ".jsx",
+            ".ts",
+            ".tsx",
+            ".vb"
+        ],
+        "MarkupExtensions": [
+            ".cshtml",
+            ".razor",
+            ".html",
+            ".css"
+        ],
+        "ConfigExtensions": [
+            ".json",
+            ".xml",
+            ".yaml",
+            ".yml",
+            ".csproj"
+        ],
+        "SqlExtensions": [
+            ".sql"
+        ]
+    }
+}

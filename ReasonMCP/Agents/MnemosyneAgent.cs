@@ -68,7 +68,7 @@ namespace ReasonMCP.Agents
                     FunctionChoiceBehavior = mnemosyneAgent.Permissions.AllowToolCalling
                         ? FunctionChoiceBehavior.Auto()
                         : FunctionChoiceBehavior.None(),
-                    ServiceId = mnemosyneAgent.ExecutionSettings.ServiceId, //  This is "Vicuna" because we want to keep it on the different model
+                    ServiceId = mnemosyneAgent.ExecutionSettings.ServiceId,
                     ExtensionData = new Dictionary<string, object> { { "raw", true } }
                 };
 
@@ -85,6 +85,7 @@ namespace ReasonMCP.Agents
 
                 //  Ensure the prompt is on the new summary
                 summaryHistory.AddUserMessage(payload.Prompt);
+                await WriteSummary(payload, summaryHistory);
             }
             catch (Exception ex)
             {
@@ -100,6 +101,9 @@ namespace ReasonMCP.Agents
         )
         {
             var summaryFilepath = _sessionContextManager.GetSummaryFilePath(payload.AgentId, payload.SessionId);
+
+            //  update with correct history path
+            summaryFilepath = _settings.RootDirectory + _settings.ChatHistoryDirectory + summaryFilepath;
 
             var jsonLine = JsonSerializer.Serialize(summaryHistory, new JsonSerializerOptions
             {

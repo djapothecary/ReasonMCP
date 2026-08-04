@@ -5,8 +5,11 @@ namespace ReasonMCP.Configurations
 {
     public class CodebaseScanSettings
     {
-        public bool Enabled { get; set; }
-        public string RootDirectory { get; set; } = string.Empty;
+        public bool Enabled { get; set; } = false;
+        public bool RunFileScan { get; set; } = false;
+        public bool ProcessFiles { get; set; } = false;
+        public bool GenerateEmbeddings { get; set; } = false;
+        public List<string> RootDirectories { get; set; } = [];
         public List<string> SubDirectories { get; set; } = [];
         public List<string> ExcludedDirectories { get; set; } = [];
         public List<string> ExcludeFilesContaining { get; set; } = [];

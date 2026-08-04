@@ -3,9 +3,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReasonMCP.Configurations;
 using ReasonMCP.Interfaces;
-using ReasonMCP.Orchestration;
 using ReasonMCP.Processors;
 using ReasonMCP.Records;
+using ReasonMCP.Services.Enrichment;
 
 namespace ReasonMCP.Strategies.Converters
 {
@@ -35,11 +35,16 @@ namespace ReasonMCP.Strategies.Converters
         public bool CanConvert(string filePath)
         {
             var fileExtension = Path.GetExtension(filePath);
-            return _settings.SourceCodeExtensions.Contains(fileExtension, StringComparer.OrdinalIgnoreCase);
+            return _settings.SourceCodeExtensions.Contains(
+                fileExtension,
+                StringComparer.OrdinalIgnoreCase
+            );
         }
 
         public async Task<bool> ConvertForIngestionAsync(
-            string filePath)
+            string filePath,
+            CancellationToken cancellationToken = default
+        )
         {
             IEnumerable<CodeChunk> chunks = [];
             var fileExtension = Path.GetExtension(filePath);
@@ -54,11 +59,15 @@ namespace ReasonMCP.Strategies.Converters
                 chunks = await _typeScriptChunkingProcessor.ChunkFileAsync(filePath);
             }
 
-            // Now send chunks off to Embedding
-            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
-            var cancellationToken = cts.Token;
-            var codebaseUpsertOrchestratior = scope.ServiceProvider.GetRequiredService<CodebaseRecordUpsertOrchestrator>();
-            return await codebaseUpsertOrchestratior.CodebaseChunkUpsertAsync(chunks, cancellationToken);
+            var codebaseUpsertOrchestratior = scope
+                .ServiceProvider
+                .GetRequiredService<CodebaseRecordIngestService>();
+
+            return await codebaseUpsertOrchestratior
+                .CodebaseChunkUpsertAsync(
+                    chunks,
+                    cancellationToken
+                );
         }
     }
 }

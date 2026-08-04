@@ -17,8 +17,7 @@ namespace ReasonMCP.Extensions
             this IHostApplicationBuilder builder
         )
         {
-            builder.Services.Configure<DocumentsProcessing>(builder.Configuration.GetSection("DocumentProcessing"));
-            builder.Services.AddSingleton<IDbConnectionFactory, SqliteConnectionFactory>();
+            builder.Services.Configure<DocumentScanSettings>(builder.Configuration.GetSection("DocumentScanSettings"));
             builder.Services.AddTransient<IIngestionQueueService, DapperIngestionQueueService>();
             builder.Services.AddTransient<LoggingDelegatingHandler>();
             builder.Services.AddTransient<DocumentContextSearchTool>();
@@ -26,8 +25,6 @@ namespace ReasonMCP.Extensions
             builder.Services.AddScoped<IFileConverterUtility, FileConverterUtility>();
             builder.Services.AddScoped<IChunkParsingUtility, ChunkParsingUtility>();
             builder.Services.AddScoped<IMetadataEnrichmentUtility, MetadataEnrichmentUtility>();
-            builder.Services.AddScoped<ICodebaseRecordIngestionService, CodebaseRecordIngestionService>();
-            builder.Services.AddScoped<IKnowledgebaseRecordIngestionService, KnowledgebaseRecordIngestionService>();
             builder.Services.AddScoped<DapperIngestionQueueService>();
             builder.Services.AddScoped<SessionContextManager>();
 

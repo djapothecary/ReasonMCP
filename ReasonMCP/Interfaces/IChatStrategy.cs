@@ -15,7 +15,6 @@ namespace ReasonMCP.Interfaces
         Task<List<ChatMessageRecord>> LoadChatHistoryFromFileAsync();
         Task AppendToChathistory(ChatMessageRecord record);
         Task AppendToCurrentContext(ChatMessageRecord record, VSCodeChatPayloadDto payload);
-        Task<ChatHistory> GetSummary(ChatHistory currentContext);
         Task<List<ChatMessageRecord>> RunAgent(
             VSCodeChatPayloadDto payload,
             ChatHistory currentContext,

@@ -32,7 +32,10 @@ namespace ReasonMCP.Strategies.Converters
             return false;
         }
 
-        public async Task<bool> ConvertForIngestionAsync(string filePath)
+        public async Task<bool> ConvertForIngestionAsync(
+            string filePath,
+            CancellationToken cancellationToken = default
+        )
         {
             // MHTML will require additional processing before being sent to mark down
 
@@ -53,7 +56,10 @@ namespace ReasonMCP.Strategies.Converters
 
             File.WriteAllText(tempFilePath, convertedFile);
 
-            return await _fileConverter.ConvertToMarkdown(tempFilePath);
+            return await _fileConverter.ConvertToMarkdown(
+                tempFilePath,
+                cancellationToken
+            );
         }
     }
 }

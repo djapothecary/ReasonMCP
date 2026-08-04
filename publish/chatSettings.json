@@ -1,0 +1,69 @@
+{
+    "ChatSettings": {
+        "RootDirectory": "C:\\Source\\ReasonData",
+        "FileExtension": ".jsonl",
+        "ChatHistoryDirectory": "\\ChatHistory",
+        "ChatSummarizationThreshold": 10,
+        "SummaryDirectoryPath": "\\Summaries",
+        "EnablePromptLogging": true,
+        "PromptLogPath": "\\PromptLogs\\userPrompts",
+        "Agents": {
+            "bella": {
+                "HistoryDirectory": "\\BellaHistory",
+                "HistoryFilename": "\\masterBellaHistory",
+                "CurrentContextFilename": "\\bellaContext",
+                "SummarizationThreshold": 10,
+                "ParticipantId": "bella",
+                "AgentProfilePath": "C:\\Source\\ReasonMCP\\.reason\\agents\\bella.yaml"
+            },
+            "dozer": {
+                "HistoryDirectory": "\\DozerHistory",
+                "HistoryFilename": "\\masterDozerHistory",
+                "CurrentcontextFileName": "\\dozerContext",
+                "SummarizationThreshold": 10,
+                "ParticipantID": "dozer",
+                "AgentProfilePath": "C:\\Source\\ReasonMCP\\.reason\\agents\\dozer.yaml"
+            },
+            "mozzie": {
+                "HistoryDirectory": "\\MozzieHistory",
+                "HistoryFilename": "\\masterMozzieHistory",
+                "CurrentcontextFileName": "\\mozzieContext",
+                "SummarizationThreshold": 10,
+                "ParticipantID": "mozzie",
+                "AgentProfilePath": "C:\\Source\\ReasonMCP\\.reason\\agents\\mozzie.yaml"
+            },
+            "reason": {
+                "HistoryDirectory": "\\ReasonHistory",
+                "HistoryFilename": "\\masterReasonHistory",
+                "CurrentContextFilename": "\\reasonContext",
+                "SummarizationThreshold": 10,
+                "ParticipantId": "reason",
+                "AgentProfilePath": "C:\\Source\\ReasonMCP\\.reason\\agents\\reason.yaml"
+            },
+            "mnemosyne": {
+                "HistoryDirectory": "\\MnemosyneHistory",
+                "HistoryFilename": "\\masterMnemosyneHistory",
+                "CurrentcontextFileName": "\\mnemosyneContext",
+                "SummarizationThreshold": 10,
+                "ParticipantID": "mnemosyne",
+                "AgentProfilePath": "C:\\Source\\ReasonMCP\\.reason\\agents\\mnemosyne.yaml"
+            },
+            "seraph": {
+                "HistoryDirectory": "\\SeraphHistory",
+                "HistoryFilename": "\\masterSeraphHistory",
+                "CurrentcontextFileName": "\\seraphContext",
+                "SummarizationThreshold": 10,
+                "ParticipantID": "seraph",
+                "AgentProfilePath": "C:\\Source\\ReasonMCP\\.reason\\agents\\seraph.yaml"
+            },
+            "tank": {
+                "HistoryDirectory": "\\TankrHistory",
+                "HistoryFilename": "\\masterTankHistory",
+                "CurrentcontextFileName": "\\tankContext",
+                "SummarizationThreshold": 10,
+                "ParticipantID": "tank",
+                "AgentProfilePath": "C:\\Source\\ReasonMCP\\.reason\\agents\\tank.yaml"
+            }
+        }
+    }
+}

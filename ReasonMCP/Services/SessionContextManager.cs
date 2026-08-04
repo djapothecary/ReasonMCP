@@ -12,6 +12,7 @@ namespace ReasonMCP.Services
     {
         private readonly string _rootDirectory;
         private readonly string _historyDirectory;
+        private readonly string _summaryDirectory;
         private readonly string _fileExtension;
         private readonly ILogger<SessionContextManager> _logger;
 
@@ -24,6 +25,7 @@ namespace ReasonMCP.Services
             var settings = options.Value;
             _rootDirectory = settings.RootDirectory;
             _historyDirectory = settings.ChatHistoryDirectory;
+            _summaryDirectory = settings.SummaryDirectoryPath;
             _fileExtension = settings.FileExtension;
             _logger = logger;
         }
@@ -43,7 +45,7 @@ namespace ReasonMCP.Services
         public string GetSummaryFilePath(string agentId, string sessionId)
         {
             string fileName = $"{agentId}_summary_{sessionId}{_fileExtension}";
-            return Path.Combine(_rootDirectory, _historyDirectory, fileName);
+            return Path.Combine(_rootDirectory, _summaryDirectory, fileName);
         }
     }
 }

@@ -36,7 +36,10 @@ namespace ReasonMCP.Strategies.Converters
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        public async Task<bool> ConvertForIngestionAsync(string filePath)
+        public async Task<bool> ConvertForIngestionAsync(
+            string filePath,
+            CancellationToken cancellationToken = default
+        )
         {
             string? convertedPdfFile;
             //  0.  Determine the size of the file
@@ -85,7 +88,10 @@ namespace ReasonMCP.Strategies.Converters
 
             File.WriteAllText(tempFilePath, sanitizedPDF);
 
-            return await _fileConverter.ChunkExistingMarkdown(tempFilePath);
+            return await _fileConverter.ChunkExistingMarkdown(
+                tempFilePath,
+                cancellationToken
+            );
         }
     }
 }

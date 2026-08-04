@@ -1,0 +1,7 @@
+{
+    "TestingSettings": {
+        "Enabled": true,
+        "DebugOutput": true,
+        "EnableEnrichment": true
+    }
+}
