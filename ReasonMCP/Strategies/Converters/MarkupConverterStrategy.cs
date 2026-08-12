@@ -40,12 +40,17 @@ namespace ReasonMCP.Strategies.Converters
 
         public async Task<bool> ConvertForIngestionAsync(
             string filePath,
-            CancellationToken cancellationToken = default)
+            bool writeConvertedOutput,
+            CancellationToken cancellationToken = default
+        )
         {
             var scope = _scopeFactory.CreateScope();
 
             IEnumerable<CodeChunk> chunks = [];
-            chunks = await _markupChunkingProcessor.ChunkFileAsync(filePath, cancellationToken);
+            chunks = await _markupChunkingProcessor.ChunkFileAsync(
+                filePath,
+                cancellationToken
+            );
 
             bool chunkUpsertSuccess = false;
             try

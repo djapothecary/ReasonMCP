@@ -67,60 +67,74 @@ namespace ReasonMCP.Workflows
                     .ServiceProvider
                     .GetRequiredService<ICodebaseProcessor>();
 
-                var strategy = scope
+                var strategies = scope
                     .ServiceProvider
-                    .GetRequiredService<IFileConverterStrategy>();
+                    .GetRequiredService<IEnumerable<IFileConverterStrategy>>();
 
-                int filesConverted = 0;
+                var fileConverter = scope
+                    .ServiceProvider
+                    .GetRequiredService<IFileConverterUtility>();
+
+                int filesprocessed = 0;
                 int filesToProcess = await ingestionQueue.GetCountIngestedRecordsAsync(
                     "Codebase",
                     cancellationToken
                 );
 
-                while (filesConverted < filesToProcess)
-                {
-                    var fileIngestionRecord = await codebaseProcessor
-                                .GetNextCodebaseFileAsync(
-                                cancellationToken
-                            );
+                string filePath = string.Empty;
 
-                    var filePath = fileIngestionRecord.FilePath;
+                while (filesprocessed < filesToProcess)
+                {
 
                     try
                     {
                         //  1.  Get the next file to process by "TargetStore = "Codebase" "
-                        var file = await ingestionQueue.DequeueNextFileAsync(
-                            "Codebase",
-                            cancellationToken
+                        var fileIngestionRecord = await codebaseProcessor
+                                .GetNextCodebaseFileAsync(
+                                cancellationToken
+                            );
+
+                        filePath = fileIngestionRecord.FilePath;
+
+                        //  Determine file type and what processor to use
+                        var strategy = strategies.FirstOrDefault(
+                            s => s.CanConvert(
+                                filePath
+                            )
                         );
 
                         //  preventing end of run exception
-                        if (file == null)
+                        if (filePath == null)
                             return;
 
                         bool convertSuccess;
+                        bool writeConvertedOutput = _settings.WriteConvertedOutput;
 
-                        convertSuccess = await strategy
+                        convertSuccess = await strategy!
                             .ConvertForIngestionAsync(
-                                file.FilePath,
+                                filePath,
+                                writeConvertedOutput,
                                 cancellationToken
                             );
 
                         if (convertSuccess)
                         {
                             await ingestionQueue.MarkConversionCompleteAsync(
-                                file.FilePath,
+                                filePath,
                                 cancellationToken
                             );
                         }
                         else
                         {
                             await ingestionQueue.MarkConversionFailedAsync(
-                                file.FilePath,
+                                filePath,
                                 "Codebase upsert failed",
                                 cancellationToken
                             );
                         }
+
+                        Console.WriteLine(filePath);
+                        filesprocessed++;
                     }
                     catch (Exception whileEx)
                     {

@@ -29,10 +29,14 @@ namespace ReasonMCP.Strategies.Converters
 
         public async Task<bool> ConvertForIngestionAsync(
             string filePath,
+            bool writeConvertedOutput,
             CancellationToken cancellationToken
         )
         {
-            await _ingestionQueue.MarkConversionCompleteAsync(filePath, cancellationToken);
+            await _ingestionQueue.MarkConversionCompleteAsync(
+                filePath,
+                cancellationToken
+            );
 
             // this file is already a markdown file, move straight to chunking/enrichment
             return true;

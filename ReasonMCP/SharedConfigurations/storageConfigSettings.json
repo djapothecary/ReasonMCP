@@ -1,8 +1,17 @@
 {
     "StorageConfigSettings": {
-        "CodebaseRootDirectory": "C:\\Source\\ReasonData",
-        "DocumentsRootDirectory": "C:\\Source\\ReasonData",
-        "ReferenceRootDirectory": "C:\\Source\\ReasonData",
+        "CodebaseRootDirectories": [
+            "C:\\Source\\",
+            "D:\\Remote_Source"
+        ],
+        "DocumentsRootDirectories": [
+            "C:\\Source\\",
+            "D:\\Remote_Source"
+        ],
+        "ReferenceRootDirectories": [
+            "C:\\Source\\",
+            "D:\\Remote_Source"
+        ],
         "CodebaseDbPath": "C:\\Source\\ReasonMCP\\VectorDb\\codebase.db",
         "DocumentsDbPath": "C:\\Source\\ReasonMCP\\VectorDb\\documents.db",
         "IngestionQueueDbPath": "C:\\Source\\ReasonMCP\\VectorDb\\ingestionQueue.db",

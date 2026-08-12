@@ -1,15 +1,30 @@
 {
     "DocumentScanSettings": {
         "Enabled": true,
-        "RunFileScan": true,
+        "RunFileScan": false,
         "ProcessFiles": true,
         "GenerateEmbeddings": true,
+        "WriteConvertedOutput": false,
         "RootDirectories": [
-            "C:\\Source\\ReasonData"
+            "W:\\Remote_Source\\ReasonData",
+            "C:\\Users\\djapo\\OneDrive\\Documents\\Career Improvement"
         ],
         "SubDirectories": [],
         "ExcludedDirectories": [
             "\\DotNetDocs"
+        ],
+        "ExcludeFilesContaining": [
+            "package-lock.json",
+            "yarn.lock",
+            ".min.js",
+            ".min.css",
+            "swagger.json"
+        ],
+        "ReferenceExtensions": [
+            ".html",
+            ".md",
+            ".pdf",
+            ".txt"
         ]
     }
 }

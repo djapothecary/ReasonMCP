@@ -38,6 +38,7 @@ namespace ReasonMCP.Strategies.Converters
         /// <returns></returns>
         public async Task<bool> ConvertForIngestionAsync(
             string filePath,
+            bool writeConvertedOutput,
             CancellationToken cancellationToken = default
         )
         {

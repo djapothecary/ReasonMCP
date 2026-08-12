@@ -145,7 +145,7 @@ namespace ReasonMCP.Services.Enrichment
                 _settings.AllTargetExtensions,
                 StringComparer.OrdinalIgnoreCase);
 
-            // 2. Safely grab your new exclusion list (assuming you named it ExcludedFileNames)
+            // 2. Safely grab the new exclusion list (assuming it is named ExcludedFileNames)
             var excludedNames = _settings.ExcludeFilesContaining ?? new List<string>();
 
             // 3. Chain the filters for maximum readability and single-pass execution

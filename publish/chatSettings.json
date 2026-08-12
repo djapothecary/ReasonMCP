@@ -1,6 +1,6 @@
 {
     "ChatSettings": {
-        "RootDirectory": "C:\\Source\\ReasonData",
+        "RootDirectory": "D:\\Remote_Source\\ReasonData",
         "FileExtension": ".jsonl",
         "ChatHistoryDirectory": "\\ChatHistory",
         "ChatSummarizationThreshold": 10,

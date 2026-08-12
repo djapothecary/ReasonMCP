@@ -35,7 +35,7 @@ namespace ReasonMCP.Services
         /// </summary>
         public string GetCurrentContextFilePath(string agentId, string sessionId)
         {
-            // Builds: "C:\ReasonData\History\bella_context_a1b2c3d4.jsonl"
+            // Builds: "D:\Remote_Source\ReasonData\History\bella_context_a1b2c3d4.jsonl"
             // Note: Use Path.Combine in production so you don't worry about missing slashes!
             string fileName = $"{agentId}_context_{sessionId}{_fileExtension}";
             // return Path.Combine(_rootDirectory, _historyDirectory, fileName);

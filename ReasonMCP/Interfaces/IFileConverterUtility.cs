@@ -4,6 +4,7 @@ namespace ReasonMCP.Interfaces
     {
         Task<bool> ConvertToMarkdown(
             string filePath,
+            bool writeConvertedOutput,
             CancellationToken cancellationToken
         );
 

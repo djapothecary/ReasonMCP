@@ -5,25 +5,26 @@ using ReasonMCP.Configurations;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Interfaces.IEnrichment;
 using ReasonMCP.Models;
+using Spectre.Console;
 
 namespace ReasonMCP.Processors
 {
-    public class ReferenceDataProcessor : IReferenceDataProcessor
+    public class DocumentsProcessor : IDocumentsProcessor
     {
         private readonly IChunkParsingUtility _chunkParser;
         private readonly IIngestionQueueService _ingestionQueue;
         private readonly IIngestEnrichedRecordsService _ingestService;
         private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
         private readonly IOptions<StorageConfigSettings> _settings;
-        private readonly ILogger<ReferenceDataProcessor> _logger;
+        private readonly ILogger<DocumentsProcessor> _logger;
 
-        public ReferenceDataProcessor(
+        public DocumentsProcessor(
             IChunkParsingUtility chunkParser,
             IIngestionQueueService ingestionQueue,
             IIngestEnrichedRecordsService ingestService,
             IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
             IOptions<StorageConfigSettings> options,
-            ILogger<ReferenceDataProcessor> logger
+            ILogger<DocumentsProcessor> logger
         )
         {
             _chunkParser = chunkParser;
@@ -35,17 +36,17 @@ namespace ReasonMCP.Processors
         }
 
         /// <summary>
-        /// Dequeue the next Reference Data record from
+        /// Dequeue the next Documents Data record from
         /// IngestionQueue
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<FileIngestionRecord> GetNextReferenceFileAsync(
+        public async Task<FileIngestionRecord> GetNextDocumentFileAsync(
             CancellationToken cancellationToken
         )
         {
             var file = await _ingestionQueue.DequeueNextFileAsync(
-                "Reference",
+                "Documents",
                 cancellationToken
             );
 
@@ -59,7 +60,7 @@ namespace ReasonMCP.Processors
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        public async Task<bool> IngestReferenceFileRecordAsync(
+        public async Task<bool> IngestDocumentRecordAsync(
             string filePath,
             CancellationToken cancellationToken = default
         )
@@ -67,26 +68,27 @@ namespace ReasonMCP.Processors
             if (filePath == null)
                 return false;
 
-            var convertedMarkdownPath = await ConvertToMarkdownPathAsync(filePath);
-            var recordsToLoad = new List<ReferenceVectorModel>();
+            //  TODO:   Refactor:   This could proably stand to be moved to it's own class
+            var convertedToMarkdownPath = await ConvertToMarkdownPathAsync(filePath);
+            var recorrdsToload = new List<DocumentVectorModel>();
 
-            //  record Upsert Success status.  If there was a failure
-            //  original markdowns will not be moved
+            //  document Upsert Success status.  If there was a failure
+            //  the original markdowns will not be moved
             bool upsertSuccess = false;
 
-            //  2.  Send file off to upsert
+            //  #.  Send file off for conversion
             _logger.LogTrace("Converting file for Vector database ...");
 
-            recordsToLoad.AddRange(
-                await _chunkParser.ParseEnrichedReferenceMarkdownAsync(
-                    convertedMarkdownPath,
+            recorrdsToload.AddRange(
+                await _chunkParser.ParseEnrichedDocumentMarkdownAsync(
+                    convertedToMarkdownPath,
                     cancellationToken
                 )
             );
 
             _logger.LogTrace("List of records to upsert built successfully.");
 
-            foreach (var record in recordsToLoad)
+            foreach (var record in recorrdsToload)
             {
                 _logger.LogTrace("Upserting record to vector store");
 
@@ -94,7 +96,8 @@ namespace ReasonMCP.Processors
                     continue;
 
                 var generatedEmbeddings = await _embeddingGenerator.GenerateAsync(
-                    new[] {
+                    new[]
+                    {
                         record.Text
                     },
                     cancellationToken: cancellationToken
@@ -102,91 +105,28 @@ namespace ReasonMCP.Processors
 
                 record.Vector = generatedEmbeddings.First().Vector;
 
-                upsertSuccess = await _ingestService.IngestEnrichedReferenceRecordAsync(
+                upsertSuccess = await _ingestService.IngestEnrichedDocumentRecordAsync(
                     record,
                     cancellationToken
                 );
 
                 int chunkCount = 1;
-                Console.WriteLine($"Successfully upserted {filePath}  Chunk Count: {chunkCount}", filePath, chunkCount);
+                AnsiConsole.WriteLine($"Successfully upserted {filePath} Chunk count: {chunkCount}", filePath, chunkCount);
                 chunkCount++;
 
                 _logger.LogTrace("Record successfully upserted");
             }
 
-            //  Update ingestion status
-
+            //  TODO:   Refactor:   This could proably stand to be moved to it's own class
             if (upsertSuccess)
                 await MoveMarkdownsToProcessedAsync();
 
             return upsertSuccess;
         }
 
-        /// <summary>
-        /// Gets the file(s) from the directory path (filePath)
-        /// and selects individual files for upsert
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
-        public async Task GetFileForUpsertAsync(
-            string filePath,
-            CancellationToken cancellationToken = default
-        )
-        {
-            //  1.  Get all the files in the directory
-            string[] files = Directory.GetFiles(filePath);
-            var recordsToLoad = new List<ReferenceVectorModel>();
-
-            //  record Upsert Success status.  If there was a failure
-            //  original markdowns will not be moved
-            bool upsertSuccess = false;
-
-            //  2.  Send files off to upsert
-            foreach (var file in files)
-            {
-                _logger.LogTrace("Converting file for Vector database ...");
-
-                recordsToLoad.AddRange(
-                    await _chunkParser.ParseEnrichedReferenceMarkdownAsync(
-                        file,
-                        cancellationToken
-                    )
-                );
-
-                _logger.LogTrace("List of records to upsert built successfully.");
-            }
-
-            foreach (var record in recordsToLoad)
-            {
-                _logger.LogTrace($"Upserting record to vector store");
-
-                if (string.IsNullOrWhiteSpace(record.Text))
-                    continue;
-
-                var generatedEmbeddings = await _embeddingGenerator.GenerateAsync(
-                    new[] { record.Text },
-                    cancellationToken: cancellationToken
-                );
-
-                record.Vector = generatedEmbeddings.First().Vector;
-
-                upsertSuccess = await _ingestService.IngestEnrichedReferenceRecordAsync(
-                    record,
-                    cancellationToken
-                );
-
-                _logger.LogTrace("Record successfully upserted");
-
-                Console.WriteLine($"Successfully upserted {record}", record);
-            }
-
-            if (upsertSuccess)
-                await MoveMarkdownsToProcessedAsync();
-        }
-
         public async Task MoveMarkdownsToProcessedAsync()
         {
-            var baseDirectories = _settings.Value.ReferenceBaseRootDirectories;
+            var baseDirectories = _settings.Value.DocumentsBaseRootDirectories;
 
             foreach (var directory in baseDirectories)
             {

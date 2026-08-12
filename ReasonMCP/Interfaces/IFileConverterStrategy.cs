@@ -5,6 +5,7 @@ namespace ReasonMCP.Interfaces
         bool CanConvert(string filePath);
         Task<bool> ConvertForIngestionAsync(
             string filePath,
+            bool writeConvertedOutput,
             CancellationToken cancellationToken
             );
     }

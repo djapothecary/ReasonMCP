@@ -39,7 +39,11 @@ namespace ReasonMCP.Services.Enrichment
                 await _codebaseCollection.EnsureCollectionExistsAsync(cancellationToken);
 
                 //  2.  Upsert the record. If it fails, it throws an exception.
-                await _codebaseCollection.UpsertAsync(record, cancellationToken: cancellationToken);
+                await _codebaseCollection.UpsertAsync(
+                    record,
+                    cancellationToken: cancellationToken
+                );
+
                 return true;
             }
             catch (VectorStoreException vEx)

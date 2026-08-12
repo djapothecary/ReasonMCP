@@ -30,6 +30,7 @@ namespace ReasonMCP.Utilities
 
         public async Task<bool> ConvertToMarkdown(
             string filePath,
+            bool writeConvertedOutput,
             CancellationToken cancellationToken = default
         )
         {
@@ -106,11 +107,17 @@ namespace ReasonMCP.Utilities
                     return false;
                 }
 
-                await File.WriteAllTextAsync(
-                    convertedOutputPath,
-                    markdownBuilder.ToString(),
-                    cancellationToken
-                );
+                if (writeConvertedOutput)
+                {
+                    Directory.CreateDirectory(convertedOutputPath);
+
+                    await File.WriteAllTextAsync(
+                        convertedOutputPath,
+                        markdownBuilder.ToString(),
+                        cancellationToken
+                    );
+                }
+
 
                 await _ingestionQueue.MarkConversionCompleteAsync(
                     filePath,

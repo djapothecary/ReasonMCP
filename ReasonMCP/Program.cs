@@ -2,20 +2,14 @@ using System.Data;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.Ollama;
 using ReasonMCP.Configurations;
 using ReasonMCP.Data;
 using ReasonMCP.Endpoints;
 using ReasonMCP.Extensions;
-using ReasonMCP.Filters;
-using ReasonMCP.Models;
 using ReasonMCP.Tools;
 using ReasonMCP.Workers;
 
@@ -30,7 +24,6 @@ builder.Configuration.SetBasePath(@"C:\Source\ReasonMCP\ReasonMCP\SharedConfigur
     .AddJsonFile("codebaseScanSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("documentScanSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("gatewaySettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile("knowledgebaseScanSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("referenceScanSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("storageConfigSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("testingSettings.json", optional: false, reloadOnChange: true)
@@ -69,9 +62,9 @@ builder.Logging.AddConsole();
 //  Add DB Factories and Initializers
 builder.AddDbInitializers();
 builder.AddDbFactories();
-builder.AddCodebaseVectorStore();
 builder.AddDocumentsVectorStore();
 builder.AddReferenceVectorStore();
+builder.AddCodebaseVectorStore();
 
 //  Add services from extensions
 builder.AddReasonOllamaService();

@@ -2,9 +2,9 @@ namespace ReasonMCP.Configurations
 {
     public class StorageConfigSettings
     {
-        public string CodebaseRootDirectory { get; set; } = string.Empty;
-        public string DocumentsBaseRootDirectory { get; set; } = string.Empty;
-        public string ReferenceBaseRootDirectory { get; set; } = string.Empty;
+        public List<string> CodebaseRootDirectories { get; set; } = [];
+        public List<string> DocumentsBaseRootDirectories { get; set; } = [];
+        public List<string> ReferenceBaseRootDirectories { get; set; } = [];
         public string CodebaseDbPath { get; set; } = string.Empty;
         public string DocumentsDbPath { get; set; } = string.Empty;
         public string IngestionQueueDbPath { get; set; } = string.Empty;

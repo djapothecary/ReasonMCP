@@ -1,11 +1,13 @@
 {
     "ReferenceScanSettings": {
         "Enabled": true,
-        "RunFilScan": true,
+        "RunFilScan": false,
         "ProcessFiles": true,
         "GenerateEmbeddings": true,
+        "WriteConvertedOutput": true,
         "RootDirectories": [
-            "C:\\Source"
+            "C:\\Source",
+            "W:\\Remote_Source"
         ],
         "SubDirectories": [
             "\\GeminiConsolidation",

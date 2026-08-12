@@ -74,13 +74,13 @@ namespace ReasonMCP.Workflows
                     .ServiceProvider
                     .GetRequiredService<IFileConverterUtility>();
 
-                int filesConverted = 0;
+                int filesprocessed = 0;
                 int filesToProcess = await ingestionQueue.GetCountIngestedRecordsAsync(
                     "Reference",
                     cancellationToken
                 );
 
-                while (filesConverted < filesToProcess)
+                while (filesprocessed < filesToProcess)
                 {
                     var fileIngestionRecord = await refDataProcessor
                                 .GetNextReferenceFileAsync(
@@ -96,16 +96,18 @@ namespace ReasonMCP.Workflows
                         //  Determine file type and what processor to use
                         var strategy = strategies.FirstOrDefault(
                             s => s.CanConvert(
-                                fileIngestionRecord.FilePath
+                                filePath
                             )
                         );
 
                         bool convertSuccess;
+                        bool writeConvertedOutput = _settings.WriteConvertedOutput;
 
                         //  perform enrichment
                         convertSuccess = await strategy!
                             .ConvertForIngestionAsync(
                                 filePath,
+                                writeConvertedOutput,
                                 cancellationToken
                             );
 
@@ -132,7 +134,8 @@ namespace ReasonMCP.Workflows
                             await fileConverter.ClearOriginalFile(filePath);
                         }
 
-                        filesConverted++;
+                        Console.WriteLine(filePath);
+                        filesprocessed++;
                     }
                     catch (Exception whileEx)
                     {

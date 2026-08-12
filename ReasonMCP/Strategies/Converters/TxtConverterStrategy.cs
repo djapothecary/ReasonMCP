@@ -23,12 +23,14 @@ namespace ReasonMCP.Strategies.Converters
 
         public async Task<bool> ConvertForIngestionAsync(
             string filePath,
+            bool writeConvertedOutput,
             CancellationToken cancellationToken = default
         )
         {
             // no additional processing required, go straight to conversion
             return await _fileConverter.ConvertToMarkdown(
                 filePath,
+                writeConvertedOutput,
                 cancellationToken
             );
         }

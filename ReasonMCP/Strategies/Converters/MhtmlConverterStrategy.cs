@@ -34,6 +34,7 @@ namespace ReasonMCP.Strategies.Converters
 
         public async Task<bool> ConvertForIngestionAsync(
             string filePath,
+            bool writeConvertedOutput,
             CancellationToken cancellationToken = default
         )
         {
@@ -58,6 +59,7 @@ namespace ReasonMCP.Strategies.Converters
 
             return await _fileConverter.ConvertToMarkdown(
                 tempFilePath,
+                writeConvertedOutput,
                 cancellationToken
             );
         }

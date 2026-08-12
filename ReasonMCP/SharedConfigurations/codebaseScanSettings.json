@@ -1,27 +1,22 @@
 {
     "CodebaseScanSettings": {
         "Enabled": true,
-        "RunFileScan": true,
+        "RunFileScan": false,
         "ProcessFiles": true,
         "GenerateEmbeddings": true,
+        "WriteConvertedOutput": false,
         "RootDirectories": [
-            "C:\\Source\\ReasonData\\DotNetDocs",
+            "W:\\Remote_Source\\ReasonData",
+            "C:\\Source\\Apoth Toxikk Neon Theme",
+            "C:\\Source\\Apoth Toxikk Neon Theme Converter",
+            "C:\\Source\\ApothToxikkThemeVsix",
             "C:\\Source\\ReasonMCP",
-            "C:\\Source\\ProjectYuki"
+            "C:\\Source\\Refinery",
+            "C:\\Source\\PawsPals",
+            "C:\\Source\\ProjectYuki",
+            "C:\\Source\\SwarmUI"
         ],
-        "SubDirectories": [
-            "\\dotnet.aspnetcore",
-            "\\dotnet.core",
-            "\\dotnet.csharplang",
-            "\\dotnet.docs-aspire",
-            "\\dotnet.dotnet-api-docs",
-            "\\dotnet.efcore",
-            "\\dotnet.roslyn",
-            "\\dotnet.runtime",
-            "\\dotnet.sdk",
-            "\\dotnet.vscode-csharp",
-            "\\dotnet.winforms"
-        ],
+        "SubDirectories": [],
         "ExcludedDirectories": [
             "\\bin",
             "\\obj",
@@ -52,7 +47,8 @@
             "\\ProcessedWebResults_archived",
             "\\Intelligence_Dossier",
             "\\ProjectYuki.FP16Onnx",
-            "\\ProjectYuki.CyberPunkAnime"
+            "\\ProjectYuki.CyberPunkAnime",
+            "\\SwarmUI\\Output"
         ],
         "ExcludeFilesContaining": [
             "package-lock.json",
