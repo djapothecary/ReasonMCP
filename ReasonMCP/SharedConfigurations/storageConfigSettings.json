@@ -2,15 +2,15 @@
     "StorageConfigSettings": {
         "CodebaseRootDirectories": [
             "C:\\Source\\",
-            "D:\\Remote_Source"
+            "W:\\Remote_Source"
         ],
         "DocumentsRootDirectories": [
             "C:\\Source\\",
-            "D:\\Remote_Source"
+            "W:\\Remote_Source"
         ],
         "ReferenceRootDirectories": [
             "C:\\Source\\",
-            "D:\\Remote_Source"
+            "W:\\Remote_Source"
         ],
         "CodebaseDbPath": "C:\\Source\\ReasonMCP\\VectorDb\\codebase.db",
         "DocumentsDbPath": "C:\\Source\\ReasonMCP\\VectorDb\\documents.db",

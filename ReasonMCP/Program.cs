@@ -106,7 +106,9 @@ builder.Services
     .AddMcpServer()
     .WithHttpTransport()
     .WithTools<RandomNumberTools>()
-    .WithTools<DocumentContextSearchTool>();
+    .WithTools<CodebaseContextSearchTool>()
+    .WithTools<DocumentContextSearchTool>()
+    .WithTools<ReferenceContextSearchTool>();
 
 builder.Services.AddKernel();
 

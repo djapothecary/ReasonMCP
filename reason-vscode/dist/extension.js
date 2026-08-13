@@ -300,7 +300,7 @@ function registerBellaParticipant(context) {
                 body: JSON.stringify({
                     sessionId: activeSessionId,
                     agentId: 'bella',
-                    role: 'user', // this will alswys be the user sending a prompt to the API
+                    role: 'user', // this will always be the user sending a prompt to the API
                     prompt: request.prompt,
                     history: historyPayload,
                     attachments: attachedFiles

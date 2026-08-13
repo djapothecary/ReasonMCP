@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Interfaces.IEnrichment;
 using ReasonMCP.Processors;
+using ReasonMCP.Services;
 using ReasonMCP.Services.Enrichment;
 using ReasonMCP.Workflows;
 
@@ -33,6 +34,7 @@ namespace ReasonMCP.Extensions
             builder.Services.AddScoped<IIngestEnrichedRecordsService, IngestEnrichedRecordsService>();
             builder.Services.AddScoped<IReferenceDataScanService, ReferenceDataScanService>();
             builder.Services.AddScoped<IReferenceDataProcessor, ReferenceDataProcessor>();
+            builder.Services.AddScoped<IVectorSearchResultService, VectorSearchResultServices>();
 
             return builder;
         }

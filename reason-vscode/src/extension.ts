@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { spawn, ChildProcess } from 'child_process';
 import { registerReasonParticipant } from './participants/reason';
 import { registerBellaParticipant } from './participants/bella';
+import { registerMozzieParticipant } from './participants/mozzie';
 
 let backendProcess: ChildProcess | null = null;
 

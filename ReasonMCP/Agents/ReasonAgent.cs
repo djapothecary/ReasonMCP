@@ -60,11 +60,22 @@ namespace ReasonMCP.Agents
             try
             {
                 //  1.  Get available tools
-                var documentSearchtool = _serviceProvider.GetRequiredService<DocumentContextSearchTool>();
-                var randomNumberTool = _serviceProvider.GetRequiredService<RandomNumberTools>();
+                var codebaseSearchTool = _serviceProvider
+                    .GetRequiredService<CodebaseContextSearchTool>();
+
+                var documentSearchTool = _serviceProvider
+                    .GetRequiredService<DocumentContextSearchTool>();
+
+                var referenceSearchTool = _serviceProvider
+                    .GetRequiredService<ReferenceContextSearchTool>();
+
+                var randomNumberTool = _serviceProvider
+                .GetRequiredService<RandomNumberTools>();
 
                 //  2.  Inject tools into the kernel
-                _kernel.Plugins.AddFromObject(documentSearchtool, "DocumentSearch");
+                _kernel.Plugins.AddFromObject(codebaseSearchTool, "CodebaseSearch");
+                _kernel.Plugins.AddFromObject(documentSearchTool, "DocumentSearch");
+                _kernel.Plugins.AddFromObject(referenceSearchTool, "ReferenceSerach");
                 _kernel.Plugins.AddFromObject(randomNumberTool, "RandomNumbers");
 
                 currentContext.AddUserMessage(prompt);

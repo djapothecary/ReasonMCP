@@ -78,8 +78,10 @@ namespace ReasonMCP.Extensions
         public static IHostApplicationBuilder AddAIPluginsAndTools(
             this IHostApplicationBuilder builder)
         {
+            builder.Services.AddSingleton<CodebaseContextSearchTool>();
             builder.Services.AddSingleton<DocumentContextSearchTool>();
             builder.Services.AddSingleton<RandomNumberTools>();
+            builder.Services.AddSingleton<ReferenceContextSearchTool>();
 
             return builder;
         }
