@@ -22,12 +22,12 @@ namespace ReasonMCP.Orchestration
         public GradingOrchestrator
         (
             SeraphAgent seraphAgent,
-            IOptions<ChatSettings> options,
+            IOptionsMonitor<ChatSettings> options,
             ILogger<GradingOrchestrator> logger
         )
         {
             _seraphAgent = seraphAgent;
-            _settings = options.Value;
+            _settings = options.CurrentValue;
             _logger = logger;
         }
 

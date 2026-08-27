@@ -18,11 +18,11 @@ namespace ReasonMCP.Services
 
         public SessionContextManager
         (
-            IOptions<ChatSettings> options,
+            IOptionsMonitor<ChatSettings> options,
             ILogger<SessionContextManager> logger
         )
         {
-            var settings = options.Value;
+            var settings = options.CurrentValue;
             _rootDirectory = settings.RootDirectory;
             _historyDirectory = settings.ChatHistoryDirectory;
             _summaryDirectory = settings.SummaryDirectoryPath;

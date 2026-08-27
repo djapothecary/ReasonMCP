@@ -27,13 +27,13 @@ namespace ReasonMCP.Strategies.Converters
         public SqlScriptConverterStrategy(
             IServiceScopeFactory scopeFactory,
             SqlScriptChunkingProcessor sqlScriptChunkProcessor,
-            IOptions<CodebaseScanSettings> options,
+            IOptionsMonitor<CodebaseScanSettings> options,
             ILogger<SqlScriptConverterStrategy> logger
         )
         {
             _scopeFactory = scopeFactory;
             _sqlScriptChunkProcessor = sqlScriptChunkProcessor;
-            _settings = options.Value;
+            _settings = options.CurrentValue;
             _logger = logger;
         }
 
@@ -49,7 +49,7 @@ namespace ReasonMCP.Strategies.Converters
             CancellationToken cancellationToken = default
         )
         {
-            var scope = _scopeFactory.CreateScope();
+            using var scope = _scopeFactory.CreateScope();
 
             IEnumerable<CodeChunk> chunks = [];
             chunks = await _sqlScriptChunkProcessor.ChunkFileAsync(
@@ -59,7 +59,7 @@ namespace ReasonMCP.Strategies.Converters
 
             var codebaseRecordIngestService = scope
                 .ServiceProvider
-                .GetRequiredService<CodebaseRecordIngestService>();
+                .GetRequiredService<ICodebaseRecordIngestionService>();
 
             return await codebaseRecordIngestService
                 .CodebaseChunkUpsertAsync(

@@ -16,14 +16,14 @@ namespace ReasonMCP.Workflows
 
         public CodebaseWorkflow(
             IServiceScopeFactory scopeFactory,
-            IOptions<CodebaseScanSettings> options,
-            IOptions<StorageConfigSettings> storageOptions,
+            IOptionsMonitor<CodebaseScanSettings> options,
+            IOptionsMonitor<StorageConfigSettings> storageOptions,
             ILogger<CodebaseWorkflow> logger
         )
         {
             _scopeFactory = scopeFactory;
-            _settings = options.Value;
-            _storageSettings = storageOptions.Value;
+            _settings = options.CurrentValue;
+            _storageSettings = storageOptions.CurrentValue;
             _logger = logger;
         }
 
@@ -38,7 +38,7 @@ namespace ReasonMCP.Workflows
             //  this will also perform upsert to ingestion queue
             if (_settings.RunFileScan)
             {
-                var scope = _scopeFactory.CreateScope();
+                using var scope = _scopeFactory.CreateScope();
                 var codebaseScanService = scope
                     .ServiceProvider
                     .GetRequiredService<ICodebaseScanService>();
@@ -48,10 +48,6 @@ namespace ReasonMCP.Workflows
                 await codebaseScanService.ScanCodebaseAsync(
                     cancellationToken
                 );
-
-                //  intentionally Disposing and creating scope
-                //  so that scope is managed in configurable blocks
-                scope.Dispose();
             }
 
             //  2.  Dequeue nextt record
@@ -150,8 +146,6 @@ namespace ReasonMCP.Workflows
                         );
                     }
                 }
-
-
             }
         }
     }

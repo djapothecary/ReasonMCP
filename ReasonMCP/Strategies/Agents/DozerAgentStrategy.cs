@@ -39,7 +39,7 @@ namespace ReasonMCP.Strategies.Agents
             DozerAgent dozerAgent,
             IAgentProfileService agentProfileService,
             SessionContextManager sessionContextManager,
-            IOptions<ChatSettings> options,
+            IOptionsMonitor<ChatSettings> options,
             ILogger<DozerAgentStrategy> logger
         )
         {
@@ -47,7 +47,7 @@ namespace ReasonMCP.Strategies.Agents
             _currentContextSummarizer = currentContextSummarizer;
             _dozerAgent = dozerAgent;
             _agentProfileService = agentProfileService;
-            _settings = options.Value;
+            _settings = options.CurrentValue;
             _logger = logger;
 
             //  Setup files

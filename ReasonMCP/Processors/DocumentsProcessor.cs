@@ -15,7 +15,7 @@ namespace ReasonMCP.Processors
         private readonly IIngestionQueueService _ingestionQueue;
         private readonly IIngestEnrichedRecordsService _ingestService;
         private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
-        private readonly IOptions<StorageConfigSettings> _settings;
+        private readonly IOptionsMonitor<StorageConfigSettings> _settings;
         private readonly ILogger<DocumentsProcessor> _logger;
 
         public DocumentsProcessor(
@@ -23,7 +23,7 @@ namespace ReasonMCP.Processors
             IIngestionQueueService ingestionQueue,
             IIngestEnrichedRecordsService ingestService,
             IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
-            IOptions<StorageConfigSettings> options,
+            IOptionsMonitor<StorageConfigSettings> options,
             ILogger<DocumentsProcessor> logger
         )
         {
@@ -126,7 +126,7 @@ namespace ReasonMCP.Processors
 
         public async Task MoveMarkdownsToProcessedAsync()
         {
-            var baseDirectories = _settings.Value.DocumentsBaseRootDirectories;
+            var baseDirectories = _settings.CurrentValue.DocumentsBaseRootDirectories;
 
             foreach (var directory in baseDirectories)
             {

@@ -14,7 +14,7 @@ namespace ReasonMCP.Processors
         private readonly IIngestionQueueService _ingestionQueue;
         private readonly IIngestEnrichedRecordsService _ingestService;
         private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
-        private readonly IOptions<StorageConfigSettings> _options;
+        private readonly IOptionsMonitor<StorageConfigSettings> _options;
         private readonly ILogger<CodebaseProcessor> _logger;
 
         public CodebaseProcessor(
@@ -22,7 +22,7 @@ namespace ReasonMCP.Processors
             IIngestionQueueService ingestionQueue,
             IIngestEnrichedRecordsService ingestService,
             IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
-            IOptions<StorageConfigSettings> options,
+            IOptionsMonitor<StorageConfigSettings> options,
             ILogger<CodebaseProcessor> logger
         )
         {

@@ -15,12 +15,12 @@ namespace ReasonMCP.Workers
 
         public EnrichmentWorker(
             IServiceScopeFactory scopeFactory,
-            IOptions<TestingSettings> options,
+            IOptionsMonitor<TestingSettings> options,
             ILogger<EnrichmentWorker> logger
         )
         {
             _scopeFactory = scopeFactory;
-            _settings = options.Value;
+            _settings = options.CurrentValue;
             _logger = logger;
         }
 

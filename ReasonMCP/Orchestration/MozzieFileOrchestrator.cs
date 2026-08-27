@@ -24,14 +24,14 @@ namespace ReasonMCP.Orchestration
             IEnumerable<IChatStrategy> chatStrategies,
             IServiceScopeFactory scopeFactory,
             IChatHistoryService chatHistoryService,
-            IOptions<StorageConfigSettings> storageSettings,
+            IOptionsMonitor<StorageConfigSettings> storageSettings,
             ILogger<MozzieFileOrchestrator> logger
         )
         {
             _chatStrategies = chatStrategies;
             _scopeFactory = scopeFactory;
             _chatHistoryService = chatHistoryService;
-            _storageSettings = storageSettings.Value;
+            _storageSettings = storageSettings.CurrentValue;
             _logger = logger;
         }
 

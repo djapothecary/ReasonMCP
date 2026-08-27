@@ -11,12 +11,12 @@ namespace ReasonMCP.Services.Enrichment
     public class ReferenceDataScanService : IReferenceDataScanService
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly IOptions<ReferenceScanSettings> _settings;
+        private readonly IOptionsMonitor<ReferenceScanSettings> _settings;
         private readonly ILogger<ReferenceDataScanService> _logger;
 
         public ReferenceDataScanService(
             IServiceScopeFactory scopeFactory,
-            IOptions<ReferenceScanSettings> options,
+            IOptionsMonitor<ReferenceScanSettings> options,
             ILogger<ReferenceDataScanService> logger
         )
         {
@@ -35,15 +35,15 @@ namespace ReasonMCP.Services.Enrichment
             CancellationToken cancellationToken = default
         )
         {
-            foreach (var rootDirectory in _settings.Value.RootDirectories)
+            foreach (var rootDirectory in _settings.CurrentValue.RootDirectories)
             {
                 var rootDirInfo = new DirectoryInfo(rootDirectory);
                 IEnumerable<DirectoryInfo> directoriesToScan;
 
-                if (_settings.Value.SubDirectories.Count > 0)
+                if (_settings.CurrentValue.SubDirectories.Count > 0)
                 {
                     var dirList = new List<DirectoryInfo>();
-                    foreach (var subDir in _settings.Value.SubDirectories)
+                    foreach (var subDir in _settings.CurrentValue.SubDirectories)
                     {
                         //  Using Path.Combine for robustness, assuming subDir is relative to rootDirectory
                         var fullPath = Path.Combine(rootDirectory, subDir);
@@ -91,7 +91,7 @@ namespace ReasonMCP.Services.Enrichment
             if (subDirectories == null || !subDirectories.Any())
                 return;
 
-            var scope = _scopeFactory.CreateScope();
+            using var scope = _scopeFactory.CreateScope();
             var dapperIngestionQueue = scope
                 .ServiceProvider
                 .GetRequiredService<DapperIngestionQueueService>();
@@ -132,7 +132,7 @@ namespace ReasonMCP.Services.Enrichment
         )
         {
             var excludeList = new List<string>();
-            foreach (var exclude in _settings.Value.ExcludedDirectories)
+            foreach (var exclude in _settings.CurrentValue.ExcludedDirectories)
             {
                 excludeList.Add(directoryPath + exclude);
             }
@@ -165,13 +165,13 @@ namespace ReasonMCP.Services.Enrichment
             // 1. Optimize lookup and fix case-sensitivity (".JSON" vs ".json")
             // Using a HashSet makes the lookup O(1) instead of O(N), which matters for thousands of files.
             var allowedExtensions = new HashSet<string>(
-                _settings.Value.AllReferenceExtensions,
+                _settings.CurrentValue.AllReferenceExtensions,
                 StringComparer.OrdinalIgnoreCase
             );
 
             // 2. Safely grab the new exclusion list (assuming it is named ExcludedFileNames)
             var excludedNames = _settings
-                .Value
+                .CurrentValue
                 .ExcludeFilesContaining ?? new List<string>();
 
             // 3. Chain the filters for maximum readability and single-pass execution

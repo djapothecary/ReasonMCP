@@ -12,11 +12,11 @@ namespace ReasonMCP.Data
         private readonly ILogger<CodebaseDbConnectionFactory> _logger;
 
         public CodebaseDbConnectionFactory(
-            IOptions<StorageConfigSettings> config,
+            IOptionsMonitor<StorageConfigSettings> config,
             ILogger<CodebaseDbConnectionFactory> logger
         )
         {
-            _connectionString = $"Data Source={config.Value.CodebaseDbPath};Mode=ReadWriteCreate;";
+            _connectionString = $"Data Source={config.CurrentValue.CodebaseDbPath};Mode=ReadWriteCreate;";
             _logger = logger;
         }
 

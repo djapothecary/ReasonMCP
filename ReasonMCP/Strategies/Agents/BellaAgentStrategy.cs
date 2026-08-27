@@ -39,7 +39,7 @@ namespace ReasonMCP.Strategies.Agents
             BellaAgent bellaAgent,
             IAgentProfileService agentProfileService,
             SessionContextManager sessionContextManager,
-            IOptions<ChatSettings> options,
+            IOptionsMonitor<ChatSettings> options,
             ILogger<BellaAgentStrategy> logger
         )
         {
@@ -47,7 +47,7 @@ namespace ReasonMCP.Strategies.Agents
             _currentContextSummarizer = currentContextSummarizer;
             _bellaAgent = bellaAgent;
             _agentProfileService = agentProfileService;
-            _settings = options.Value;
+            _settings = options.CurrentValue;
             _logger = logger;
 
             //  Setup files

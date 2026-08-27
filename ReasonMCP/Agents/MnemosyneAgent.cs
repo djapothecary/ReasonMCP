@@ -31,7 +31,7 @@ namespace ReasonMCP.Agents
             [FromKeyedServices("MnemosyneService")] IChatCompletionService chatCompletionService,
             IAgentProfileService agentProfileService,
             SessionContextManager sessionContextManager,
-            IOptions<ChatSettings> options,
+            IOptionsMonitor<ChatSettings> options,
             ILogger<MnemosyneAgent> logger
         )
         {
@@ -40,7 +40,7 @@ namespace ReasonMCP.Agents
             _chatCompletionService = chatCompletionService;
             _agentProfileService = agentProfileService;
             _sessionContextManager = sessionContextManager;
-            _settings = options.Value;
+            _settings = options.CurrentValue;
             _logger = logger;
         }
 

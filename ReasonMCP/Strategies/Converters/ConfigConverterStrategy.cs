@@ -20,14 +20,14 @@ namespace ReasonMCP.Strategies.Converters
             IServiceScopeFactory scopeFactory,
             ConfigChunkingProcessor configChunkingProcessor,
             IIngestionQueueService ingestionQueue,
-            IOptions<CodebaseScanSettings> options,
+            IOptionsMonitor<CodebaseScanSettings> options,
             ILogger<ConfigConverterStrategy> logger
         )
         {
             _scopeFactory = scopeFactory;
             _configChunkingProcessor = configChunkingProcessor;
             _ingestionQueue = ingestionQueue;
-            _settings = options.Value;
+            _settings = options.CurrentValue;
             _logger = logger;
         }
 
@@ -46,7 +46,7 @@ namespace ReasonMCP.Strategies.Converters
             CancellationToken cancellationToken
         )
         {
-            var scope = _scopeFactory.CreateScope();
+            using var scope = _scopeFactory.CreateScope();
 
             IEnumerable<CodeChunk> chunks = [];
             chunks = await _configChunkingProcessor.ChunkFileAsync(

@@ -16,14 +16,14 @@ namespace ReasonMCP.Workflows
 
         public ReferenceWorkflow(
             IServiceScopeFactory scopeFactory,
-            IOptions<ReferenceScanSettings> options,
-            IOptions<StorageConfigSettings> storageOptions,
+            IOptionsMonitor<ReferenceScanSettings> options,
+            IOptionsMonitor<StorageConfigSettings> storageOptions,
             ILogger<ReferenceWorkflow> logger
         )
         {
             _scopeFactory = scopeFactory;
-            _settings = options.Value;
-            _storageSettings = storageOptions.Value;
+            _settings = options.CurrentValue;
+            _storageSettings = storageOptions.CurrentValue;
             _logger = logger;
         }
 
@@ -38,7 +38,7 @@ namespace ReasonMCP.Workflows
             //  this will also perform upsert to ingestion queue
             if (_settings.RunFileScan)
             {
-                var scope = _scopeFactory.CreateScope();
+                using var scope = _scopeFactory.CreateScope();
                 var referenceScanService = scope
                     .ServiceProvider
                     .GetRequiredService<IReferenceDataScanService>();
@@ -48,16 +48,12 @@ namespace ReasonMCP.Workflows
                 await referenceScanService.ScanReferenceDataAsync(
                     cancellationToken
                 );
-
-                //  intentionally Disposing and creating scope
-                //  so that scope is managed in configurable blocks
-                scope.Dispose();
             }
 
             //  2.  Dequeue next record
             if (_settings.ProcessFiles)
             {
-                var scope = _scopeFactory.CreateScope();
+                using var scope = _scopeFactory.CreateScope();
                 var ingestionQueue = scope
                     .ServiceProvider
                     .GetRequiredService<IIngestionQueueService>();
@@ -152,16 +148,12 @@ namespace ReasonMCP.Workflows
                     }
 
                 }
-
-                //  intentionally Disposing and creating scope
-                //  so that scope is managed in configurable blocks
-                scope.Dispose();
             }
 
             //  4.  embed
             if (_settings.GenerateEmbeddings)
             {
-                var scope = _scopeFactory.CreateScope();
+                using var scope = _scopeFactory.CreateScope();
 
                 var ingestionQueue = scope
                     .ServiceProvider
@@ -228,10 +220,6 @@ namespace ReasonMCP.Workflows
                         );
                     }
                 }
-
-                //  intentionally Disposing and creating scope
-                //  so that scope is managed in configurable blocks
-                scope.Dispose();
             }
         }
     }

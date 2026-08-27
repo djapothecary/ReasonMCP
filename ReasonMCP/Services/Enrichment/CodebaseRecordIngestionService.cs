@@ -8,23 +8,23 @@ using ReasonMCP.Records;
 
 namespace ReasonMCP.Services.Enrichment
 {
-    public class CodebaseRecordIngestService : ICodebaseRecordIngestionService
+    public class CodebaseRecordIngestionService : ICodebaseRecordIngestionService
     {
         private readonly VectorStoreCollection<string, CodebaseVectorModel> _collection;
         private readonly IIngestionQueueService _ingestionQueue;
         private readonly IIngestEnrichedRecordsService _ingestionService;
         private IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
-        private ILogger<CodebaseRecordIngestService> _logger;
+        private ILogger<CodebaseRecordIngestionService> _logger;
 
         //  8000 chars is roughly 2000 tokens.  Extremely safe for Nomic and local LLMs
         private const int MaxCharsPerChunk = 8000;
 
-        public CodebaseRecordIngestService(
+        public CodebaseRecordIngestionService(
             VectorStore vectorStore,
             IIngestionQueueService ingestionQueue,
             IIngestEnrichedRecordsService ingestionService,
             IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
-            ILogger<CodebaseRecordIngestService> logger
+            ILogger<CodebaseRecordIngestionService> logger
         )
         {
             _collection = vectorStore.GetCollection<string, CodebaseVectorModel>("Codebase");

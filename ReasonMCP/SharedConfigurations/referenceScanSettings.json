@@ -1,7 +1,8 @@
 {
     "ReferenceScanSettings": {
         "Enabled": true,
-        "RunFilScan": false,
+        "BatchSize": 10,
+        "RunFilScan": true,
         "ProcessFiles": true,
         "GenerateEmbeddings": true,
         "WriteConvertedOutput": true,

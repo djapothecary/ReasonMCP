@@ -18,13 +18,13 @@ namespace ReasonMCP.Utilities
         public FileConverterUtility(
             IServiceScopeFactory scopeFactory,
             IIngestionQueueService ingestionQueue,
-            IOptions<StorageConfigSettings> options,
+            IOptionsMonitor<StorageConfigSettings> options,
             ILogger<FileConverterUtility> logger
         )
         {
             _scopeFactory = scopeFactory;
             _ingestionQueue = ingestionQueue;
-            _settings = options.Value;
+            _settings = options.CurrentValue;
             _logger = logger;
         }
 

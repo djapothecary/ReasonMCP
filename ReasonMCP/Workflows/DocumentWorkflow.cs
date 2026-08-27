@@ -17,14 +17,14 @@ namespace ReasonMCP.Workflows
 
         public DocumentWorkflow(
             IServiceScopeFactory scopeFactory,
-            IOptions<DocumentScanSettings> options,
-            IOptions<StorageConfigSettings> storageOptions,
+            IOptionsMonitor<DocumentScanSettings> options,
+            IOptionsMonitor<StorageConfigSettings> storageOptions,
             ILogger<DocumentWorkflow> logger
         )
         {
             _scopeFactory = scopeFactory;
-            _settings = options.Value;
-            _storageSettings = storageOptions.Value;
+            _settings = options.CurrentValue;
+            _storageSettings = storageOptions.CurrentValue;
             _logger = logger;
         }
 
@@ -39,7 +39,7 @@ namespace ReasonMCP.Workflows
             //  this will also perform upsert to ingestion queue
             if (_settings.RunFileScan)
             {
-                var scope = _scopeFactory.CreateScope();
+                using var scope = _scopeFactory.CreateScope();
                 var documentScanService = scope
                     .ServiceProvider
                     .GetRequiredService<IDocumentScanService>();
@@ -48,16 +48,12 @@ namespace ReasonMCP.Workflows
                 await documentScanService.ScanDocumentsAsync(
                     cancellationToken
                 );
-
-                //  intentionally Disposing and creating scope
-                //  so that scope is managed in configurable blocks
-                scope.Dispose();
             }
 
             //  2.  Dequeue next record
             if (_settings.ProcessFiles)
             {
-                var scope = _scopeFactory.CreateScope();
+                using var scope = _scopeFactory.CreateScope();
                 var ingestionQueue = scope
                     .ServiceProvider
                     .GetRequiredService<IIngestionQueueService>();
@@ -151,10 +147,6 @@ namespace ReasonMCP.Workflows
                         );
                     }
                 }
-
-                //  intentionally Disposing and creating scope
-                //  so that scope is managed in configurable blocks
-                scope.Dispose();
             }
         }
     }

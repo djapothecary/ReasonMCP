@@ -1,11 +1,11 @@
 using System.Text.Json.Serialization;
-using ReverseMarkdown;
 
 namespace ReasonMCP.Configurations
 {
     public class CodebaseScanSettings
     {
         public bool Enabled { get; set; } = false;
+        public int BatchSize { get; set; }
         public bool RunFileScan { get; set; } = false;
         public bool ProcessFiles { get; set; } = false;
         public bool GenerateEmbeddings { get; set; } = false;

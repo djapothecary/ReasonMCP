@@ -14,12 +14,12 @@ namespace ReasonMCP.Services.Enrichment
 
         public CodebaseScanService(
             IServiceScopeFactory scopeFactory,
-            IOptions<CodebaseScanSettings> options,
+            IOptionsMonitor<CodebaseScanSettings> options,
             ILogger<CodebaseScanService> logger
         )
         {
             _scopeFactory = scopeFactory;
-            _settings = options.Value;
+            _settings = options.CurrentValue;
             _logger = logger;
         }
 
@@ -84,7 +84,7 @@ namespace ReasonMCP.Services.Enrichment
             if (subDirectories == null || !subDirectories.Any())
                 return;
 
-            var scope = _scopeFactory.CreateScope();
+            using var scope = _scopeFactory.CreateScope();
             var dapperIngestionQueue = scope.ServiceProvider.GetRequiredService<DapperIngestionQueueService>();
 
             foreach (var subdirectory in subDirectories)

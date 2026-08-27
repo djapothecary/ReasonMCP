@@ -40,7 +40,7 @@ namespace ReasonMCP.Strategies.Agents
             ReasonAgent reasonAgent,
             IAgentProfileService agentProfileService,
             SessionContextManager sessionContextManager,
-            IOptions<ChatSettings> options,
+            IOptionsMonitor<ChatSettings> options,
             ILogger<ReasonAgentStrategy> logger
         )
         {
@@ -48,7 +48,7 @@ namespace ReasonMCP.Strategies.Agents
             _currentContextSummarizer = currentContextSummarizer;
             _reasonAgent = reasonAgent;
             _agentProfileService = agentProfileService;
-            _settings = options.Value;
+            _settings = options.CurrentValue;
             _logger = logger;
 
             //  Setup files

@@ -18,11 +18,11 @@ namespace ReasonMCP.Services
         private readonly ILogger<ChatHistoryService> _logger;
 
         public ChatHistoryService(
-            IOptions<ChatSettings> options,
+            IOptionsMonitor<ChatSettings> options,
             ILogger<ChatHistoryService> logger
         )
         {
-            _settings = options.Value;
+            _settings = options.CurrentValue;
             _logger = logger;
         }
 

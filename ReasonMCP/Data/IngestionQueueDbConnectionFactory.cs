@@ -12,11 +12,11 @@ namespace ReasonMCP.Data
         private readonly ILogger<IngestionQueueDbConnectionFactory> _logger;
 
         public IngestionQueueDbConnectionFactory(
-            IOptions<StorageConfigSettings> config,
+            IOptionsMonitor<StorageConfigSettings> config,
             ILogger<IngestionQueueDbConnectionFactory> logger
         )
         {
-            _connectionString = $"Data Source={config.Value.IngestionQueueDbPath};Cache=Shared;Mode=ReadWriteCreate;";
+            _connectionString = $"Data Source={config.CurrentValue.IngestionQueueDbPath};Cache=Shared;Mode=ReadWriteCreate;";
             _logger = logger;
         }
 

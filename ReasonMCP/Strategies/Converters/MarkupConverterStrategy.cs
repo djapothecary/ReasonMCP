@@ -21,14 +21,14 @@ namespace ReasonMCP.Strategies.Converters
             IServiceScopeFactory scopeFactory,
             MarkupChunkingProcessor markupChunkingProcessor,
             IIngestionQueueService ingestionQueue,
-            IOptions<CodebaseScanSettings> options,
+            IOptionsMonitor<CodebaseScanSettings> options,
             ILogger<MarkupConverterStrategy> logger
         )
         {
             _scopeFactory = scopeFactory;
             _markupChunkingProcessor = markupChunkingProcessor;
             _ingestionQueue = ingestionQueue;
-            _settings = options.Value;
+            _settings = options.CurrentValue;
             _logger = logger;
         }
 
@@ -44,7 +44,7 @@ namespace ReasonMCP.Strategies.Converters
             CancellationToken cancellationToken = default
         )
         {
-            var scope = _scopeFactory.CreateScope();
+            using var scope = _scopeFactory.CreateScope();
 
             IEnumerable<CodeChunk> chunks = [];
             chunks = await _markupChunkingProcessor.ChunkFileAsync(
@@ -57,7 +57,7 @@ namespace ReasonMCP.Strategies.Converters
             {
                 var codebaseRecordIngestService = scope
                     .ServiceProvider
-                    .GetRequiredService<CodebaseRecordIngestService>();
+                    .GetRequiredService<ICodebaseRecordIngestionService>();
 
                 chunkUpsertSuccess = await codebaseRecordIngestService
                     .CodebaseChunkUpsertAsync(

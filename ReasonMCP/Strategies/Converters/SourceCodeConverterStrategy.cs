@@ -21,14 +21,14 @@ namespace ReasonMCP.Strategies.Converters
             IServiceScopeFactory scopeFactory,
             CSharpRoslynChunkingProcessor csharpCodeChunkingProcessor,
             TypeScriptChunkingProcessor typeScriptChunkingProcessor,
-            IOptions<CodebaseScanSettings> options,
+            IOptionsMonitor<CodebaseScanSettings> options,
             ILogger<SourceCodeConverterStrategy> logger
         )
         {
             _scopeFactory = scopeFactory;
             _csharpCodeChunkingProcessor = csharpCodeChunkingProcessor;
             _typeScriptChunkingProcessor = typeScriptChunkingProcessor;
-            _settings = options.Value;
+            _settings = options.CurrentValue;
             _logger = logger;
         }
 
@@ -49,7 +49,7 @@ namespace ReasonMCP.Strategies.Converters
         {
             IEnumerable<CodeChunk> chunks = [];
             var fileExtension = Path.GetExtension(filePath);
-            var scope = _scopeFactory.CreateScope();
+            using var scope = _scopeFactory.CreateScope();
 
             if (_settings.CSharpExtensions.Contains(fileExtension))
             {
@@ -60,11 +60,11 @@ namespace ReasonMCP.Strategies.Converters
                 chunks = await _typeScriptChunkingProcessor.ChunkFileAsync(filePath);
             }
 
-            var codebaseUpsertOrchestratior = scope
+            var codebaseRecordIngestService = scope
                 .ServiceProvider
-                .GetRequiredService<CodebaseRecordIngestService>();
+                .GetRequiredService<ICodebaseRecordIngestionService>();
 
-            return await codebaseUpsertOrchestratior
+            return await codebaseRecordIngestService
                 .CodebaseChunkUpsertAsync(
                     chunks,
                     cancellationToken

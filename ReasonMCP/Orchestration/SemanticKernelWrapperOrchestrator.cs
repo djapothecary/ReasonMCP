@@ -25,14 +25,14 @@ namespace ReasonMCP.Orchestration
             IEnumerable<IChatStrategy> strategies,
             IMnemosyne mnemosyneAgent,
             IChatHistoryService chathistoryService,
-            IOptions<ChatSettings> options,
+            IOptionsMonitor<ChatSettings> options,
             ILogger<SemanticKernelWrapperOrchestrator> logger
         )
         {
             _strategies = strategies;
             _mnemosyneAgent = mnemosyneAgent;
             _chatHistoryService = chathistoryService;
-            _settings = options.Value;
+            _settings = options.CurrentValue;
             _logger = logger;
         }
 

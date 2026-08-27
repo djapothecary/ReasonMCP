@@ -19,13 +19,13 @@ namespace ReasonMCP.Workers
         (
             Channel<dynamic> agentTaskChannel,
             IServiceScopeFactory scopeFactory,
-            IOptions<AgentTaskWorkerSettings> options,
+            IOptionsMonitor<AgentTaskWorkerSettings> options,
             ILogger<AgentTaskWorker> logger
         )
         {
             _agentTaskChannel = agentTaskChannel;
             _scopeFactory = scopeFactory;
-            _settings = options.Value;
+            _settings = options.CurrentValue;
             _logger = logger;
         }
 

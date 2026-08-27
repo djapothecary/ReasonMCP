@@ -2,6 +2,6 @@
     "TestingSettings": {
         "Enabled": true,
         "DebugOutput": true,
-        "EnableEnrichment": false
+        "EnableEnrichment": true
     }
 }

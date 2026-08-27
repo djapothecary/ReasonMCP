@@ -1,7 +1,8 @@
 {
     "DocumentScanSettings": {
         "Enabled": true,
-        "RunFileScan": false,
+        "BatchSize": 10,
+        "RunFileScan": true,
         "ProcessFiles": true,
         "GenerateEmbeddings": true,
         "WriteConvertedOutput": false,

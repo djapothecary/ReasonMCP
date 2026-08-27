@@ -27,7 +27,7 @@ namespace ReasonMCP.Agents
             Kernel kernel,
             IServiceProvider serviceProvider,
             [FromKeyedServices("Reason")] IChatCompletionService chatCompletionService,
-            IOptions<ChatSettings> options,
+            IOptionsMonitor<ChatSettings> options,
             ILogger<BellaAgent> logger
         )
         {
@@ -35,7 +35,7 @@ namespace ReasonMCP.Agents
             _kernel = kernel;
             _serviceProvider = serviceProvider;
             _chatCompletionService = chatCompletionService;
-            _settings = options.Value;
+            _settings = options.CurrentValue;
             _logger = logger;
         }
 

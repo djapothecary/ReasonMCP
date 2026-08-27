@@ -28,7 +28,7 @@ namespace ReasonMCP.Extensions
         {
             builder.Services.AddScoped<ICodebaseScanService, CodebaseScanService>();
             builder.Services.AddScoped<ICodebaseProcessor, CodebaseProcessor>();
-            builder.Services.AddScoped<ICodebaseRecordIngestionService, CodebaseRecordIngestService>();
+            builder.Services.AddScoped<ICodebaseRecordIngestionService, CodebaseRecordIngestionService>();
             builder.Services.AddScoped<IDocumentsProcessor, DocumentsProcessor>();
             builder.Services.AddScoped<IDocumentScanService, DocumentScanService>();
             builder.Services.AddScoped<IIngestEnrichedRecordsService, IngestEnrichedRecordsService>();
