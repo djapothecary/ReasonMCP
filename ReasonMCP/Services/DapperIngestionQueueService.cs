@@ -129,7 +129,7 @@ namespace ReasonMCP.Services
         {
             const string sql = @"
                 UPDATE IngestionQueue
-                SET Status = 3
+                SET Status = 4
                 WHERE FilePath = @FilePath";
             using var connection = _connectionFactory.CreateConnection();
             await connection.ExecuteAsync(sql, new { FilePath = filePath });
@@ -196,6 +196,29 @@ namespace ReasonMCP.Services
 
             using var connection = _connectionFactory.CreateConnection();
             await connection.ExecuteAsync(sql, new { FilePath = filePath, ErrorMessage = errorMessage });
+        }
+
+        public async Task<int> GetCountDocumentsIngestedRecordsAsync(
+            string targetStore,
+            CancellationToken cancellationToken = default
+        )
+        {
+            const string sql = @"
+                SELECT
+                    COUNT(*)
+                FROM
+                    IngestionQueue
+                WHERE
+                    Status = 3
+                AND
+                    TargetStore = @TargetStore;
+            ";
+
+            using var connection = _connectionFactory.CreateConnection();
+            return await connection.ExecuteScalarAsync<int>(sql, new
+            {
+                TargetStore = targetStore
+            });
         }
 
         public async Task<int> GetCountIngestedRecordsAsync(

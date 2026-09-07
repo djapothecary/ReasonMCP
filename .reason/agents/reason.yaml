@@ -33,5 +33,6 @@ Permissions:
   FileSystem: ReadOnly, ReadWrite
   AllowToolCalling: true
   AllowedTools:
-    - document_context_search
+    - codebase_context_search
+    #- document_context_search
     - random_number

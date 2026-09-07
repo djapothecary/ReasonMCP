@@ -78,6 +78,18 @@ namespace ReasonMCP.Interfaces
         );
 
         /// <summary>
+        /// Returns the count of Documents records that have been ingested
+        /// and are ready for processing
+        /// </summary>
+        /// <param name="targetStore"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<int> GetCountDocumentsIngestedRecordsAsync(
+            string targetStore,
+            CancellationToken cancellationToken = default
+        );
+
+        /// <summary>
         /// Returns the count of files that have been successfully ingested
         /// </summary>
         /// <param name="targetStore"></param>

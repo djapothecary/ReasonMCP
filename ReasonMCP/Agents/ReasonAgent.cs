@@ -74,8 +74,8 @@ namespace ReasonMCP.Agents
 
                 //  2.  Inject tools into the kernel
                 _kernel.Plugins.AddFromObject(codebaseSearchTool, "CodebaseSearch");
-                _kernel.Plugins.AddFromObject(documentSearchTool, "DocumentSearch");
-                _kernel.Plugins.AddFromObject(referenceSearchTool, "ReferenceSerach");
+                // _kernel.Plugins.AddFromObject(documentSearchTool, "DocumentSearch");
+                // _kernel.Plugins.AddFromObject(referenceSearchTool, "ReferenceSerach");
                 _kernel.Plugins.AddFromObject(randomNumberTool, "RandomNumbers");
 
                 currentContext.AddUserMessage(prompt);

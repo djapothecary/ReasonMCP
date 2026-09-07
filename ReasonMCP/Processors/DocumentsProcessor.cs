@@ -45,7 +45,7 @@ namespace ReasonMCP.Processors
             CancellationToken cancellationToken
         )
         {
-            var file = await _ingestionQueue.DequeueNextFileAsync(
+            var file = await _ingestionQueue.DequeueNextFileToEmbedAsync(
                 "Documents",
                 cancellationToken
             );

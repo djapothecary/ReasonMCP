@@ -1,8 +1,8 @@
 {
     "CodebaseScanSettings": {
-        "Enabled": true,
+        "Enabled": false,
         "BatchSize": 10,
-        "RunFileScan": true,
+        "RunFileScan": false,
         "ProcessFiles": true,
         "GenerateEmbeddings": true,
         "WriteConvertedOutput": false,
@@ -19,6 +19,7 @@
         ],
         "SubDirectories": [],
         "ExcludedDirectories": [
+            "C:\\Source\\ProjectYuki\\ProjRefFiles",
             "\\bin",
             "\\obj",
             "\\Debug",
@@ -32,6 +33,7 @@
             "\\mcp-dist",
             "\\dist",
             "\\node_modules",
+            "\\site_packages",
             "\\.git",
             "\\.gitHub",
             "\\packages",

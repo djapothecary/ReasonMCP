@@ -71,7 +71,7 @@ namespace ReasonMCP.Workflows
                     .GetRequiredService<IFileConverterUtility>();
 
                 int filesprocessed = 0;
-                int filesToProcess = await ingestionQueue.GetCountIngestedRecordsAsync(
+                int filesToProcess = await ingestionQueue.GetCountDocumentsIngestedRecordsAsync(
                     "Documents",
                     cancellationToken
                 );
