@@ -129,5 +129,4 @@ export function registerBellaParticipant(context: vscode.ExtensionContext) {
     // bellaParticipant.iconPath = vscode.Uri.joinPath(context.extensionUri, 'images', 'dog.png');
 
     context.subscriptions.push(bellaParticipant);
-
 }

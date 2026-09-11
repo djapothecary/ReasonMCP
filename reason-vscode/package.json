@@ -3,11 +3,29 @@
   "displayName": "reason-vscode",
   "description": "Frontend for Reason AI Architect",
   "version": "0.0.1",
+  "enabledApiProposals": [
+    "languageModelSystem",
+    "chatContextProvider",
+    "chatParticipantAdditions",
+    "chatParticipantPrivate",
+    "chatOutputRenderer",
+    "chatSessionCustomizationProvider",
+    "chatSessionsProvider",
+    "contribChatEditorInlineGutterMenu",
+    "contribEditorContentMenu",
+    "contribMenuBarHome",
+    "contribStatusBarItems",
+    "contribSourceControlInputBoxMenu",
+    "contribViewContainerTitle",
+    "defaultChatParticipant",
+    "taskExecutionTerminal"
+  ],
   "engines": {
-    "vscode": "^1.120.0"
+    "vscode": "^1.137.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Chat"
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",
@@ -16,8 +34,85 @@
       {
         "command": "reason-vscode.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "browseAndAttachExternal",
+        "title": "Browse External Folder",
+        "icon": "$(folder-opened)"
       }
     ],
+    "menus": {
+      "editor/context/chat": [
+        {
+          "command": "browseAndAttachExternal",
+          "when": "true",
+          "group": "chat"
+        }
+      ],
+      "chat/chatSessions": [
+        {
+          "command": "browseAndAttachExternal",
+          "when": "true",
+          "group": "chat"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "browseAndAttachExternal",
+          "when": "true",
+          "group": "chat"
+        }
+      ],
+      "chat/contextUsage/actions": [
+        {
+          "command": "browseAndAttachExternal",
+          "when": "true",
+          "group": "chat"
+        }
+      ],
+      "chat/editor/inlineGutter": [
+        {
+          "command": "browseAndAttachExternal",
+          "when": "true",
+          "group": "chat"
+        }
+      ],
+      "chat/customizations/item": [
+        {
+          "command": "browseAndAttachExternal",
+          "when": "true",
+          "group": "chat"
+        }
+      ],
+      "chat/customizations/create": [
+        {
+          "command": "browseAndAttachExternal",
+          "when": "true",
+          "group": "chat"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "browseAndAttachExternal",
+          "when": "true",
+          "group": "chat"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "browseAndAttachExternal",
+          "when": "true",
+          "group": "chat"
+        }
+      ],
+      "viewContainer/title": [
+        {
+          "command": "browseAndAttachExternal",
+          "when": "viewContainer == workbench.view.debug",
+          "group": "chat"
+        }
+      ]
+    },
     "chatParticipants": [
       {
         "id": "reasonmcp.chat",
@@ -29,9 +124,35 @@
       {
         "id": "bella.chat",
         "name": "bella",
-        "fullName": "Reason Architect",
-        "description": "Your aloof chocolate labrador coding companin",
+        "fullName": "Labrador Companion",
+        "description": "Your aloof chocolate labrador coding companion",
         "isSticky": true
+      },
+      {
+        "id": "mozzie.chat",
+        "name": "mozzie",
+        "fullName": "Archival Specialist",
+        "description": "Agent specialized in indexing and enriching documents",
+        "isSticky": true
+      }
+    ],
+    "languageModelTools": [
+      {
+        "canBeReferencedInPrompt": true,
+        "toolReferenceName": "browseExternalContext",
+        "displayName": "browseExternalContext",
+        "modelDescription": "browseExternalContext",
+        "name": "browseExternalContext",
+        "tags": [
+          "reasonmcp-chat-tools",
+          "browseAndAttachExternal",
+          "browseExternalContext"
+        ],
+        "icon": "$(folder-opened)",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
       }
     ]
   },
@@ -49,7 +170,7 @@
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.20.0",
-    "@types/vscode": "^1.120.0",
+    "@types/vscode": "^1.137.0",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
     "@typescript-eslint/parser": "^8.45.0",
     "@vscode/test-cli": "^0.0.11",

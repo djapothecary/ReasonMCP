@@ -1,6 +1,12 @@
 import * as vscode from 'vscode';
 import * as crypto from 'crypto';
 import { TextDecoder } from 'util';
+import { ExternalContextState } from '../extensions/sharedState';
+
+let externallyAttachedFiles: {
+    fileName: string;
+    content: string
+}[] = [];
 
 export function registerMozzieParticipant(context: vscode.ExtensionContext) {
     console.log(('Mozzie is now avaialble'));
@@ -19,6 +25,21 @@ export function registerMozzieParticipant(context: vscode.ExtensionContext) {
 
             if (context.history.length === 0) {
                 activeSessionId = crypto.randomUUID();
+                externallyAttachedFiles = [];
+            }
+
+            if (request.prompt === "") {
+                response.markdown(`No prompt was provided. Please provide one of the following options:
+                    1. **[Codebase Scan]** This will trigger indexing of the entire codebase.
+                    2. **[Documents Scan]** This will trigger indexing of the Documents directories.
+                    3. **[Reference Scan]** This will trigger indexing of the References directories.
+                    4. **[Attached File]** This will trigger the indexing of a specific attached file.
+                    5. Provide a message to chat with Mozzie.
+
+                    --- or ---
+
+                    👉 **[Click Here to Browse an External File/Folder Layout](command:browseExternalContext)**`);
+                return; // Exit early so it doesn't fire an empty fetch request
             }
 
             try {
@@ -45,15 +66,23 @@ export function registerMozzieParticipant(context: vscode.ExtensionContext) {
                     }
                 }
 
-                const payload = {
-                    prompt: request.prompt,
-                    history: historyPayload
-                };
 
-                const attachedFiles: {
-                    fileName: string,
-                    content: string
-                }[] = [];
+
+                const attachedFiles: { fileName: string; content: any; }[] = []; //    standard VS code workspace files
+
+                //  Grab and clear the shared state
+                const externallyAttachedFiles = ExternalContextState.consumePaths();
+
+                //  Now bundle the paths into the payload for the C# backend
+                const payload = {
+                    sessionId: activeSessionId,
+                    agentId: 'mozzie',
+                    role: 'user',
+                    prompt: request.prompt,
+                    history: historyPayload,
+                    attachedPaths: externallyAttachedFiles,
+                    attachments: attachedFiles
+                };
 
                 for (const reference of request.references) {
                     let fileUri: vscode.Uri | undefined;
@@ -91,12 +120,7 @@ export function registerMozzieParticipant(context: vscode.ExtensionContext) {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        sessionId: activeSessionId,
-                        agentId: 'mozzie',
-                        role: 'user',
-                        prompt: request.prompt,
-                        history: historyPayload,
-                        attachments: attachedFiles
+                        payload
                     })
                 });
 

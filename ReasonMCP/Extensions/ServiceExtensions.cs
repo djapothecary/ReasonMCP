@@ -23,6 +23,8 @@ namespace ReasonMCP.Extensions
             builder.Services.AddTransient<DocumentContextSearchTool>();
             builder.Services.AddTransient<IMhtmlConverterUtility, MhtmlConverterUtility>();
             builder.Services.AddScoped<IFileConverterUtility, FileConverterUtility>();
+            builder.Services.AddScoped<IFileSystemSecurityService, FileSystemSecurityService>();
+            builder.Services.AddScoped<ILocalFileSystemService, LocalFileSystemService>();
             builder.Services.AddScoped<IChunkParsingUtility, ChunkParsingUtility>();
             builder.Services.AddScoped<IMetadataEnrichmentUtility, MetadataEnrichmentUtility>();
             builder.Services.AddScoped<DapperIngestionQueueService>();

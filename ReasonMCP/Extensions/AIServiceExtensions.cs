@@ -80,6 +80,7 @@ namespace ReasonMCP.Extensions
         {
             builder.Services.AddSingleton<CodebaseContextSearchTool>();
             builder.Services.AddSingleton<DocumentContextSearchTool>();
+            builder.Services.AddSingleton<LocalFileSystemTool>();
             builder.Services.AddSingleton<RandomNumberTools>();
             builder.Services.AddSingleton<ReferenceContextSearchTool>();
 

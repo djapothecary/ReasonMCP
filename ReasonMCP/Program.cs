@@ -23,6 +23,7 @@ builder.Configuration.SetBasePath(@"C:\Source\ReasonMCP\ReasonMCP\SharedConfigur
     .AddJsonFile("chatSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("codebaseScanSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("documentScanSettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("fileSystemSecuritySettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("gatewaySettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("referenceScanSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("storageConfigSettings.json", optional: false, reloadOnChange: true)
@@ -33,6 +34,7 @@ builder.Services.Configure<AgentTaskWorkerSettings>(builder.Configuration.GetSec
 builder.Services.Configure<ChatSettings>(builder.Configuration.GetSection("ChatSettings"));
 builder.Services.Configure<CodebaseScanSettings>(builder.Configuration.GetSection("CodebaseScanSettings"));
 builder.Services.Configure<DocumentScanSettings>(builder.Configuration.GetSection("DocumentsScanSettings"));
+builder.Services.Configure<FileSystemSecuritySettings>(builder.Configuration.GetSection("FileSystemSescuritySettings"));
 builder.Services.Configure<GatewaySettings>(builder.Configuration.GetSection("GatewaySettings"));
 builder.Services.Configure<KnowledgebaseScanSettings>(builder.Configuration.GetSection("KnowledgebaseScanSettings"));
 builder.Services.Configure<ReferenceScanSettings>(builder.Configuration.GetSection("ReferenceScanSettings"));
@@ -108,6 +110,7 @@ builder.Services
     .WithTools<RandomNumberTools>()
     .WithTools<CodebaseContextSearchTool>()
     .WithTools<DocumentContextSearchTool>()
+    .WithTools<LocalFileSystemTool>()
     .WithTools<ReferenceContextSearchTool>();
 
 builder.Services.AddKernel();
