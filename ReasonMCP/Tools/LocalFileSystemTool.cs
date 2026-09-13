@@ -11,6 +11,7 @@ using ReasonMCP.Configurations;
 using ReasonMCP.Interfaces;
 using ReasonMCP.Interfaces.IEnrichment;
 using ReasonMCP.Models;
+using ReasonMCP.Records;
 
 namespace ReasonMCP.Tools
 {
@@ -34,22 +35,45 @@ namespace ReasonMCP.Tools
         [McpServerTool(Name = "local_filesystem_tool")]
         [KernelFunction("local_filesystem_tool")]
         [Description("Lists all files and subdirectories within a given absolute directory path.")]
-        public async Task<string> ListDirectoryAsync(
+        public async Task<List<FileAttachmentRecord>> ListDirectoryAsync(
             [Description("""
                 The absolute path of the directory to inspect (e.g. 'C:\\Source\\ReasonData')
                 """)] string absolutePath,
+            [Description("""
+                The ID of the Agent making the request
+            """)] string agentId,
             CancellationToken cancellationToken
         )
         {
+            var localFileSystemToolResponse = new List<FileAttachmentRecord>();
             if (!_settings.CurrentValue.Enabled)
-                return "Local File System Scanning is not Enabled!";
+            {
+                var notEnabledResponse = new FileAttachmentRecord(
+                        string.Empty,
+                        string.Empty,
+                        absolutePath,
+                        0,
+                        "Local File System Scanning is not Enabled!",
+                        true
+                    );
 
-            var scannedFilePath = await _localFileSystemService.GenerateDirectoryListAsync(
-                absolutePath,
-                cancellationToken
-            );
+                localFileSystemToolResponse.Add(notEnabledResponse);
+                return localFileSystemToolResponse;
+            }
 
-            return scannedFilePath ?? string.Empty;
+            var scannedFilePaths = await _localFileSystemService
+                .GenerateDirectoryListAsync(
+                    agentId,
+                    absolutePath,
+                    cancellationToken
+                );
+
+            foreach (var file in scannedFilePaths)
+            {
+                localFileSystemToolResponse.Add(file);
+            }
+
+            return localFileSystemToolResponse;
         }
 
     }

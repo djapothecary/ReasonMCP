@@ -129,6 +129,13 @@
         "isSticky": true
       },
       {
+        "id": "esper.chat",
+        "name": "esper",
+        "fullName": "Esper from Blade Runner",
+        "description": "Esper takes one specific file you hand it, dissects it, extracts the tags/text, and returns the exact context you need.",
+        "isSticky": true
+      },
+      {
         "id": "mozzie.chat",
         "name": "mozzie",
         "fullName": "Archival Specialist",

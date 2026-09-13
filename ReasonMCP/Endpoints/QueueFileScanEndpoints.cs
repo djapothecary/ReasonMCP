@@ -8,13 +8,13 @@ using ReasonMCP.Orchestration;
 
 namespace ReasonMCP.Endpoints
 {
-    public static class MozzieEndpoints
+    public static class QueueFileScanEndpoints
     {
-        public static void MapMozzieFileScanEndpoints(
+        public static void MapQueueFileScanEndpoints(
             this WebApplication app
         )
         {
-            app.MapPost("/api/v1/mozzie", async (
+            app.MapPost("/api/v1/workspace/queue/scan", async (
                 [FromBody] VSCodeChatPayloadDto payload,
                 [FromServices] MozzieFileOrchestrator mozzie
             ) =>

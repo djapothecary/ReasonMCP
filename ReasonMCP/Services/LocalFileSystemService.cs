@@ -1,6 +1,8 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using ReasonMCP.Interfaces;
+using ReasonMCP.Records;
 
 namespace ReasonMCP.Services
 {
@@ -18,21 +20,44 @@ namespace ReasonMCP.Services
             _logger = logger;
         }
 
-        public async Task<string> GenerateDirectoryListAsync(
+        public async Task<List<FileAttachmentRecord>> GenerateDirectoryListAsync(
+            string agentId,
             string absolutePath,
             CancellationToken cancellationToken
         )
         {
+            var directoryFileAttachementRecords = new List<FileAttachmentRecord>();
             //  1.  The Guardrail (never trust the LLM)
             if (!_securityService.IsPathAllowed(absolutePath))
             {
-                _logger.LogWarning("[SECURITY ALERT]:  Mozzie attempted to read restricted path: {Path}", absolutePath);
-                return $"[SYSTEM DIRECTIVE]: Access to '{absolutePath}' is DENIED by enterprise policy. Stop and ask Apoth for a valid path.";
+                directoryFileAttachementRecords.Add(
+                    new FileAttachmentRecord(
+                        string.Empty,
+                        string.Empty,
+                        absolutePath,
+                        0,
+                        $"[SYSTEM DIRECTIVE]: Access to '{absolutePath}' is DENIED by enterprise policy. Stop and ask Apoth for a valid path.",
+                        true
+                    )
+                );
+
+                _logger.LogWarning("[SECURITY ALERT]:  {Agent} attempted to read restricted path: {Path}", agentId, absolutePath);
+                return directoryFileAttachementRecords;
             }
 
             if (!Directory.Exists(absolutePath))
             {
-                return $"Directory not found: {absolutePath}";
+                directoryFileAttachementRecords.Add(
+                    new FileAttachmentRecord(
+                        string.Empty,
+                        string.Empty,
+                        absolutePath,
+                        0,
+                        $"Directory not found: {absolutePath}",
+                        true
+                    )
+                );
+                return directoryFileAttachementRecords;
             }
 
             try
@@ -44,7 +69,16 @@ namespace ReasonMCP.Services
                 foreach (var dir in Directory.GetDirectories(absolutePath))
                 {
                     var dirInfo = new DirectoryInfo(dir);
-                    sb.AppendLine($"- 📁 **{dirInfo.Name}/** (Directory)");
+                    directoryFileAttachementRecords.Add(
+                        new FileAttachmentRecord(
+                            string.Empty,
+                            dirInfo.Name,
+                            absolutePath,
+                            0,
+                            $"- 📁 **{dirInfo.Name}/** (Directory)",
+                            false
+                        )
+                    );
                 }
 
                 //  Files
@@ -53,14 +87,34 @@ namespace ReasonMCP.Services
                     var fileInfo = new FileInfo(file);
                     //  Convert bytes to KB for context
                     long sizeKb = fileInfo.Length / 1024;
-                    sb.AppendLine($"- 📄 {fileInfo.Name} ({sizeKb} KB)");
+                    directoryFileAttachementRecords.Add(
+                        new FileAttachmentRecord(
+                            fileInfo.Name,
+                            fileInfo.FullName,
+                            absolutePath,
+                            sizeKb,
+                            $"- 📄 {fileInfo.Name} ({sizeKb} KB)",
+                            false
+                        )
+                    );
                 }
 
-                return sb.ToString();
+                return directoryFileAttachementRecords;
             }
             catch (UnauthorizedAccessException)
             {
-                return $"[ERROR]: Permission denied when trying to read {absolutePath}.";
+                directoryFileAttachementRecords.Add(
+                    new FileAttachmentRecord(
+                        string.Empty,
+                        string.Empty,
+                        absolutePath,
+                        0,
+                        $"[ERROR]: Permission denied when trying to read {absolutePath}.",
+                        true
+                    )
+                );
+
+                return directoryFileAttachementRecords;
             }
         }
 

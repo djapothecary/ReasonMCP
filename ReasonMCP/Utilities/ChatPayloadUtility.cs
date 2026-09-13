@@ -22,7 +22,7 @@ namespace ReasonMCP.Utilities
 
             foreach (var file in payload.Attachments)
             {
-                augmentedPrompt.AppendLine($"\n<file name=\"{file.Filename}\">");
+                augmentedPrompt.AppendLine($"\n<file name=\"{file.FileName}\">");
                 augmentedPrompt.AppendLine(file.Content);
                 augmentedPrompt.AppendLine("</file>");
             }

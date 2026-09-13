@@ -5,6 +5,7 @@ import { registerBellaParticipant } from './participants/bella';
 import { registerMozzieParticipant } from './participants/mozzie';
 import { BrowseExternalContextTool } from './extensions/browseExternalContextExtension';
 import { ExternalContextState } from './extensions/sharedState';
+import { registerEsperParticipant } from './participants/esper';
 
 let backendProcess: ChildProcess | null = null;
 
@@ -60,6 +61,7 @@ export async function activate(context: vscode.ExtensionContext) {
     registerReasonParticipant(context);
     registerBellaParticipant(context);
     registerMozzieParticipant(context);
+    registerEsperParticipant(context);
 }
 
 export async function deactivate() {

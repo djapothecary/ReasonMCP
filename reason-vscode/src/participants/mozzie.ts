@@ -1,12 +1,6 @@
 import * as vscode from 'vscode';
 import * as crypto from 'crypto';
-import { TextDecoder } from 'util';
-import { ExternalContextState } from '../extensions/sharedState';
-
-let externallyAttachedFiles: {
-    fileName: string;
-    content: string
-}[] = [];
+import { dispatchToAgentAsync } from '../components/agentDispatcher';
 
 export function registerMozzieParticipant(context: vscode.ExtensionContext) {
     console.log(('Mozzie is now avaialble'));
@@ -21,11 +15,10 @@ export function registerMozzieParticipant(context: vscode.ExtensionContext) {
             response: vscode.ChatResponseStream,
             token: vscode.CancellationToken
         ) => {
-            response.progress('Mozzie is sorting papers...');
 
+            //  Handle sessions resets
             if (context.history.length === 0) {
                 activeSessionId = crypto.randomUUID();
-                externallyAttachedFiles = [];
             }
 
             if (request.prompt === "") {
@@ -42,95 +35,20 @@ export function registerMozzieParticipant(context: vscode.ExtensionContext) {
                 return; // Exit early so it doesn't fire an empty fetch request
             }
 
+            response.progress('Mozzie is sorting papers...');
+
             try {
-                const historyPayload: any[] = [];
+                            //  one 'line' to handle all the payload assembly
+                            //  and API communication
+                            const answer = await dispatchToAgentAsync(
+                                request,
+                                context,
+                                activeSessionId,
+                                'esper',
+                                'http://127.0.0.1:5000/api/v1/workspace/queue/scan'
+                            );
 
-                for (const turn of context.history) {
-                    if (turn instanceof vscode.ChatRequestTurn) {
-                        historyPayload.push({
-                            role: 'user',
-                            content: turn.prompt
-                        });
-                    } else if (turn instanceof vscode.ChatResponseTurn) {
-                        const responseText = turn.response.map(part => {
-                            if (part instanceof vscode.ChatResponseMarkdownPart) {
-                                return part.value.value;
-                            }
-                            return '';
-                        }).join('');
-
-                        historyPayload.push({
-                            role: 'assistant',
-                            content: responseText
-                        });
-                    }
-                }
-
-
-
-                const attachedFiles: { fileName: string; content: any; }[] = []; //    standard VS code workspace files
-
-                //  Grab and clear the shared state
-                const externallyAttachedFiles = ExternalContextState.consumePaths();
-
-                //  Now bundle the paths into the payload for the C# backend
-                const payload = {
-                    sessionId: activeSessionId,
-                    agentId: 'mozzie',
-                    role: 'user',
-                    prompt: request.prompt,
-                    history: historyPayload,
-                    attachedPaths: externallyAttachedFiles,
-                    attachments: attachedFiles
-                };
-
-                for (const reference of request.references) {
-                    let fileUri: vscode.Uri | undefined;
-
-                    if (reference.value instanceof vscode.Uri) {
-                        fileUri = reference.value;
-                    } else if (reference.value instanceof vscode.Location) {
-                        fileUri = reference.value.uri;
-                    }
-
-                    if (fileUri) {
-                        try {
-                            const fileData = await vscode.workspace.fs.readFile(fileUri);
-                            const fileContent = new TextDecoder('utf-8').decode(fileData);
-
-                            const fileName = fileUri.path.split('/').pop() || "UnknownFile.txt";
-
-                            attachedFiles.push({
-                                fileName: fileName,
-                                content: fileContent
-                            });
-                        } catch (err) {
-                            console.error(`Failed to read attached file ${fileUri.path}`, err);
-                        }
-                    }
-                }
-
-                console.log("[TS PAYLOAD OUT]: " + JSON.stringify(payload, null, 2));
-				//	This output provides the VSCode "pop-up" window
-				// vscode.window.showInformationMessage("[TS PAYLOAD OUT]: " + JSON.stringify(payload, null, 2));
-
-                const res = await fetch('http://127.0.0.1:5000/api/v1/mozzie', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        payload
-                    })
-                });
-
-                if (!res.ok) {
-                    throw new Error(`C# Backend returned Http ${res.status}`);
-                }
-
-                const data = await res.json() as any;
-
-                response.markdown(data.response || "No response received from Reason backend.");
+                            response.markdown(answer);
             } catch (error: any) {
                 response.markdown(`*
                     Mozzie couldn't find and enrichment files to fence ... Error ${error.message}`);

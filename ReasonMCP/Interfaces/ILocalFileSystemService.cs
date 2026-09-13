@@ -1,8 +1,11 @@
+using ReasonMCP.Records;
+
 namespace ReasonMCP.Interfaces
 {
     public interface ILocalFileSystemService
     {
-        Task<string> GenerateDirectoryListAsync(
+        Task<List<FileAttachmentRecord>> GenerateDirectoryListAsync(
+            string agentId,
             string absolutePath,
             CancellationToken cancellationToken
         );
