@@ -61,6 +61,9 @@ builder.Logging.AddConsole();
 // TODO:    Feature: Add a file logger to save/read logs
 // builder.Logging.AddFile("logs/reason-mcp.log");
 
+//  Add Permisions/Policies
+builder.AddAgentPermissonPolicies();
+
 //  Add DB Factories and Initializers
 builder.AddDbInitializers();
 builder.AddDbFactories();
