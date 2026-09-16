@@ -1,9 +1,9 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
-using ReasonMCP.Interfaces.IEnrichment;
+using ReasonMCP.Core.Interfaces;
 
-namespace ReasonMCP.Services
+namespace ReasonMCP.Core.Services
 {
     public class VectorSearchResultServices : IVectorSearchResultService
     {

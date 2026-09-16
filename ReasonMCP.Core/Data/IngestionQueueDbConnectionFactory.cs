@@ -1,8 +1,8 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ReasonMCP.Configurations;
-using ReasonMCP.Interfaces;
+using ReasonMCP.Core.Configurations;
+using ReasonMCP.Core.Interfaces;
 
 namespace ReasonMCP.Core.Data
 {

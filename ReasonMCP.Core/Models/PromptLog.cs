@@ -1,4 +1,4 @@
-namespace ReasonMCP.Models
+namespace ReasonMCP.Core.Models
 {
     public class PromptLog
     {

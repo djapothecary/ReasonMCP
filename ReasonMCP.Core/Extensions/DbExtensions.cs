@@ -1,9 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ReasonMCP.Data;
-using ReasonMCP.Interfaces;
+using ReasonMCP.Core.Data;
+using ReasonMCP.Core.Interfaces;
 
-namespace ReasonMCP.Extensions
+namespace ReasonMCP.Core.Extensions
 {
     public static class DbExtensions
     {

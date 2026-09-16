@@ -1,10 +1,10 @@
 using System.Security.AccessControl;
 using Microsoft.SemanticKernel;
-using ReasonMCP.Enums;
-using ReasonMCP.Interfaces;
-using ResourceType = ReasonMCP.Enums.ResourceType;
+using ReasonMCP.Core.Enums;
+using ReasonMCP.Core.Interfaces;
+using ResourceType = ReasonMCP.Core.Enums.ResourceType;
 
-namespace ReasonMCP.Services
+namespace ReasonMCP.Core.Services
 {
     public class AgentAuthorizationFilter : IFunctionInvocationFilter
     {

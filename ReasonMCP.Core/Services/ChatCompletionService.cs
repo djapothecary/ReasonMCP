@@ -1,7 +1,7 @@
 using Microsoft.SemanticKernel;
-using ReasonMCP.Interfaces;
+using ReasonMCP.Core.Interfaces;
 
-namespace ReasonMCP.Services
+namespace ReasonMCP.Core.Services
 {
     public class ChatCompletionService : IReasonChatCompletionService
     {

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace ReasonMCP.Services
+namespace ReasonMCP.Core.Services
 {
     public class CurrentChatContextSummarizer
     {

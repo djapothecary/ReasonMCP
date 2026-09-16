@@ -1,11 +1,11 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
-using ReasonMCP.Configurations;
-using ReasonMCP.Interfaces;
+using ReasonMCP.Core.Configurations;
+using ReasonMCP.Core.Interfaces;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace ReasonMCP.Services
+namespace ReasonMCP.Core.Services
 {
     public class AgentProfileService : IAgentProfileService
     {

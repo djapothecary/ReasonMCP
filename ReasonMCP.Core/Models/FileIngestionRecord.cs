@@ -1,7 +1,7 @@
 using System;
-using ReasonMCP.Enums;
+using ReasonMCP.Core.Enums;
 
-namespace ReasonMCP.Models
+namespace ReasonMCP.Core.Models
 {
     public class FileIngestionRecord
     {

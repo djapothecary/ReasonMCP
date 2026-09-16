@@ -1,4 +1,4 @@
-namespace ReasonMCP.Configurations
+namespace ReasonMCP.Core.Configurations
 {
     public class AgentProfile
     {

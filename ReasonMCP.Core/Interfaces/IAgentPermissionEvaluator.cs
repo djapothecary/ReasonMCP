@@ -1,6 +1,6 @@
-using ReasonMCP.Enums;
+using ReasonMCP.Core.Enums;
 
-namespace ReasonMCP.Interfaces
+namespace ReasonMCP.Core.Interfaces
 {
     public interface IAgentPermissionEvaluator
     {

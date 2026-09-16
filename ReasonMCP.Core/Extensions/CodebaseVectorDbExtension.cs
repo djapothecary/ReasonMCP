@@ -3,9 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using ReasonMCP.Data;
+using ReasonMCP.Core.Data;
 
-namespace ReasonMCP.Extensions
+namespace ReasonMCP.Core.Extensions
 {
     public static class CodebaseVectorDbExtension
     {

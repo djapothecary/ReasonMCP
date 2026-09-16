@@ -1,10 +1,10 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using ReasonMCP.Interfaces;
-using ReasonMCP.Records;
+using ReasonMCP.Core.Interfaces;
+using ReasonMCP.Core.Records;
 
-namespace ReasonMCP.Services
+namespace ReasonMCP.Core.Services
 {
     public class LocalFileSystemService : ILocalFileSystemService
     {

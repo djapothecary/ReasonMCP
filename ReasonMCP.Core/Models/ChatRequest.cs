@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace ReasonMCP.Models
+namespace ReasonMCP.Core.Models
 {
     public class ChatRequest
     {

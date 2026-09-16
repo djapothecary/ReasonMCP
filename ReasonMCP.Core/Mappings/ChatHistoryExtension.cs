@@ -1,8 +1,8 @@
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using ReasonMCP.Records;
+using ReasonMCP.Core.Records;
 
-namespace ReasonMCP.Mappings
+namespace ReasonMCP.Core.Mappings
 {
     public static class ChatHistoryExtensions
     {

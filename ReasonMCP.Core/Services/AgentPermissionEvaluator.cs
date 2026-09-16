@@ -2,12 +2,12 @@ using System.Security.AccessControl;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using ReasonMCP.Enums;
-using ReasonMCP.Interfaces;
-using ReasonMCP.Models;
-using ResourceType = ReasonMCP.Enums.ResourceType;
+using ReasonMCP.Core.Enums;
+using ReasonMCP.Core.Interfaces;
+using ReasonMCP.Core.Models;
+using ResourceType = ReasonMCP.Core.Enums.ResourceType;
 
-namespace ReasonMCP.Services
+namespace ReasonMCP.Core.Services
 {
 
     public class AgentPermissionEvaluator : IAgentPermissionEvaluator

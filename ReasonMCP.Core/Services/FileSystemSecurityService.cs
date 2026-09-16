@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Options;
-using ReasonMCP.Configurations;
-using ReasonMCP.Interfaces;
+using ReasonMCP.Core.Configurations;
+using ReasonMCP.Core.Interfaces;
 
-namespace ReasonMCP.Services
+namespace ReasonMCP.Core.Services
 {
     public class FileSystemSecurityService : IFileSystemSecurityService
     {

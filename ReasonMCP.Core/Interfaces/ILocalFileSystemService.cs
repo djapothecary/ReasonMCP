@@ -1,6 +1,6 @@
-using ReasonMCP.Records;
+using ReasonMCP.Core.Records;
 
-namespace ReasonMCP.Interfaces
+namespace ReasonMCP.Core.Interfaces
 {
     public interface ILocalFileSystemService
     {

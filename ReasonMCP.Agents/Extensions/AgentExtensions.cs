@@ -5,8 +5,7 @@ using ReasonMCP.Agents.Interfaces;
 using ReasonMCP.Agents.Strategies;
 using ReasonMCP.Core.Configurations;
 using ReasonMCP.Core.Interfaces;
-using ReasonMCP.Services;
-using ReasonMPC.Agents;
+using ReasonMCP.Core.Services;
 
 namespace ReasonMCP.Agents.Extensions
 {
@@ -50,6 +49,18 @@ namespace ReasonMCP.Agents.Extensions
             builder.Services.AddScoped<CurrentChatContextSummarizer>();
             builder.Services.AddScoped<IAgentProfileService, AgentProfileService>();
             builder.Services.AddScoped<IMnemosyne, MnemosyneAgent>();
+
+            return builder;
+        }
+
+        public static IHostApplicationBuilder AddAIPluginsAndTools(
+            this IHostApplicationBuilder builder)
+        {
+            builder.Services.AddSingleton<CodebaseContextSearchTool>();
+            builder.Services.AddSingleton<DocumentContextSearchTool>();
+            builder.Services.AddSingleton<LocalFileSystemTool>();
+            builder.Services.AddSingleton<RandomNumberTools>();
+            builder.Services.AddSingleton<ReferenceContextSearchTool>();
 
             return builder;
         }

@@ -1,9 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ReasonMCP.Interfaces;
-using ReasonMCP.Services;
+using ReasonMCP.Core.Interfaces;
+using ReasonMCP.Core.Services;
 
-namespace ReasonMCP.Extensions
+namespace ReasonMCP.Core.Extensions
 {
     public static class PermissionPoliciesExtensions
     {

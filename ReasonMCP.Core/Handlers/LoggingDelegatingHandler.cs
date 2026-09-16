@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace ReasonMCP.Handlers
+namespace ReasonMCP.Core.Handlers
 {
     /// <summary>
     /// Delegating handler that logs outgoing HTTP requests and responses for debugging

@@ -1,4 +1,4 @@
-namespace ReasonMCP.Records
+namespace ReasonMCP.Core.Records
 {
     /// <summary>
     /// Represents a semantic chunk of C# source code extracted from an AST.

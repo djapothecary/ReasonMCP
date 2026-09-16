@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using FunctionInvocationContext = Microsoft.SemanticKernel.FunctionInvocationContext;
 
-namespace ReasonMCP.Filters
+namespace ReasonMCP.Core.Filters
 {
     /// <summary>
     /// Intercepts Semantic Kernel AI invocations to enable Context Compression,

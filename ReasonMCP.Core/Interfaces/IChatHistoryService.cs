@@ -1,7 +1,7 @@
-using ReasonMCP.DTOs;
-using ReasonMCP.Records;
+using ReasonMCP.Core.DTOs;
+using ReasonMCP.Core.Records;
 
-namespace ReasonMCP.Interfaces
+namespace ReasonMCP.Core.Interfaces
 {
     public interface IChatHistoryService
     {

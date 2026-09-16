@@ -2,10 +2,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using ReasonMCP.Interfaces;
-using ReasonMCP.Records;
+using ReasonMCP.Core.Interfaces;
+using ReasonMCP.Core.Records;
 
-namespace ReasonMCP.Walkers
+namespace ReasonMCP.Core.Walkers
 {
     /// <summary>
     /// Custom Roslyn syntax walker that extracts semantic chunks from the AST.

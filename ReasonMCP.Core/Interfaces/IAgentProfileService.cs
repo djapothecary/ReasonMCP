@@ -1,6 +1,6 @@
-using ReasonMCP.Configurations;
+using ReasonMCP.Core.Configurations;
 
-namespace ReasonMCP.Interfaces
+namespace ReasonMCP.Core.Interfaces
 {
     public interface IAgentProfileService
     {

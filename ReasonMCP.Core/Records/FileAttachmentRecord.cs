@@ -1,4 +1,4 @@
-namespace ReasonMCP.Records
+namespace ReasonMCP.Core.Records
 {
     public record FileAttachmentRecord(
         string FileName,

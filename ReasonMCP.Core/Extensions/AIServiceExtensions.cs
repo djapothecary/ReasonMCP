@@ -6,10 +6,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OllamaSharp;
-using ReasonMCP.Handlers;
-using ReasonMCP.Tools;
 
-namespace ReasonMCP.Extensions
+namespace ReasonMCP.Core.Extensions
 {
     public static class AIServiceExtensions
     {
@@ -71,18 +69,6 @@ namespace ReasonMCP.Extensions
 
                 return chatClient.AsChatCompletionService();
             });
-
-            return builder;
-        }
-
-        public static IHostApplicationBuilder AddAIPluginsAndTools(
-            this IHostApplicationBuilder builder)
-        {
-            builder.Services.AddSingleton<CodebaseContextSearchTool>();
-            builder.Services.AddSingleton<DocumentContextSearchTool>();
-            builder.Services.AddSingleton<LocalFileSystemTool>();
-            builder.Services.AddSingleton<RandomNumberTools>();
-            builder.Services.AddSingleton<ReferenceContextSearchTool>();
 
             return builder;
         }

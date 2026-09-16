@@ -1,6 +1,6 @@
-using ReasonMCP.Records;
+using ReasonMCP.Core.Records;
 
-namespace ReasonMCP.Interfaces
+namespace ReasonMCP.Core.Interfaces
 {
     /// <summary>
     /// Processor for chunking C# source code into semantic AST-based elements.

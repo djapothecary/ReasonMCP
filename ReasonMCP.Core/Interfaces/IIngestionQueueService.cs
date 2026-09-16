@@ -1,6 +1,6 @@
-using ReasonMCP.Models;
+using ReasonMCP.Core.Models;
 
-namespace ReasonMCP.Interfaces
+namespace ReasonMCP.Core.Interfaces
 {
     public interface IIngestionQueueService
     {

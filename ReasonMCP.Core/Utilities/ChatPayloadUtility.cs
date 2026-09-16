@@ -1,7 +1,7 @@
 using System.Text;
-using ReasonMCP.DTOs;
+using ReasonMCP.Core.DTOs;
 
-namespace ReasonMCP.Utilities
+namespace ReasonMCP.Core.Utilities
 {
     public static class ChatPayloadUtility
     {

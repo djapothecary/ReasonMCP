@@ -4,10 +4,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.SqliteVec;
-using ReasonMCP.Interfaces;
-using ReasonMCP.Models;
+using ReasonMCP.Core.Interfaces;
+using ReasonMCP.Core.Models;
 
-namespace ReasonMCP.Extensions
+namespace ReasonMCP.Core.Extensions
 {
     public static class CodebaseVectorStoreExtensions
     {

@@ -3,10 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ReasonMCP.Configurations;
-using ReasonMCP.Orchestration;
+using ReasonMCP.Core.Configurations;
+using ReasonMCP.Core.Orchestration;
 
-namespace ReasonMCP.Workers
+namespace ReasonMCP.Core.Workers
 {
     public class AgentTaskWorker : BackgroundService
     {

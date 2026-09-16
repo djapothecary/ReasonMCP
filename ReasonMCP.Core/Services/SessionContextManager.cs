@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ReasonMCP.Configurations;
+using ReasonMCP.Core.Configurations;
 
-namespace ReasonMCP.Services
+namespace ReasonMCP.Core.Services
 {
     /// <summary>
     /// Manages per-session context file paths for chat strategies.

@@ -6,12 +6,11 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using ReasonMCP.Configurations;
-using ReasonMCP.Data;
-using ReasonMCP.Endpoints;
-using ReasonMCP.Extensions;
-using ReasonMCP.Tools;
-using ReasonMCP.Workers;
+using ReasonMCP.Core.Configurations;
+using ReasonMCP.Core.Data;
+using ReasonMCP.Core.Extensions;
+using ReasonMCP.Core.Workers;
+// using ReasonMCP.Server.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 

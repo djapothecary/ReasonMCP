@@ -1,11 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ReasonMCP.Configurations;
-using ReasonMCP.Interfaces;
-using ReasonMCP.Orchestration;
-using ReasonMCP.Services;
+using ReasonMCP.Core.Configurations;
+using ReasonMCP.Core.Interfaces;
+using ReasonMCP.Core.Orchestration;
+using ReasonMCP.Core.Services;
 
-namespace ReasonMCP.Extensions
+namespace ReasonMCP.Core.Extensions
 {
     public static class AiGatewayServiceExtensions
     {

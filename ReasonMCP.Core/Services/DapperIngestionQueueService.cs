@@ -1,10 +1,10 @@
 using Dapper;
 using DocumentFormat.OpenXml.Spreadsheet;
-using ReasonMCP.Enums;
-using ReasonMCP.Interfaces;
-using ReasonMCP.Models;
+using ReasonMCP.Core.Enums;
+using ReasonMCP.Core.Interfaces;
+using ReasonMCP.Core.Models;
 
-namespace ReasonMCP.Services
+namespace ReasonMCP.Core.Services
 {
     public class DapperIngestionQueueService : IIngestionQueueService
     {

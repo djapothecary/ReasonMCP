@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ElBruno.MarkItDotNet" Version="0.6.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ReasonMCP.Core\ReasonMCP.Core.csproj" />
   </ItemGroup>
 

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.VectorData;
-using ReasonMCP.Interfaces.IEnrichment;
+using ReasonMCP.Core.Interfaces;
 
-namespace ReasonMCP.Models
+namespace ReasonMCP.Core.Models
 {
     public class DocumentVectorModel : IEnrichmentVectorModel
     {

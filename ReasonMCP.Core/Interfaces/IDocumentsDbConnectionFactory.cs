@@ -1,6 +1,6 @@
 using Microsoft.Data.Sqlite;
 
-namespace ReasonMCP.Interfaces
+namespace ReasonMCP.Core.Interfaces
 {
     public interface IDocumentsDbConnectionFactory
     {

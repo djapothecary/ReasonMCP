@@ -1,15 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ReasonMCP.Configurations;
-using ReasonMCP.Data;
-using ReasonMCP.Handlers;
-using ReasonMCP.Interfaces;
-using ReasonMCP.Services;
-using ReasonMCP.Strategies.Converters;
-using ReasonMCP.Tools;
-using ReasonMCP.Utilities;
+using ReasonMCP.Core.Configurations;
+using ReasonMCP.Core.Data;
+using ReasonMCP.Core.Handlers;
+using ReasonMCP.Core.Interfaces;
+using ReasonMCP.Core.Services;
+using ReasonMCP.Core.Utilities;
 
-namespace ReasonMCP.Extensions
+namespace ReasonMCP.Core.Extensions
 {
     public static class ServiceExtensions
     {
@@ -29,22 +27,6 @@ namespace ReasonMCP.Extensions
             builder.Services.AddScoped<IMetadataEnrichmentUtility, MetadataEnrichmentUtility>();
             builder.Services.AddScoped<DapperIngestionQueueService>();
             builder.Services.AddScoped<SessionContextManager>();
-
-            return builder;
-        }
-
-        public static IHostApplicationBuilder AddStrategies(
-            this IHostApplicationBuilder builder
-        )
-        {
-            builder.Services.AddScoped<IFileConverterStrategy, ConfigConverterStrategy>();
-            builder.Services.AddScoped<IFileConverterStrategy, MarkdownFileStrategy>();
-            builder.Services.AddScoped<IFileConverterStrategy, MarkupConverterStrategy>();
-            builder.Services.AddScoped<IFileConverterStrategy, MhtmlConverterStrategy>();
-            builder.Services.AddScoped<IFileConverterStrategy, PdfConverterStrategy>();
-            builder.Services.AddScoped<IFileConverterStrategy, SourceCodeConverterStrategy>();
-            builder.Services.AddScoped<IFileConverterStrategy, SqlScriptConverterStrategy>();
-            builder.Services.AddScoped<IFileConverterStrategy, TxtConverterStrategy>();
 
             return builder;
         }

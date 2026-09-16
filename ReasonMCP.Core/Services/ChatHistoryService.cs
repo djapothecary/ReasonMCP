@@ -3,14 +3,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using ReasonMCP.Configurations;
-using ReasonMCP.DTOs;
-using ReasonMCP.Interfaces;
-using ReasonMCP.Mappings;
-using ReasonMCP.Models;
-using ReasonMCP.Records;
+using ReasonMCP.Core.Configurations;
+using ReasonMCP.Core.DTOs;
+using ReasonMCP.Core.Interfaces;
+using ReasonMCP.Core.Mappings;
+using ReasonMCP.Core.Models;
+using ReasonMCP.Core.Records;
 
-namespace ReasonMCP.Services
+namespace ReasonMCP.Core.Services
 {
     public class ChatHistoryService : IChatHistoryService
     {

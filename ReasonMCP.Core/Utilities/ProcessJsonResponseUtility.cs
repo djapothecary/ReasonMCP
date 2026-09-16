@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.SemanticKernel;
 
-namespace ReasonMCP.Utilities
+namespace ReasonMCP.Core.Utilities
 {
     public static class ProcessJsonResponseUtility
     {
