@@ -4,5 +4,9 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="ReasonMCP/ReasonMCP.csproj" />
+  <Project Path="ReasonMCP.Agents/ReasonMCP.Agents.csproj" />
+  <Project Path="ReasonMCP.Console/ReasonMCP.Console.csproj" />
+  <Project Path="ReasonMCP.Enrichment/ReasonMCP.Enrichment.csproj" />
+  <Project Path="ReasonMCP.Server/ReasonMCP.Server.csproj" />
+  <Project Path="ReasonMCP/ReasonMCP.Core.csproj" />
 </Solution>
