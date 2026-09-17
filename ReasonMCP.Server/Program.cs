@@ -80,8 +80,10 @@ builder.AddCodebaseVectorDbService();
 builder.AddDocumentsVectorDbService();
 builder.AddReferenceVectorDbService();
 // builder.AddStrategies();
-// builder.AddFileServices();
+builder.AddSecurityServices();
+builder.AddSessionServices();
 // builder.AddCodeChunkingServices();
+builder.AddEnrichmentUtilities();
 builder.AddAiGatewayService();
 
 //  Agent Services and Strategies

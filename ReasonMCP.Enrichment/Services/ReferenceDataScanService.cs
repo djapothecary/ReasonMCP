@@ -3,10 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.VectorData;
-using ReasonMCP.Configurations;
-using ReasonMCP.Core.Interfaces.IEnrichment;
+using ReasonMCP.Core.Configurations;
+using ReasonMCP.Enrichment.Interfaces;
 
-namespace ReasonMCP.Services
+namespace ReasonMCP.Enrichment.Services
 {
     public class ReferenceDataScanService : IReferenceDataScanService
     {

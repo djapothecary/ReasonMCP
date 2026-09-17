@@ -7,11 +7,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using ModelContextProtocol.Server;
-using ReasonMCP.Configurations;
+using ReasonMCP.Core.Configurations;
+using ReasonMCP.Core.Interfaces;
 using ReasonMCP.Core.Models;
 using ReasonMCP.Core.Records;
-using ReasonMCP.Enrichment.Interfaces;
-using ReasonMCP.Interfaces;
 
 namespace ReasonMCP.Agents.Tools
 {

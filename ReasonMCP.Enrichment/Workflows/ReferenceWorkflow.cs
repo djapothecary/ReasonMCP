@@ -1,11 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ReasonMCP.Configurations;
-using ReasonMCP.Interfaces;
-using ReasonMCP.Interfaces.IEnrichment;
+using ReasonMCP.Core.Configurations;
+using ReasonMCP.Enrichment.Interfaces;
 
-namespace ReasonMCP.Workflows
+namespace ReasonMCP.Enrichment.Workflows
 {
     public class ReferenceWorkflow
     {

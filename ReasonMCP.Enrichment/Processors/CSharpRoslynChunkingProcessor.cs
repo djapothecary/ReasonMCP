@@ -2,9 +2,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
+using ReasonMCP.Core.Interfaces;
 using ReasonMCP.Core.Records;
 using ReasonMCP.Core.Walkers;
-using ReasonMCP.Enrichment.Interfaces;
 
 namespace ReasonMCP.Enrichment.Processors
 {

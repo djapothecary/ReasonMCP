@@ -7,7 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.3.10" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ReasonMCP.Core\ReasonMCP.Core.csproj" />
+    <ProjectReference Include="..\ReasonMCP.Enrichment\ReasonMCP.Enrichment.csproj" />
   </ItemGroup>
 
 </Project>

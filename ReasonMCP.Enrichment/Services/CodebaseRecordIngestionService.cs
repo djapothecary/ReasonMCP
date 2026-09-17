@@ -2,9 +2,9 @@ using System.Text;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
-using ReasonMCP.Interfaces;
-using ReasonMCP.Models;
-using ReasonMCP.Records;
+using ReasonMCP.Core.Models;
+using ReasonMCP.Core.Records;
+using ReasonMCP.Enrichment.Interfaces;
 
 namespace ReasonMCP.Enrichment.Services
 {

@@ -79,8 +79,10 @@ builder.AddIngestionQueueService();
 builder.AddCodebaseVectorDbService();
 builder.AddDocumentsVectorDbService();
 builder.AddReferenceVectorDbService();
+builder.AddEnrichmentUtilities();
 // builder.AddStrategies();
-// builder.AddFileServices();
+builder.AddSecurityServices();
+builder.AddSessionServices();
 // builder.AddCodeChunkingServices();
 builder.AddAiGatewayService();
 

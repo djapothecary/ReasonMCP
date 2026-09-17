@@ -5,10 +5,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Ollama;
-using ReasonMCP.Configurations;
-using ReasonMCP.Records;
-using ReasonMCP.Tools;
-using ReasonMCP.Utilities;
+using ReasonMCP.Agents.Tools;
+using ReasonMCP.Core.Configurations;
+using ReasonMCP.Core.Records;
+using ReasonMCP.Core.Utilities;
 
 namespace ReasonMCP.Agents.Agents
 {

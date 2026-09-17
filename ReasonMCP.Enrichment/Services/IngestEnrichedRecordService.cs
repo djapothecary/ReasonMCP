@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
-using ReasonMCP.Interfaces;
-using ReasonMCP.Models;
+using ReasonMCP.Core.Models;
+using ReasonMCP.Enrichment.Interfaces;
 
-namespace ReasonMCP.Services
+namespace ReasonMCP.Enrichment.Services
 {
     public class IngestEnrichedRecordsService : IIngestEnrichedRecordsService
     {

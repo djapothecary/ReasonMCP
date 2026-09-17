@@ -2,10 +2,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReasonMCP.Core.Configurations;
-using ReasonMCP.Core.Processors;
 using ReasonMCP.Core.Records;
-using ReasonMCP.Core.Services.Enrichment;
 using ReasonMCP.Enrichment.Interfaces;
+using ReasonMCP.Enrichment.Processors;
 
 namespace ReasonMCP.Enrichment.Strategies.Converters
 {

@@ -2,8 +2,8 @@ using System.Text;
 using ElBruno.MarkItDotNet;
 using ElBruno.MarkItDotNet.Converters;
 using Microsoft.Extensions.Logging;
-using ReasonMCP.Core.Utilities;
 using ReasonMCP.Enrichment.Interfaces;
+using ReasonMCP.Enrichment.Utilities;
 
 namespace ReasonMCP.Enrichment.Strategies.Converters
 {

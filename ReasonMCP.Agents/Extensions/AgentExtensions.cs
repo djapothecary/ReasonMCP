@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ReasonMCP.Agents.Agents;
 using ReasonMCP.Agents.Strategies;
+using ReasonMCP.Agents.Tools;
 using ReasonMCP.Core.Configurations;
 using ReasonMCP.Core.Interfaces;
 using ReasonMCP.Core.Services;
@@ -60,6 +61,16 @@ namespace ReasonMCP.Agents.Extensions
             builder.Services.AddSingleton<LocalFileSystemTool>();
             builder.Services.AddSingleton<RandomNumberTools>();
             builder.Services.AddSingleton<ReferenceContextSearchTool>();
+
+            return builder;
+        }
+
+        public static IHostApplicationBuilder AddSecurityServices(
+            this IHostApplicationBuilder builder
+        )
+        {
+            builder.Services.AddScoped<IFileSystemSecurityService, FileSystemSecurityService>();
+            builder.Services.AddScoped<ILocalFileSystemService, LocalFileSystemService>();
 
             return builder;
         }

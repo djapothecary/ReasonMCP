@@ -1,3 +1,8 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using ReasonMCP.Enrichment.Interfaces;
+using ReasonMCP.Enrichment.Strategies.Converters;
+
 namespace ReasonMCP.Agents.Extensions
 {
     public static class AgentStrategyExtensions

@@ -5,8 +5,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using ModelContextProtocol.Server;
+using ReasonMCP.Core.Interfaces;
 using ReasonMCP.Core.Models;
-using ReasonMCP.Enrichment.Interfaces;
 
 namespace ReasonMCP.Agents.Tools
 {
