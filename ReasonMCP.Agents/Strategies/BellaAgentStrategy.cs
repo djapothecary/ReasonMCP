@@ -2,12 +2,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using ReasonMCP.Agents;
-using ReasonMCP.Configurations;
-using ReasonMCP.DTOs;
-using ReasonMCP.Interfaces;
-using ReasonMCP.Records;
-using ReasonMCP.Services;
+using ReasonMCP.Agents.Agents;
+using ReasonMCP.Core.Configurations;
+using ReasonMCP.Core.DTOs;
+using ReasonMCP.Core.Interfaces;
+using ReasonMCP.Core.Records;
+using ReasonMCP.Core.Services;
 
 namespace ReasonMCP.Agents.Strategies
 {
@@ -144,7 +144,11 @@ namespace ReasonMCP.Agents.Strategies
                 payload.SessionId
             );
 
-            var agentProfile = await _agentProfileService.LoadAgentProfileAsync(_settings.Agents["bella"].AgentProfilePath);
+            var agentProfile = await _agentProfileService
+                .LoadAgentProfileAsync(
+                    _settings.Agents["bella"].AgentProfilePath
+                );
+
             var agentResponse = await _bellaAgent.SendPrompt(
                                 agentProfile,
                                 currentContext,

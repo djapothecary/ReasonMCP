@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OllamaSharp;
+using ReasonMCP.Core.Handlers;
 
 namespace ReasonMCP.Core.Extensions
 {
