@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <RuntimeIdentifiers>win-x64;win-arm64;osx-arm64;linux-x64;linux-arm64;linux-musl-x64</RuntimeIdentifiers>
     <Nullable>enable</Nullable>
@@ -61,7 +62,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ReasonMCP.Agents\ReasonMCP.Agents.csproj" />
     <ProjectReference Include="..\ReasonMCP.Core\ReasonMCP.Core.csproj" />
+    <ProjectReference Include="..\ReasonMCP.Enrichment\ReasonMCP.Enrichment.csproj" />
   </ItemGroup>
 
   <ItemGroup>

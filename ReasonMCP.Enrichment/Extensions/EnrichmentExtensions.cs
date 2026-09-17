@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ReasonMCP.Core.Interfaces;
 using ReasonMCP.Core.Services;
+using ReasonMCP.Enrichment.Dispatchers;
 using ReasonMCP.Enrichment.Interfaces;
 using ReasonMCP.Enrichment.Processors;
 using ReasonMCP.Enrichment.Services;
@@ -49,6 +50,15 @@ namespace ReasonMCP.Enrichment.Extensions
             builder.Services.AddScoped<IFileConverterUtility, FileConverterUtility>();
             builder.Services.AddScoped<IChunkParsingUtility, ChunkParsingUtility>();
             builder.Services.AddScoped<IMetadataEnrichmentUtility, MetadataEnrichmentUtility>();
+
+            return builder;
+        }
+
+        public static IHostApplicationBuilder AddEnrichmentDispatcher(
+            this IHostApplicationBuilder builder
+        )
+        {
+            builder.Services.AddScoped<EnrichmentDispatcher>();
 
             return builder;
         }

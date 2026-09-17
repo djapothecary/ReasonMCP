@@ -1,21 +1,31 @@
 ﻿using System.Data;
+using System.Text;
 using System.Threading.Channels;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel;
+using ReasonMCP.Agents.Extensions;
+using ReasonMCP.Agents.Tools;
 using ReasonMCP.Core.Configurations;
 using ReasonMCP.Core.Data;
 using ReasonMCP.Core.Extensions;
 using ReasonMCP.Core.Workers;
-// using ReasonMCP.Server.Endpoints;
+using ReasonMCP.Enrichment.Dispatchers;
+using ReasonMCP.Enrichment.Extensions;
+using ReasonMCP.Enrichment.Workers;
+using Spectre.Console;
 
-var builder = WebApplication.CreateBuilder(args);
+System.Console.OutputEncoding = Encoding.UTF8;
+// AnsiConsole.Write(new Rule("[yellow]Project Yuki Neural Terminal (v10.0)[/]").RuleStyle("blue"));
+// AnsiConsole.MarkupLine($"{NeuralStyle.LogSys} Initializing Project Yuki v10.0 Core...");
+// AnsiConsole.MarkupLine($"{NeuralStyle.LogSys} Loading Ollama endpoint: {NeuralStyle.Construct}http://127.0.0.1:11434{NeuralStyle.End}");
+// AnsiConsole.MarkupLine($"{NeuralStyle.Success} [bold]VEC0_STABLE:[/]{NeuralStyle.End} Neural memory synchronized (768 Dimensions).");
 
-builder.WebHost.UseUrls("http://127.0.0.1:5000");
-// builder.WebHost.UseUrls("http://127.0.0.1:11434");
+var builder = Host.CreateApplicationBuilder(args);
 
 builder.Configuration.SetBasePath(@"C:\Source\ReasonMCP\ReasonMCP.Core\SharedConfigurations")
     .AddJsonFile("agentTaskWorkerSettings.json", optional: false, reloadOnChange: true)
@@ -39,26 +49,6 @@ builder.Services.Configure<KnowledgebaseScanSettings>(builder.Configuration.GetS
 builder.Services.Configure<ReferenceScanSettings>(builder.Configuration.GetSection("ReferenceScanSettings"));
 builder.Services.Configure<StorageConfigSettings>(builder.Configuration.GetSection("StorageConfigSettings"));
 builder.Services.Configure<TestingSettings>(builder.Configuration.GetSection("TestingSettings"));
-
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
-    });
-});
-
-//  Clear default providers so that nothing leaks accidently leaks to STDOUT
-builder.Logging.ClearProviders();
-
-//  Add the console forcing STDERR for everything
-//  Configure all logs to go to stderr (stdout is used for the MCP protocol messages).
-builder.Logging.AddConsole();
-// TODO:    Feature: Add a file logger to save/read logs
-// builder.Logging.AddFile("logs/reason-mcp.log");
 
 //  Add Permisions/Policies
 builder.AddAgentPermissonPolicies();
@@ -87,60 +77,37 @@ builder.AddSessionServices();
 builder.AddAiGatewayService();
 
 //  Agent Services and Strategies
-// builder.AddAgentChatStrategies();
-// builder.AddAgents();
-// builder.AddAgentServices();
-// builder.AddAIPluginsAndTools();
+builder.AddAgentChatStrategies();
+builder.AddAgents();
+builder.AddAgentServices();
+builder.AddAIPluginsAndTools();
 
 //  Enrichment Extensions
-// builder.AddWorkflows();
-// builder.AddEnrichmentServices();
+builder.AddWorkflows();
+builder.AddEnrichmentServices();
+builder.AddEnrichmentDispatcher();
 
 //  testing AI Agent chat interception
 // builder.Services.AddSingleton<IFunctionInvocationFilter, ChatInterceptor>();
 
 //  Register the Background Services
 //  Scanners for Codebase and Documents/Knowledge
-// builder.Services.AddHostedService<EnrichmentWorker>();
+builder.Services.AddHostedService<EnrichmentWorker>();
 builder.Services.AddHostedService<AgentTaskWorker>();
 
 builder.Services.AddSingleton(Channel.CreateUnbounded<object>());
 
-// Add the MCP services: the transport to use and the tools to register.
-builder.Services
-    .AddMcpServer()
-    .WithHttpTransport()
-    // .WithTools<RandomNumberTools>()
-    // .WithTools<CodebaseContextSearchTool>()
-    // .WithTools<DocumentContextSearchTool>()
-    // .WithTools<LocalFileSystemTool>()
-    // .WithTools<ReferenceContextSearchTool>()
-    ;
+var kernelBuilder = builder.Services.AddKernel();
 
-builder.Services.AddKernel();
+kernelBuilder.Plugins.AddFromType<CodebaseContextSearchTool>();
+kernelBuilder.Plugins.AddFromType<DocumentContextSearchTool>();
+kernelBuilder.Plugins.AddFromType<LocalFileSystemTool>();
+kernelBuilder.Plugins.AddFromType<ReferenceContextSearchTool>();
 
-var webHost = builder.Build();
-// webHost.UseDeveloperExceptionPage();
-// webHost.MapHealthEndpoints();
-// webHost.MapReasonChatEndpoints();
-// webHost.MapGradingEndpoints();
-// webHost.MapAiGatewayEndpoints();
-// webHost.MapAiTestInterceptEndpoints();
-// webHost.MapTroubleshootingEndpoints();
+using IHost host = builder.Build();
+await host.StartAsync();
 
-webHost.MapGet("/routes", (IEnumerable<EndpointDataSource> endpointSources) =>
-{
-    var endpoints = endpointSources.SelectMany(es => es.Endpoints).OfType<RouteEndpoint>();
-    return endpoints.Select(e => new
-    {
-        Route = e.RoutePattern.RawText,
-        Methods = e.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods
-    });
-});
-
-webHost.MapMcp();
-
-using (var scope = webHost.Services.CreateAsyncScope())
+using (var scope = host.Services.CreateAsyncScope())
 {
     var services = scope.ServiceProvider;
     var logger = services.GetRequiredService<ILogger<Program>>();
@@ -160,7 +127,13 @@ using (var scope = webHost.Services.CreateAsyncScope())
     var dbIngestionQueueInit = services.GetRequiredService<IngestionQueueDbInitializer>();
     await dbIngestionQueueInit.InitializeIngestionQueueDbAsync();
 
-    logger.LogInformation("Ingestion complete. Start MCP Server loop ...");
+    logger.LogInformation("Ingestion complete. Start MCP Flight Deck ...");
+
+    var config = services.GetRequiredService<IConfiguration>();
+
+    //  TODO:   Feature:    Buildout MLOps workflows
+    var enrichmentDispatcher = services.GetRequiredService<EnrichmentDispatcher>();
+    await enrichmentDispatcher.RunAsync();
 }
 
-await webHost.RunAsync();
+await host.StopAsync();
