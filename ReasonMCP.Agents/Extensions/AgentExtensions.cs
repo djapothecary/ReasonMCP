@@ -30,7 +30,7 @@ namespace ReasonMCP.Agents.Extensions
             this IHostApplicationBuilder builder
         )
         {
-            builder.Services.AddScoped<WarmupAgent>();
+            builder.Services.AddScoped<TrinityAgent>();
             builder.Services.AddScoped<BellaAgent>();
             builder.Services.AddScoped<DozerAgent>();
             builder.Services.AddScoped<MozzieAgent>();

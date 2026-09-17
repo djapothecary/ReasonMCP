@@ -1,15 +1,11 @@
 using System.ComponentModel;
-using System.Text;
 using DocumentFormat.OpenXml.Wordprocessing;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using ModelContextProtocol.Server;
 using ReasonMCP.Core.Configurations;
 using ReasonMCP.Core.Interfaces;
-using ReasonMCP.Core.Models;
 using ReasonMCP.Core.Records;
 
 namespace ReasonMCP.Agents.Tools

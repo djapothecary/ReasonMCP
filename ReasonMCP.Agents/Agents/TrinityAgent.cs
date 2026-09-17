@@ -6,17 +6,17 @@ using Microsoft.SemanticKernel.Connectors.Ollama;
 
 namespace ReasonMCP.Agents.Agents
 {
-    public class WarmupAgent
+    public class TrinityAgent
     {
         private readonly Kernel _kernel;
         private readonly IChatCompletionService _chatCompletionService;
-        private readonly ILogger<WarmupAgent> _logger;
+        private readonly ILogger<TrinityAgent> _logger;
 
-        public WarmupAgent
+        public TrinityAgent
         (
             Kernel kernel,
             [FromKeyedServices("Reason")] IChatCompletionService chatCompletionService,
-            ILogger<WarmupAgent> logger
+            ILogger<TrinityAgent> logger
         )
         {
             _kernel = kernel;

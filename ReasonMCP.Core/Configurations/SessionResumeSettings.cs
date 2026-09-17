@@ -1,5 +1,3 @@
-using Azure.Core;
-
 namespace ReasonMCP.Core.Configurations
 {
     public class SessionResumeSettings

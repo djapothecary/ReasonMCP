@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using ReasonMCP.Agents.Agents;
 using ReasonMCP.Core.Configurations;
@@ -8,7 +7,6 @@ using ReasonMCP.Core.DTOs;
 using ReasonMCP.Core.Interfaces;
 using ReasonMCP.Core.Records;
 using ReasonMCP.Core.Services;
-using ReasonMCP.Core.Utilities;
 
 namespace ReasonMCP.Agents.Strategies
 {
