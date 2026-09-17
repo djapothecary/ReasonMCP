@@ -6,11 +6,16 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using ReasonMCP.Agents.Extensions;
+using ReasonMCP.Agents.Tools;
 using ReasonMCP.Core.Configurations;
 using ReasonMCP.Core.Data;
 using ReasonMCP.Core.Extensions;
 using ReasonMCP.Core.Workers;
-// using ReasonMCP.Server.Endpoints;
+using ReasonMCP.Enrichment.Extensions;
+using ReasonMCP.Enrichment.Workers;
+using ReasonMCP.Server.Endpoints;
+using ReasonMCP.Server.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,29 +84,29 @@ builder.AddIngestionQueueService();
 builder.AddCodebaseVectorDbService();
 builder.AddDocumentsVectorDbService();
 builder.AddReferenceVectorDbService();
-// builder.AddStrategies();
+builder.AddStrategies();
 builder.AddSecurityServices();
 builder.AddSessionServices();
-// builder.AddCodeChunkingServices();
+builder.AddCodeChunkingServices();
 builder.AddEnrichmentUtilities();
 builder.AddAiGatewayService();
 
 //  Agent Services and Strategies
-// builder.AddAgentChatStrategies();
-// builder.AddAgents();
-// builder.AddAgentServices();
-// builder.AddAIPluginsAndTools();
+builder.AddAgentChatStrategies();
+builder.AddAgents();
+builder.AddAgentServices();
+builder.AddAIPluginsAndTools();
 
 //  Enrichment Extensions
-// builder.AddWorkflows();
-// builder.AddEnrichmentServices();
+builder.AddWorkflows();
+builder.AddEnrichmentServices();
 
 //  testing AI Agent chat interception
 // builder.Services.AddSingleton<IFunctionInvocationFilter, ChatInterceptor>();
 
 //  Register the Background Services
 //  Scanners for Codebase and Documents/Knowledge
-// builder.Services.AddHostedService<EnrichmentWorker>();
+builder.Services.AddHostedService<EnrichmentWorker>();
 builder.Services.AddHostedService<AgentTaskWorker>();
 
 builder.Services.AddSingleton(Channel.CreateUnbounded<object>());
@@ -110,23 +115,22 @@ builder.Services.AddSingleton(Channel.CreateUnbounded<object>());
 builder.Services
     .AddMcpServer()
     .WithHttpTransport()
-    // .WithTools<RandomNumberTools>()
-    // .WithTools<CodebaseContextSearchTool>()
-    // .WithTools<DocumentContextSearchTool>()
-    // .WithTools<LocalFileSystemTool>()
-    // .WithTools<ReferenceContextSearchTool>()
-    ;
+    .WithTools<RandomNumberTools>()
+    .WithTools<CodebaseContextSearchTool>()
+    .WithTools<DocumentContextSearchTool>()
+    .WithTools<LocalFileSystemTool>()
+    .WithTools<ReferenceContextSearchTool>();
 
 builder.Services.AddKernel();
 
 var webHost = builder.Build();
-// webHost.UseDeveloperExceptionPage();
-// webHost.MapHealthEndpoints();
-// webHost.MapReasonChatEndpoints();
-// webHost.MapGradingEndpoints();
-// webHost.MapAiGatewayEndpoints();
-// webHost.MapAiTestInterceptEndpoints();
-// webHost.MapTroubleshootingEndpoints();
+webHost.UseDeveloperExceptionPage();
+webHost.MapHealthEndpoints();
+webHost.MapReasonChatEndpoints();
+webHost.MapGradingEndpoints();
+webHost.MapAiGatewayEndpoints();
+webHost.MapAiTestInterceptEndpoints();
+webHost.MapTroubleshootingEndpoints();
 
 webHost.MapGet("/routes", (IEnumerable<EndpointDataSource> endpointSources) =>
 {

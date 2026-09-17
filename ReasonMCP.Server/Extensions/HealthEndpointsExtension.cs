@@ -9,7 +9,7 @@ namespace ReasonMCP.Server.Extensions
             this IEndpointRouteBuilder app
         )
         {
-            HealthEndpoints.MapEndpoints(app);
+            HealthEndpoints.MapHealthEndpoints(app);
         }
     }
 }

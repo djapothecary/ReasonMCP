@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using ReasonMCP.DTOs;
-using ReasonMCP.Orchestration;
+using ReasonMCP.Core.DTOs;
+using ReasonMCP.Core.Orchestration;
 
 namespace ReasonMCP.Server.Endpoints
 {

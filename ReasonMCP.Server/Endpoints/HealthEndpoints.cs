@@ -7,7 +7,7 @@ namespace ReasonMCP.Server.Endpoints
 {
     public class HealthEndpoints
     {
-        public static void MapEndpoints(IEndpointRouteBuilder app)
+        public static void MapHealthEndpoints(IEndpointRouteBuilder app)
         {
             var group = app.MapGroup("/health");
 

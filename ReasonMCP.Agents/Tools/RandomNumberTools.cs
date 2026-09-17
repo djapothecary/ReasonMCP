@@ -8,7 +8,7 @@ namespace ReasonMCP.Agents.Tools
     /// Sample MCP tools for demonstration purposes.
     /// These tools can be invoked by MCP clients to perform various operations.
     /// </summary>
-    internal class RandomNumberTools
+    public class RandomNumberTools
     {
         [McpServerTool(Name = "random_number")]
         [KernelFunction("random_number")]

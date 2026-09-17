@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
-using ReasonMCP.DTOs;
+using ReasonMCP.Core.DTOs;
 
 
 namespace ReasonMCP.Server.Endpoints

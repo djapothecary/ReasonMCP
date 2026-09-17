@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using ReasonMCP.DTOs;
-using ReasonMCP.Orchestration;
+using ReasonMCP.Core.DTOs;
+using ReasonMCP.Core.Orchestration;
 
 namespace ReasonMCP.Server.Endpoints
 {
@@ -11,7 +11,7 @@ namespace ReasonMCP.Server.Endpoints
     {
         public static void MapTroubleshootingEndpoints(this WebApplication app)
         {
-            app.MapPost("/api/v1/chat", async (
+            app.MapPost("/api/v1/troubleshooting", async (
                 [FromBody] VSCodeChatPayloadDto request,
                 HttpContext httpContext) =>
             {
