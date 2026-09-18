@@ -1,0 +1,115 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+using ReasonMCP.Core.Configurations;
+using ReasonMCP.Core.DTOs;
+using ReasonMCP.Core.Interfaces;
+using ReasonMCP.Core.Records;
+using ReasonMCP.Core.Utilities;
+
+namespace ReasonMCP.Core.Orchestration
+{
+    public class SemanticKernelWrapperOrchestrator
+    {
+        private readonly IEnumerable<IChatStrategy> _strategies;
+        private readonly IMnemosyne _mnemosyneAgent;
+        private readonly IChatHistoryService _chatHistoryService;
+        private readonly ChatSettings _settings;
+        private readonly ILogger<SemanticKernelWrapperOrchestrator> _logger;
+        private readonly CancellationToken cancellationToken;
+
+        public SemanticKernelWrapperOrchestrator
+        (
+            IEnumerable<IChatStrategy> strategies,
+            IMnemosyne mnemosyneAgent,
+            IChatHistoryService chathistoryService,
+            IOptionsMonitor<ChatSettings> options,
+            ILogger<SemanticKernelWrapperOrchestrator> logger
+        )
+        {
+            _strategies = strategies;
+            _mnemosyneAgent = mnemosyneAgent;
+            _chatHistoryService = chathistoryService;
+            _settings = options.CurrentValue;
+            _logger = logger;
+        }
+
+        public async Task<string> ProcessChatAsync(
+            VSCodeChatPayloadDto payload
+        )
+        {
+            //  1.  Convert DTOs to SK ChatHistory
+            var skChathistory = new ChatHistory();
+            var currentChatContext = new ChatHistory();
+
+            foreach (var turn in payload.History)
+            {
+                skChathistory.AddMessage(new AuthorRole(turn.Role), turn.Content);
+            }
+
+            //  2. Dynamic Persona routing
+            string agentId = payload.AgentId.ToLower();
+            var agentStrategy = _strategies.FirstOrDefault(s => s.GetAgentStrategy(agentId));
+
+            //  update the prompt for file attachments
+            //  if no files are attached the original prompt is returned
+            var augmentedPrompt = payload.ToAugmentedPrompt();
+
+            //  add user prompt to the prompt log if enabled
+            if (_settings.EnablePromptLogging)
+                await _chatHistoryService.AppendToPromptHistoryFileAsync(payload);
+
+            //  3.  Add current message to "master" chat history regardless
+            await agentStrategy!.AppendToChathistory(new ChatMessageRecord("user", augmentedPrompt));
+
+            //  Append to current context
+            await agentStrategy!.AppendToCurrentContext(new ChatMessageRecord(
+                                "user", augmentedPrompt),
+                                payload);
+
+            //  4. Determine if summary needed
+            var turnCount = payload.History.Count(m => m.Role == "user");
+            var shouldSummarize = agentStrategy!.ShouldSummarize(turnCount);
+
+            if (shouldSummarize)
+            {
+                //  perform current chat context summarization
+                currentChatContext = await _mnemosyneAgent.CreateSummary(
+                    payload,
+                    currentChatContext);
+            }
+            else
+            {
+                foreach (var message in payload.History)
+                {
+                    currentChatContext.Add(new ChatMessageContent(
+                        new AuthorRole(message.Role),
+                        message.Content
+                    ));
+                }
+            }
+
+            //  5.Call _kernel.InvokePromptAsync() or IChatCompletionService
+            var agentResponse = await agentStrategy!.RunAgent(
+                                payload,
+                                currentChatContext,
+                                augmentedPrompt);
+
+            //  6.  Append agent response to to master history
+            await agentStrategy!.AppendToChathistory(new ChatMessageRecord(
+                                "assistant",
+                                agentResponse.First().Content));
+
+            //  Append to current context
+            await agentStrategy!.AppendToCurrentContext(new ChatMessageRecord(
+                                "assistant",
+                                agentResponse.First().Content),
+                                payload);
+
+            //  7.  Return text
+
+            return agentResponse.First().Content;
+        }
+    }
+}

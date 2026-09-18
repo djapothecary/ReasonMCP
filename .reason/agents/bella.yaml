@@ -20,5 +20,6 @@ Permissions:
   FileSystem: ReadOnly
   AllowToolCalling: true
   AllowedTools:
+    - CodebaseContextSearchTool
     - DocumentContextSearchTool
     - RandomNumberTool

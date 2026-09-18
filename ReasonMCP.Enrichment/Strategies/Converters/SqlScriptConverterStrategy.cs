@@ -1,0 +1,70 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using ReasonMCP.Core.Configurations;
+using ReasonMCP.Core.Records;
+using ReasonMCP.Enrichment.Interfaces;
+using ReasonMCP.Enrichment.Processors;
+
+namespace ReasonMCP.Enrichment.Strategies.Converters
+{
+    /// <summary>
+    /// This classintentionally uses Boilerplate constructors
+    /// </summary>
+    public class SqlScriptConverterStrategy : IFileConverterStrategy
+    {
+        private readonly IServiceScopeFactory _scopeFactory;
+        private SqlScriptChunkingProcessor _sqlScriptChunkProcessor;
+        private readonly CodebaseScanSettings _settings;
+        private readonly ILogger<SqlScriptConverterStrategy> _logger;
+
+        private static readonly string[] _supportedExtensions =
+        [
+            ".sql"
+        ];
+
+        public SqlScriptConverterStrategy(
+            IServiceScopeFactory scopeFactory,
+            SqlScriptChunkingProcessor sqlScriptChunkProcessor,
+            IOptionsMonitor<CodebaseScanSettings> options,
+            ILogger<SqlScriptConverterStrategy> logger
+        )
+        {
+            _scopeFactory = scopeFactory;
+            _sqlScriptChunkProcessor = sqlScriptChunkProcessor;
+            _settings = options.CurrentValue;
+            _logger = logger;
+        }
+
+        public bool CanConvert(string filePath)
+        {
+            var fileExtension = Path.GetExtension(filePath);
+            return _supportedExtensions.Contains(fileExtension, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public async Task<bool> ConvertForIngestionAsync(
+            string filePath,
+            bool writeConvertedOutput,
+            CancellationToken cancellationToken = default
+        )
+        {
+            using var scope = _scopeFactory.CreateScope();
+
+            IEnumerable<CodeChunk> chunks = [];
+            chunks = await _sqlScriptChunkProcessor.ChunkFileAsync(
+                filePath,
+                cancellationToken
+            );
+
+            var codebaseRecordIngestService = scope
+                .ServiceProvider
+                .GetRequiredService<ICodebaseRecordIngestionService>();
+
+            return await codebaseRecordIngestService
+                .CodebaseChunkUpsertAsync(
+                    chunks,
+                    cancellationToken
+            );
+        }
+    }
+}
