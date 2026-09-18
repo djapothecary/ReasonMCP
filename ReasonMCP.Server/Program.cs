@@ -45,6 +45,8 @@ builder.Services.Configure<ReferenceScanSettings>(builder.Configuration.GetSecti
 builder.Services.Configure<StorageConfigSettings>(builder.Configuration.GetSection("StorageConfigSettings"));
 builder.Services.Configure<TestingSettings>(builder.Configuration.GetSection("TestingSettings"));
 
+//  Register Memory Caching
+builder.Services.AddMemoryCache();
 
 builder.Services.AddCors(options =>
 {

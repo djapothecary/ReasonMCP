@@ -1,4 +1,6 @@
 using System.Security.AccessControl;
+using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using ReasonMCP.Core.Enums;
 using ReasonMCP.Core.Interfaces;
@@ -9,15 +11,15 @@ namespace ReasonMCP.Core.Services
     public class AgentAuthorizationFilter : IFunctionInvocationFilter
     {
         private readonly IAgentPermissionEvaluator _permissionEvaluator;
-        private readonly string _currentAgentId;   //  injected per-request via HttpContext/Extension state
+        private readonly IServiceScopeFactory _scopeFactory;
 
         public AgentAuthorizationFilter(
             IAgentPermissionEvaluator permissionEvaluator,
-            string currentAgentId
+            IServiceScopeFactory scopeFactory
         )
         {
             _permissionEvaluator = permissionEvaluator;
-            _currentAgentId = currentAgentId;
+            _scopeFactory = scopeFactory;
         }
 
         public async Task OnFunctionInvocationAsync(
@@ -28,12 +30,14 @@ namespace ReasonMCP.Core.Services
             using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
             var cancellationToken = cts.Token;
 
+            string currentAgentId = context.Arguments["agentId"]?.ToString() ?? string.Empty;
+
             string pluginName = context.Function.PluginName;
             string functionName = context.Function.Name;
 
             //  Evaluate if the AgentId has access to "PluginName.FunctionName"
             bool isAuthorized = await _permissionEvaluator.HasPermissionAsync(
-                _currentAgentId,
+                currentAgentId,
                 ResourceType.Plugin,
                 $"{pluginName}.{functionName}",
                 cancellationToken
@@ -41,7 +45,7 @@ namespace ReasonMCP.Core.Services
 
             if (!isAuthorized)
             {
-                throw new UnauthorizedAccessException($"Agent '{_currentAgentId}' is not authorized to execute {pluginName}.{functionName}.");
+                throw new UnauthorizedAccessException($"Agent '{currentAgentId}' is not authorized to execute {pluginName}.{functionName}.");
             }
 
             await next(context);

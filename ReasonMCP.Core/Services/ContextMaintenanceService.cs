@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using ReasonMCP.Core.DTOs;
@@ -10,20 +11,25 @@ namespace ReasonMCP.Core.Services
     public class ContextMaintenanceService : IContextMaintenanceService
     {
         private readonly Kernel _kernel;
-        private readonly IChatCompletionService _chatService;
+        private readonly IServiceScopeFactory _scopeFactory;
 
         public ContextMaintenanceService(
             Kernel kernel,
-            IChatCompletionService chatService
+            IServiceScopeFactory scopeFactory
         )
         {
             _kernel = kernel;
-            _chatService = chatService;
+            _scopeFactory = scopeFactory;
         }
         public async Task<List<ChatMessageRecord>> SummarizeHistory(
             VSCodeChatPayloadDto payload
         )
         {
+            using var scope = _scopeFactory.CreateScope();
+            var chatService = scope
+                .ServiceProvider
+                .GetRequiredService<IChatCompletionService>();
+
             //  Map to Semantic Kernel Types
             var skHistory = new ChatHistory();
             foreach (var msg in payload.History)
@@ -53,7 +59,7 @@ namespace ReasonMCP.Core.Services
             using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
 
             //  7.  Generate the Summary
-            var summaryResponse = await _chatService.GetChatMessageContentAsync(
+            var summaryResponse = await chatService.GetChatMessageContentAsync(
                 tempHistory,
                 kernel: _kernel,
                 cancellationToken: cts.Token

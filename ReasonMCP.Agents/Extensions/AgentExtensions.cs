@@ -69,8 +69,8 @@ namespace ReasonMCP.Agents.Extensions
             this IHostApplicationBuilder builder
         )
         {
-            builder.Services.AddScoped<IFileSystemSecurityService, FileSystemSecurityService>();
-            builder.Services.AddScoped<ILocalFileSystemService, LocalFileSystemService>();
+            builder.Services.AddSingleton<IFileSystemSecurityService, FileSystemSecurityService>();
+            builder.Services.AddSingleton<ILocalFileSystemService, LocalFileSystemService>();
 
             return builder;
         }

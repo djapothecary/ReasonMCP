@@ -28,16 +28,16 @@ namespace ReasonMCP.Enrichment.Extensions
             this IHostApplicationBuilder builder
         )
         {
-            builder.Services.AddScoped<ICodebaseScanService, CodebaseScanService>();
-            builder.Services.AddScoped<ICodebaseProcessor, CodebaseProcessor>();
+            builder.Services.AddSingleton<ICodebaseScanService, CodebaseScanService>();
+            builder.Services.AddSingleton<ICodebaseProcessor, CodebaseProcessor>();
             builder.Services.AddScoped<ICodebaseRecordIngestionService, CodebaseRecordIngestionService>();
             builder.Services.AddTransient<IIngestionQueueService, DapperIngestionQueueService>();
-            builder.Services.AddScoped<IDocumentsProcessor, DocumentsProcessor>();
-            builder.Services.AddScoped<IDocumentScanService, DocumentScanService>();
-            builder.Services.AddScoped<IIngestEnrichedRecordsService, IngestEnrichedRecordsService>();
-            builder.Services.AddScoped<IReferenceDataScanService, ReferenceDataScanService>();
-            builder.Services.AddScoped<IReferenceDataProcessor, ReferenceDataProcessor>();
-            builder.Services.AddScoped<IVectorSearchResultService, VectorSearchResultServices>();
+            builder.Services.AddSingleton<IDocumentsProcessor, DocumentsProcessor>();
+            builder.Services.AddSingleton<IDocumentScanService, DocumentScanService>();
+            builder.Services.AddSingleton<IIngestEnrichedRecordsService, IngestEnrichedRecordsService>();
+            builder.Services.AddSingleton<IReferenceDataScanService, ReferenceDataScanService>();
+            builder.Services.AddSingleton<IReferenceDataProcessor, ReferenceDataProcessor>();
+            builder.Services.AddSingleton<IVectorSearchResultService, VectorSearchResultServices>();
 
             return builder;
         }
@@ -47,9 +47,9 @@ namespace ReasonMCP.Enrichment.Extensions
         )
         {
             builder.Services.AddTransient<IMhtmlConverterUtility, MhtmlConverterUtility>();
-            builder.Services.AddScoped<IFileConverterUtility, FileConverterUtility>();
-            builder.Services.AddScoped<IChunkParsingUtility, ChunkParsingUtility>();
-            builder.Services.AddScoped<IMetadataEnrichmentUtility, MetadataEnrichmentUtility>();
+            builder.Services.AddSingleton<IFileConverterUtility, FileConverterUtility>();
+            builder.Services.AddSingleton<IChunkParsingUtility, ChunkParsingUtility>();
+            builder.Services.AddSingleton<IMetadataEnrichmentUtility, MetadataEnrichmentUtility>();
 
             return builder;
         }
