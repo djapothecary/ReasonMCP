@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using ReasonMCP.Core.Utilities;
 using Spectre.Console;
 
 namespace ReasonMCP.Enrichment.Dispatchers
@@ -24,6 +25,8 @@ namespace ReasonMCP.Enrichment.Dispatchers
         )
         {
             AnsiConsole.MarkupLine("[lime]Initializing ReasonMCP Enrichment processes ...[/]");
+
+            await GradientDisplay.DisplayCyberpunkStartupAsync();
 
             while (!cancellationToken.IsCancellationRequested)
             {

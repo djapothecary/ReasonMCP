@@ -13,17 +13,19 @@ using ReasonMCP.Agents.Tools;
 using ReasonMCP.Core.Configurations;
 using ReasonMCP.Core.Data;
 using ReasonMCP.Core.Extensions;
+using ReasonMCP.Core.Utilities;
 using ReasonMCP.Core.Workers;
 using ReasonMCP.Enrichment.Dispatchers;
 using ReasonMCP.Enrichment.Extensions;
 using ReasonMCP.Enrichment.Workers;
 using Spectre.Console;
+using Rule = Spectre.Console.Rule;
 
 System.Console.OutputEncoding = Encoding.UTF8;
-// AnsiConsole.Write(new Rule("[yellow]Project Yuki Neural Terminal (v10.0)[/]").RuleStyle("blue"));
-// AnsiConsole.MarkupLine($"{NeuralStyle.LogSys} Initializing Project Yuki v10.0 Core...");
-// AnsiConsole.MarkupLine($"{NeuralStyle.LogSys} Loading Ollama endpoint: {NeuralStyle.Construct}http://127.0.0.1:11434{NeuralStyle.End}");
-// AnsiConsole.MarkupLine($"{NeuralStyle.Success} [bold]VEC0_STABLE:[/]{NeuralStyle.End} Neural memory synchronized (768 Dimensions).");
+AnsiConsole.Write(new Rule("[yellow]ReasonMCP Neural Terminal (v10.0)[/]").RuleStyle("blue"));
+AnsiConsole.MarkupLine($"{NeuralStyle.LogSys} Initializing ReasonMCP v10.0 Core...");
+AnsiConsole.MarkupLine($"{NeuralStyle.LogSys} Loading Ollama endpoint: {NeuralStyle.Construct}http://127.0.0.1:11434{NeuralStyle.End}");
+AnsiConsole.MarkupLine($"{NeuralStyle.Success} [bold]VEC0_STABLE:[/]{NeuralStyle.End} Neural memory synchronized (768 Dimensions).");
 
 var builder = Host.CreateApplicationBuilder(args);
 
