@@ -49,6 +49,7 @@ const mozzie_1 = __webpack_require__(9);
 const browseExternalContextExtension_1 = __webpack_require__(10);
 const sharedState_1 = __webpack_require__(7);
 const esper_1 = __webpack_require__(11);
+const tank_1 = __webpack_require__(12);
 let backendProcess = null;
 async function activate(context) {
     //  1.  Silently start the C# Kestrel server in the background
@@ -62,7 +63,7 @@ async function activate(context) {
         const fileUris = await vscode.window.showOpenDialog({
             canSelectFiles: true,
             canSelectFolders: true,
-            canSelectMany: false,
+            canSelectMany: true,
             openLabel: 'Attach to ReasonMCP',
             defaultUri: vscode.Uri.file('C:\\Source')
         });
@@ -87,6 +88,7 @@ async function activate(context) {
     (0, bella_1.registerBellaParticipant)(context);
     (0, mozzie_1.registerMozzieParticipant)(context);
     (0, esper_1.registerEsperParticipant)(context);
+    (0, tank_1.registerTankParticipant)(context);
 }
 async function deactivate() {
     //  Allow VS Code to handle cleanup automatically via context
@@ -454,10 +456,10 @@ const vscode = __importStar(__webpack_require__(1));
 const crypto = __importStar(__webpack_require__(4));
 const agentDispatcher_1 = __webpack_require__(5);
 function registerMozzieParticipant(context) {
-    console.log(('Mozzie is now avaialble'));
+    console.log('Mozzie is now avaialble');
     let activeSessionId = crypto.randomUUID();
     const mozzieParticipant = vscode.chat.createChatParticipant('mozzie.chat', async (request, context, response, token) => {
-        //  Handle sessions resets
+        //  Handle session resets
         if (context.history.length === 0) {
             activeSessionId = crypto.randomUUID();
         }
@@ -632,6 +634,75 @@ function registerEsperParticipant(context) {
         }
     });
     context.subscriptions.push(esperParticipant);
+}
+
+
+/***/ }),
+/* 12 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.registerTankParticipant = registerTankParticipant;
+const vscode = __importStar(__webpack_require__(1));
+const crypto = __importStar(__webpack_require__(4));
+const agentDispatcher_1 = __webpack_require__(5);
+function registerTankParticipant(context) {
+    console.log('Tank is now available');
+    let activeSessionId = crypto.randomUUID();
+    const tankParticipant = vscode.chat.createChatParticipant('tank.chat', async (request, context, response, token) => {
+        //  Handle session resets
+        if (context.history.length === 0) {
+            activeSessionId = crypto.randomUUID();
+        }
+        if (request.prompt === "") {
+            response.markdown(`Tank is ready to load a Playbook...`);
+            return;
+        }
+        response.progress('Tank is patching in... loading playbook...');
+        try {
+            const answer = await (0, agentDispatcher_1.dispatchToAgentAsync)(request, context, activeSessionId, 'tank', 'http://127.0.0.1:5000/api/v1/playbook/load');
+            response.markdown(answer);
+        }
+        catch (error) {
+            response.markdown(`*
+                    Tank couldn't patch in ... Error ${error.message}`);
+        }
+    });
+    context.subscriptions.push(tankParticipant);
 }
 
 

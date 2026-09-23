@@ -75,7 +75,10 @@ namespace ReasonMCP.Agents.Strategies
 
         public bool GetAgentStrategy(string agent)
         {
-            return agent.Equals(_self, StringComparison.OrdinalIgnoreCase);
+            return agent.Equals(
+                _self,
+                StringComparison.OrdinalIgnoreCase
+            );
         }
 
         public bool ShouldSummarize(int turnCount)
@@ -100,10 +103,11 @@ namespace ReasonMCP.Agents.Strategies
             VSCodeChatPayloadDto payload
         )
         {
-            var fullPath = _sessionContextManager.GetCurrentContextFilePath(
-                payload.AgentId,
-                payload.SessionId
-            );
+            var fullPath = _sessionContextManager.
+                GetCurrentContextFilePath(
+                    payload.AgentId,
+                    payload.SessionId
+                );
 
             await _chatHistoryService
                     .AppendToHistoryFileAsync(

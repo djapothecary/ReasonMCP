@@ -6,6 +6,7 @@ import { registerMozzieParticipant } from './participants/mozzie';
 import { BrowseExternalContextTool } from './extensions/browseExternalContextExtension';
 import { ExternalContextState } from './extensions/sharedState';
 import { registerEsperParticipant } from './participants/esper';
+import { registerTankParticipant } from './participants/tank';
 
 let backendProcess: ChildProcess | null = null;
 
@@ -25,7 +26,7 @@ export async function activate(context: vscode.ExtensionContext) {
         const fileUris = await vscode.window.showOpenDialog({
             canSelectFiles: true,
             canSelectFolders: true,
-            canSelectMany: false,
+            canSelectMany: true,
             openLabel: 'Attach to ReasonMCP',
             defaultUri: vscode.Uri.file('C:\\Source')
         });
@@ -62,6 +63,7 @@ export async function activate(context: vscode.ExtensionContext) {
     registerBellaParticipant(context);
     registerMozzieParticipant(context);
     registerEsperParticipant(context);
+    registerTankParticipant(context);
 }
 
 export async function deactivate() {

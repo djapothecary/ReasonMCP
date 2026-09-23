@@ -9,7 +9,9 @@ namespace ReasonMCP.Server.Endpoints
 {
     public static class TroubleshootingEndpoints
     {
-        public static void MapTroubleshootingEndpoints(this WebApplication app)
+        public static void MapTroubleshootingEndpoints(
+            this WebApplication app
+        )
         {
             app.MapPost("/api/v1/troubleshooting", async (
                 [FromBody] VSCodeChatPayloadDto request,
@@ -33,7 +35,9 @@ namespace ReasonMCP.Server.Endpoints
             });
         }
 
-        public static void MapRawAPIEndpoint(this WebApplication app)
+        public static void MapRawAPIEndpoint(
+            this WebApplication app
+        )
         {
             //  For testing payload configurations
             app.MapPost("/api/v1/chat", async (HttpContext context) =>

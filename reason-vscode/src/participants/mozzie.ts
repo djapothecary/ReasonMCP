@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
-import * as crypto from 'crypto';
+    import * as crypto from 'crypto';
 import { dispatchToAgentAsync } from '../components/agentDispatcher';
 
 export function registerMozzieParticipant(context: vscode.ExtensionContext) {
-    console.log(('Mozzie is now avaialble'));
+    console.log('Mozzie is now avaialble');
 
     let activeSessionId = crypto.randomUUID();
 
@@ -16,7 +16,7 @@ export function registerMozzieParticipant(context: vscode.ExtensionContext) {
             token: vscode.CancellationToken
         ) => {
 
-            //  Handle sessions resets
+            //  Handle session resets
             if (context.history.length === 0) {
                 activeSessionId = crypto.randomUUID();
             }
@@ -38,17 +38,17 @@ export function registerMozzieParticipant(context: vscode.ExtensionContext) {
             response.progress('Mozzie is sorting papers...');
 
             try {
-                            //  one 'line' to handle all the payload assembly
-                            //  and API communication
-                            const answer = await dispatchToAgentAsync(
-                                request,
-                                context,
-                                activeSessionId,
-                                'esper',
-                                'http://127.0.0.1:5000/api/v1/workspace/queue/scan'
-                            );
+                //  one 'line' to handle all the payload assembly
+                //  and API communication
+                const answer = await dispatchToAgentAsync(
+                    request,
+                    context,
+                    activeSessionId,
+                    'esper',
+                    'http://127.0.0.1:5000/api/v1/workspace/queue/scan'
+                );
 
-                            response.markdown(answer);
+                response.markdown(answer);
             } catch (error: any) {
                 response.markdown(`*
                     Mozzie couldn't find and enrichment files to fence ... Error ${error.message}`);

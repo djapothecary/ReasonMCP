@@ -141,6 +141,13 @@
         "fullName": "Archival Specialist",
         "description": "Agent specialized in indexing and enriching documents",
         "isSticky": true
+      },
+      {
+        "id": "tank.chat",
+        "name": "tank",
+        "fullName": "Playbook Processor",
+        "description": "Agent specialized in processing Playbooks and dispatch Agentic work",
+        "isSticky": true
       }
     ],
     "languageModelTools": [

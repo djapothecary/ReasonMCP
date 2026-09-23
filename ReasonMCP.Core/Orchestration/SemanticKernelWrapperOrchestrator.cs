@@ -50,7 +50,12 @@ namespace ReasonMCP.Core.Orchestration
 
             //  2. Dynamic Persona routing
             string agentId = payload.AgentId.ToLower();
-            var agentStrategy = _strategies.FirstOrDefault(s => s.GetAgentStrategy(agentId));
+            var agentStrategy = _strategies
+                .FirstOrDefault(
+                    s => s.GetAgentStrategy(
+                        agentId
+                        )
+                    );
 
             //  update the prompt for file attachments
             //  if no files are attached the original prompt is returned

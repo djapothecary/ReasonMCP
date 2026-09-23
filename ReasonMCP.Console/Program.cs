@@ -36,6 +36,7 @@ builder.Configuration.SetBasePath(@"C:\Source\ReasonMCP\ReasonMCP.Core\SharedCon
     .AddJsonFile("documentScanSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("fileSystemSecuritySettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("gatewaySettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("playbookSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("referenceScanSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("storageConfigSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("testingSettings.json", optional: false, reloadOnChange: true)
@@ -48,6 +49,7 @@ builder.Services.Configure<DocumentScanSettings>(builder.Configuration.GetSectio
 builder.Services.Configure<FileSystemSecuritySettings>(builder.Configuration.GetSection("FileSystemSescuritySettings"));
 builder.Services.Configure<GatewaySettings>(builder.Configuration.GetSection("GatewaySettings"));
 builder.Services.Configure<KnowledgebaseScanSettings>(builder.Configuration.GetSection("KnowledgebaseScanSettings"));
+builder.Services.Configure<PlaybookSettings>(builder.Configuration.GetSection("PlaybookSettings"));
 builder.Services.Configure<ReferenceScanSettings>(builder.Configuration.GetSection("ReferenceScanSettings"));
 builder.Services.Configure<StorageConfigSettings>(builder.Configuration.GetSection("StorageConfigSettings"));
 builder.Services.Configure<TestingSettings>(builder.Configuration.GetSection("TestingSettings"));
@@ -88,6 +90,12 @@ builder.AddAIPluginsAndTools();
 builder.AddWorkflows();
 builder.AddEnrichmentServices();
 builder.AddEnrichmentDispatcher();
+
+//  Orchestration
+builder.AddOrchestrators();
+
+//  Agentic Playbook Services
+builder.AddAgenticPlaybookServices();
 
 //  testing AI Agent chat interception
 // builder.Services.AddSingleton<IFunctionInvocationFilter, ChatInterceptor>();
