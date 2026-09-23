@@ -273,8 +273,10 @@ async function dispatchToAgentAsync(request, context, sessionId, agentId, apiUrl
                 const fileData = await vscode.workspace.fs.readFile(fileUri);
                 const fileContent = new util_1.TextDecoder('utf-8').decode(fileData);
                 const fileName = fileUri.path.split('/').pop() || "UnknownFile.txt";
+                const fsPath = fileUri.fsPath;
                 attachedFiles.push({
                     fileName,
+                    fsPath,
                     content: fileContent
                 });
             }

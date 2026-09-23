@@ -34,6 +34,7 @@ export async function dispatchToAgentAsync(
     //  2.  Process Standard VS Code File References
     const attachedFiles: {
         fileName: string;
+        fsPath: string;
         content: string;
     }[] = [];
     for (const reference of request.references) {
@@ -50,9 +51,11 @@ export async function dispatchToAgentAsync(
                 const fileData = await vscode.workspace.fs.readFile(fileUri);
                 const fileContent = new TextDecoder('utf-8').decode(fileData);
                 const fileName = fileUri.path.split('/').pop() || "UnknownFile.txt";
+                const fsPath = fileUri.fsPath;
 
                 attachedFiles.push({
                     fileName,
+                    fsPath,
                     content: fileContent
                 });
             } catch (err) {

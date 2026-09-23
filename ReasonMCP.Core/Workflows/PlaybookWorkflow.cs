@@ -1,8 +1,10 @@
 using System.Text;
+using DocumentFormat.OpenXml.Drawing.Wordprocessing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using ReasonMCP.Core.Interfaces;
+using ReasonMCP.Core.Models;
 using ReasonMCP.Core.Services;
 
 namespace ReasonMCP.Core.workflows
@@ -86,6 +88,7 @@ namespace ReasonMCP.Core.workflows
 
             // --> Build your context and send the prompt to the specific agent here <--
             // var agentResponseContent = await agentStrategy.SendPrompt(...);
+            var convertedStepPrompt = AssembleAgentPrompt(step);
             var agentResponseContent = string.Empty;
 
             //  4.  Chekpoint the state
@@ -131,6 +134,52 @@ namespace ReasonMCP.Core.workflows
             //  mark playbook completed
             playbook.PlaybookCompleted = true;
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Translates the Orchestration Step into a useable LLM prompt for the Agent
+        /// </summary>
+        /// <param name="step"></param>
+        /// <returns></returns>
+        private string AssembleAgentPrompt(
+            OrchestrationStep step
+        )
+        {
+            var sb = new StringBuilder();
+
+            //  1.  The Core Persona / Instruction
+            if (!string.IsNullOrWhiteSpace(step.AgentPrompt))
+            {
+                sb.AppendLine(step.AgentPrompt);
+                sb.AppendLine();
+            }
+
+            //  2.  The Context
+            sb.AppendLine("### Context & Goal");
+            sb.AppendLine(step.PromptDescription);
+            sb.AppendLine();
+
+            //  3.  The Task
+            sb.AppendLine("### Task to Complete");
+            sb.AppendLine(step.TaskToComplete);
+            sb.AppendLine();
+
+            //  4.  The Constraints (Critical for the LLM's attention mechanism)
+            if (!string.IsNullOrWhiteSpace(step.Constraints))
+            {
+                sb.AppendLine("### Constraints & Rules");
+                sb.AppendLine(step.Constraints);
+                sb.AppendLine();
+            }
+
+            //  5.  OutPut Requirements
+            if (!string.IsNullOrWhiteSpace(step.OutputRequirements))
+            {
+                sb.AppendLine("### Output Requirements");
+                sb.AppendLine(step.OutputRequirements);
+            }
+
+            return sb.ToString().Trim();
         }
     }
 }

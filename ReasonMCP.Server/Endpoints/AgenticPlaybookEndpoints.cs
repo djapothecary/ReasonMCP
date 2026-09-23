@@ -45,13 +45,10 @@ namespace ReasonMCP.Server.Endpoints
                     .GetRequiredService<IPlaybookWorkflow>();
 
                 // build playbook path
-                var playbookRoot = settings.Value.ReasonMCPRootDirectory +
-                    "\\" + settings.Value.DotReasonDirectory +
-                    settings.Value.PlaybooksDirectory;
-                var fullPath = playbookRoot + "\\" + payload.Attachments[0].FileName;
+                var filePath = payload.Attachments[0].FilePath;
 
                 var playbookResponse = await playbookWorkflow.ProcessPlaybookWorkflowAsync(
-                    fullPath,
+                    filePath,
                     payload.SessionId,
                     payload.Prompt.TrimEnd(),
                     cancellationToken

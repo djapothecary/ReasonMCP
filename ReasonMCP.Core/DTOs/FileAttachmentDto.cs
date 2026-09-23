@@ -7,6 +7,9 @@ namespace ReasonMCP.Core.DTOs
         [JsonPropertyName("fileName")]
         public string FileName { get; set; } = string.Empty;
 
+        [JsonPropertyName("fsPath")]
+        public string FilePath { get; set; } = string.Empty;
+
         [JsonPropertyName("content")]
         public string Content { get; set; } = string.Empty;
     }
