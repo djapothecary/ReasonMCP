@@ -78,8 +78,11 @@ namespace ReasonMCP.Agents.Agents
                 // _kernel.Plugins.AddFromObject(referenceSearchTool, "ReferenceSerach");
                 _kernel.Plugins.AddFromObject(randomNumberTool, "RandomNumbers");
 
-                currentContext.AddUserMessage(prompt);
-                currentContext.AddSystemMessage(agentProfile.SystemPrompt);
+                var executionHistory = new ChatHistory();
+
+                executionHistory.AddSystemMessage(agentProfile.SystemPrompt);
+                executionHistory.AddRange(currentContext);
+                executionHistory.AddUserMessage(prompt);
 
                 var executionSettings = new OllamaPromptExecutionSettings
                 {
@@ -92,8 +95,11 @@ namespace ReasonMCP.Agents.Agents
                     ExtensionData = new Dictionary<string, object> { { "raw", true } }
                 };
 
+                // var jsonDebug = System.Text.Json.JsonSerializer.Serialize(currentContext);
+                // Console.WriteLine(jsonDebug);
+
                 var agentResponse = await _chatCompletionService.GetChatMessageContentAsync(
-                    currentContext,
+                    executionHistory,
                     executionSettings,
                     _kernel
                 );
@@ -114,9 +120,9 @@ namespace ReasonMCP.Agents.Agents
                     ));
                 }
             }
-            catch (System.Exception)
+            catch (Exception ex)
             {
-
+                Console.WriteLine(ex);
                 throw;
             }
 

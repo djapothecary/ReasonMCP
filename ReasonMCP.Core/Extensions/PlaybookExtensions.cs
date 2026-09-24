@@ -7,7 +7,7 @@ using ReasonMCP.Core.Interfaces;
 using ReasonMCP.Core.Orchestration;
 using ReasonMCP.Core.Services;
 using ReasonMCP.Core.Utilities;
-using ReasonMCP.Core.workflows;
+using ReasonMCP.Core.Workflows;
 
 namespace ReasonMCP.Core.Extensions
 {

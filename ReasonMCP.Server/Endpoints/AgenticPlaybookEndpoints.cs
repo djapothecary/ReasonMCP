@@ -7,7 +7,7 @@ using ReasonMCP.Core.Configurations;
 using ReasonMCP.Core.DTOs;
 using ReasonMCP.Core.Interfaces;
 using ReasonMCP.Core.Orchestration;
-using ReasonMCP.Core.workflows;
+using ReasonMCP.Core.Workflows;
 
 namespace ReasonMCP.Server.Endpoints
 {
@@ -35,7 +35,7 @@ namespace ReasonMCP.Server.Endpoints
                 }
 
                 //  Create Cancellation Token
-                using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+                using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
                 var cancellationToken = cts.Token;
 
                 //  Build scope and get services
@@ -54,11 +54,9 @@ namespace ReasonMCP.Server.Endpoints
                     cancellationToken
                 );
 
-
-
                 return Results.Ok(new
                 {
-
+                    playbookResponse
                 });
             });
         }

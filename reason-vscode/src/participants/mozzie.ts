@@ -44,7 +44,7 @@ export function registerMozzieParticipant(context: vscode.ExtensionContext) {
                     request,
                     context,
                     activeSessionId,
-                    'esper',
+                    'mozzie',
                     'http://127.0.0.1:5000/api/v1/workspace/queue/scan'
                 );
 

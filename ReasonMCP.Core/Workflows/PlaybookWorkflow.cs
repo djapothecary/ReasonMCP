@@ -3,11 +3,13 @@ using DocumentFormat.OpenXml.Drawing.Wordprocessing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
+using ModelContextProtocol.Protocol;
+using ReasonMCP.Core.DTOs;
 using ReasonMCP.Core.Interfaces;
 using ReasonMCP.Core.Models;
 using ReasonMCP.Core.Services;
 
-namespace ReasonMCP.Core.workflows
+namespace ReasonMCP.Core.Workflows
 {
     public class PlaybookWorkflow : IPlaybookWorkflow
     {
@@ -89,14 +91,29 @@ namespace ReasonMCP.Core.workflows
             // --> Build your context and send the prompt to the specific agent here <--
             // var agentResponseContent = await agentStrategy.SendPrompt(...);
             var convertedStepPrompt = AssembleAgentPrompt(step);
-            var agentResponseContent = string.Empty;
+
+            //  Build the step as a PayloadDto
+            var stepPayload = new VSCodeChatPayloadDto
+            {
+                SessionId = sessionId,
+                AgentId = step.TargetAgentId,
+                Role = "user"
+            };
+
+            var promptChatHistory = new ChatHistory();
+
+            var agentResponseContent = await agentStrategy!.RunAgent(
+                stepPayload,
+                promptChatHistory,
+                convertedStepPrompt
+            );
 
             //  4.  Chekpoint the state
             await playbookService.SaveCheckpointAsync(
                 playbook,
                 sessionId,
                 currentStepIndex,
-                "Completed",
+                $"Step {currentStepIndex} Completed",
                 cancellationToken
             );
 
@@ -104,7 +121,9 @@ namespace ReasonMCP.Core.workflows
             var sb = new StringBuilder();
             sb.AppendLine($"### Step {step.StepNumber}: {step.PromptDescription} - **COMPLETE**");
             sb.AppendLine($"**{step.TargetAgentId} Output:**");
-            sb.AppendLine(agentResponseContent); // The text from the agent
+
+            var actualResponseText = agentResponseContent.FirstOrDefault()?.Content ?? "No response generated.";
+            sb.AppendLine(actualResponseText); // The text from the agent
 
             //  Look ahead to the next step to see if we need a HITL pause
             var nextStep = playbook.Steps.FirstOrDefault(
@@ -179,7 +198,7 @@ namespace ReasonMCP.Core.workflows
                 sb.AppendLine(step.OutputRequirements);
             }
 
-            return sb.ToString().Trim();
+            return sb.ToString().Trim().Replace("\r\n", "\n");
         }
     }
 }

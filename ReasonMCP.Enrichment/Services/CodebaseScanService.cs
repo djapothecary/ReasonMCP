@@ -85,7 +85,9 @@ namespace ReasonMCP.Enrichment.Services
                 return;
 
             using var scope = _scopeFactory.CreateScope();
-            var dapperIngestionQueue = scope.ServiceProvider.GetRequiredService<DapperIngestionQueueService>();
+            var dapperIngestionQueue = scope
+                .ServiceProvider
+                .GetRequiredService<IIngestionQueueService>();
 
             foreach (var subdirectory in subDirectories)
             {

@@ -2,6 +2,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using ReasonMCP.Core.Utilities;
+using ReasonMCP.Enrichment.Interfaces;
+using ReasonMCP.Enrichment.Workflows;
 using Spectre.Console;
 
 namespace ReasonMCP.Enrichment.Dispatchers
@@ -37,11 +39,12 @@ namespace ReasonMCP.Enrichment.Dispatchers
                             "1. Run Codebase Scan",
                             "2. Run Documents Scan",
                             "3. Run Reference Scan",
-                            "4. Exit Flight Deck"
+                            "4. Run Codebase Workflow",
+                            "5. Exit Flight Deck"
                         )
                 );
 
-                if (choice == "4. Exit Flight Deck")
+                if (choice == "5. Exit Flight Deck")
                 {
                     AnsiConsole.MarkupLine("[OrangeRed1]Exiting Enrichment ...[/]");
                     break;
@@ -53,7 +56,13 @@ namespace ReasonMCP.Enrichment.Dispatchers
                     {
                         if (choice == "1. Run Codebase Scan")
                         {
+                            var codebaseScanService = scope
+                                .ServiceProvider
+                                .GetRequiredService<ICodebaseScanService>();
 
+                            await codebaseScanService.ScanCodebaseAsync(
+                                cancellationToken
+                            );
                         }
                         else if (choice == "2. Run Documents Scan")
                         {
@@ -63,7 +72,17 @@ namespace ReasonMCP.Enrichment.Dispatchers
                         {
 
                         }
-                        else if (choice == "4. Exit Flight Deck")
+                        else if (choice == "4. Run Codebase Workflow")
+                        {
+                            var codebaseWorkflow = scope
+                                .ServiceProvider
+                                .GetRequiredService<CodebaseWorkflow>();
+
+                            await codebaseWorkflow.RunAsync(
+                                cancellationToken
+                            );
+                        }
+                        else if (choice == "5. Exit Flight Deck")
                         {
 
                         }

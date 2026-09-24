@@ -2,7 +2,7 @@
   "name": "reason-vscode",
   "displayName": "reason-vscode",
   "description": "Frontend for Reason AI Architect",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "enabledApiProposals": [
     "languageModelSystem",
     "chatContextProvider",

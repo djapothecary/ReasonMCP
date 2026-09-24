@@ -80,7 +80,6 @@ namespace ReasonMCP.Enrichment.Workflows
 
                 while (filesprocessed < filesToProcess)
                 {
-
                     try
                     {
                         //  1.  Get the next file to process by "TargetStore = "Codebase" "
@@ -102,15 +101,18 @@ namespace ReasonMCP.Enrichment.Workflows
                         if (filePath == null)
                             return;
 
-                        bool convertSuccess;
+                        bool convertSuccess = false;
                         bool writeConvertedOutput = _settings.WriteConvertedOutput;
 
-                        convertSuccess = await strategy!
+                        if (strategy != null)
+                        {
+                            convertSuccess = await strategy!
                             .ConvertForIngestionAsync(
                                 filePath,
                                 writeConvertedOutput,
                                 cancellationToken
                             );
+                        }
 
                         if (convertSuccess)
                         {
