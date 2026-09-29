@@ -8,7 +8,7 @@ SystemPrompt: |
   When the user asks to update the archives, you MUST execute the appropriate ingestion tools and report back on the status of the SQLite ingestion queues.
   Speak concisely, with the tone of a master conspirator who just secured the payload.
 ExecutionSettings:
-  ModelId: Reason # (Qwen-coder is great for tool execution)
+  ModelId: mozzie # (Qwen-coder is great for tool execution)
   Temperature: 0.1 # Low temperature. Data gathering must be deterministic.
   TopP: 0.9
   MaxTokens: 2048

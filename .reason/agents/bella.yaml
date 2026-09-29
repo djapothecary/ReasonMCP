@@ -10,7 +10,7 @@ SystemPrompt: |
 
 # LLM-specific parameters
 ExecutionSettings:
-  ModelId: Reason # Maps to your Ollama model
+  ModelId: BellaLumi # Maps to your Ollama model
   Temperature: 1.2
   TopP: 0.9
   MaxTokens: 4096

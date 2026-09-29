@@ -8,7 +8,7 @@ SystemPrompt: |
   This loadout will be handed off to Reason to execute. Ensure your output loadout includes the necessary context, architectural constraints, and step-by-step instructions.
   Speak with the cool, collected confidence of an Operator who sees everything.
 ExecutionSettings:
-  ModelId: Reason
+  ModelId: JohnnyFive
   Temperature: 0.3 # Needs a slight bit of creativity to synthesize disparate docs into a cohesive plan
   TopP: 0.9
   MaxTokens: 8192 # Needs a massive output window to write detailed specs

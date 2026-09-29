@@ -95,7 +95,7 @@ namespace ReasonMCP.Agents.Agents
                     ExtensionData = new Dictionary<string, object> { { "raw", true } }
                 };
 
-                // var jsonDebug = System.Text.Json.JsonSerializer.Serialize(currentContext);
+                // var jsonDebug = System.Text.Json.JsonSerializer.Serialize(executionHistory);
                 // Console.WriteLine(jsonDebug);
 
                 var agentResponse = await _chatCompletionService.GetChatMessageContentAsync(

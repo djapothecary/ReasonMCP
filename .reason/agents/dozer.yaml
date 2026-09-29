@@ -7,7 +7,7 @@ SystemPrompt: |
   If a test fails, do not panic and do not guess. Clearly identify the broken component and provide the exact error logs to the Architect so they can fix it.
   Keep your updates grounded, brief, and professional.
 ExecutionSettings:
-  ModelId: Reason # (Needs deep C# knowledge to read stack traces)
+  ModelId: Mnemosyne # (Needs deep C# knowledge to read stack traces)
   Temperature: 0.0 # Zero creativity. Tests are pass/fail.
   TopP: 0.1
   MaxTokens: 4096

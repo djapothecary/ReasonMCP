@@ -13,7 +13,7 @@ namespace ReasonMCP.Core.Orchestration
     public class SemanticKernelWrapperOrchestrator
     {
         private readonly IEnumerable<IChatStrategy> _strategies;
-        private readonly IMnemosyne _mnemosyneAgent;
+        private readonly IMnemosyneAgent _mnemosyneAgent;
         private readonly IChatHistoryService _chatHistoryService;
         private readonly ChatSettings _settings;
         private readonly ILogger<SemanticKernelWrapperOrchestrator> _logger;
@@ -22,7 +22,7 @@ namespace ReasonMCP.Core.Orchestration
         public SemanticKernelWrapperOrchestrator
         (
             IEnumerable<IChatStrategy> strategies,
-            IMnemosyne mnemosyneAgent,
+            IMnemosyneAgent mnemosyneAgent,
             IChatHistoryService chathistoryService,
             IOptionsMonitor<ChatSettings> options,
             ILogger<SemanticKernelWrapperOrchestrator> logger
@@ -66,12 +66,20 @@ namespace ReasonMCP.Core.Orchestration
                 await _chatHistoryService.AppendToPromptHistoryFileAsync(payload);
 
             //  3.  Add current message to "master" chat history regardless
-            await agentStrategy!.AppendToChathistory(new ChatMessageRecord("user", augmentedPrompt));
+            await agentStrategy!.AppendToChathistory(
+                new ChatMessageRecord(
+                    "user",
+                    augmentedPrompt
+                )
+            );
 
             //  Append to current context
-            await agentStrategy!.AppendToCurrentContext(new ChatMessageRecord(
-                                "user", augmentedPrompt),
-                                payload);
+            await agentStrategy!.AppendToCurrentContext(
+                new ChatMessageRecord(
+                    "user", augmentedPrompt
+                ),
+                payload
+            );
 
             //  4. Determine if summary needed
             var turnCount = payload.History.Count(m => m.Role == "user");
@@ -80,7 +88,7 @@ namespace ReasonMCP.Core.Orchestration
             if (shouldSummarize)
             {
                 //  perform current chat context summarization
-                currentChatContext = await _mnemosyneAgent.CreateSummary(
+                currentChatContext = await _mnemosyneAgent.CreateSummaryAsync(
                     payload,
                     currentChatContext);
             }

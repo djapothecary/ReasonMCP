@@ -33,6 +33,7 @@ namespace ReasonMCP.Agents.Extensions
             builder.Services.AddScoped<TrinityAgent>();
             builder.Services.AddScoped<BellaAgent>();
             builder.Services.AddScoped<DozerAgent>();
+            builder.Services.AddScoped<GladosAgent>();
             builder.Services.AddScoped<MozzieAgent>();
             builder.Services.AddScoped<ReasonAgent>();
             builder.Services.AddScoped<SeraphAgent>();
@@ -48,7 +49,8 @@ namespace ReasonMCP.Agents.Extensions
             builder.Services.AddScoped<ChatHistoryService>();
             builder.Services.AddScoped<CurrentChatContextSummarizer>();
             builder.Services.AddScoped<IAgentProfileService, AgentProfileService>();
-            builder.Services.AddScoped<IMnemosyne, MnemosyneAgent>();
+            builder.Services.AddScoped<IGladosAgent, GladosAgent>();
+            builder.Services.AddScoped<IMnemosyneAgent, MnemosyneAgent>();
 
             return builder;
         }

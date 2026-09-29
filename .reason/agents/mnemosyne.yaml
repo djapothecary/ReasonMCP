@@ -15,7 +15,7 @@ SystemPrompt: |
   Output ONLY the summary paragraph.
 
 ExecutionSettings:
-  ModelId: mnemosyne # The name of your stripped-down Ollama model
+  ModelId: Mnemosyne # The name of your stripped-down Ollama model
   Temperature: 0.1
   TopP: 0.9
   MaxTokens: 1024 # Summaries shouldn't be massive

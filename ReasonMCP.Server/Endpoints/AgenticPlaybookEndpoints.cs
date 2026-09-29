@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.SemanticKernel.ChatCompletion;
 using ReasonMCP.Core.Configurations;
 using ReasonMCP.Core.DTOs;
 using ReasonMCP.Core.Interfaces;
 using ReasonMCP.Core.Orchestration;
+using ReasonMCP.Core.Utilities;
 using ReasonMCP.Core.Workflows;
 
 namespace ReasonMCP.Server.Endpoints
@@ -54,10 +56,65 @@ namespace ReasonMCP.Server.Endpoints
                     cancellationToken
                 );
 
+                var playbookChatHistoryErrorCheck = new ChatHistory();
+                playbookChatHistoryErrorCheck.AddAssistantMessage(playbookResponse);
+
+                var errorCheckedPlaybookResponse = EndpointResponseUtility.CheckResponseErrors(
+                    payload,
+                    playbookChatHistoryErrorCheck
+                );
+
                 return Results.Ok(new
                 {
-                    playbookResponse
-                });
+                    errorCheckedPlaybookResponse
+                }
+                );
+            });
+
+            app.MapPost("/api/v1/playbook/create", async (
+                [FromBody] VSCodeChatPayloadDto payload,
+                [FromServices] IServiceScopeFactory scopeFactory,
+                [FromServices] IOptions<PlaybookSettings> settings
+            ) =>
+            {
+                //  Bail out if there are no files attached
+                if (payload.Attachments == null
+                    || payload.ExternallyAttachedFiles == null)
+                {
+                    var badRequestResponse = "No files were attached.";
+                    return Results.BadRequest(new
+                    {
+                        badRequestResponse
+                    });
+                }
+
+                //  Create Cancellation Token
+                using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+                var cancellationToken = cts.Token;
+
+                //  Build scope and get services
+                using var scope = scopeFactory.CreateScope();
+                //  get GLaDOS
+                var gladosAgent = scope
+                    .ServiceProvider
+                    .GetRequiredService<IGladosAgent>();
+
+                var gladosResponse = await gladosAgent.CreatePlaybookAsync(
+                    payload,
+                    cancellationToken
+                );
+
+                var errorCheckedGladosResponse = EndpointResponseUtility.CheckResponseErrors(
+                    payload,
+                    gladosResponse
+                );
+
+                return Results.Ok(
+                    new
+                    {
+                        errorCheckedGladosResponse
+                    }
+                );
             });
         }
     }

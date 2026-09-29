@@ -12,7 +12,7 @@ using ReasonMCP.Core.Services;
 
 namespace ReasonMCP.Agents.Agents
 {
-    public class MnemosyneAgent : IMnemosyne
+    public class MnemosyneAgent : IMnemosyneAgent
     {
         private readonly Kernel _kernel;
         private readonly IServiceProvider _serviceProvider;
@@ -42,9 +42,10 @@ namespace ReasonMCP.Agents.Agents
             _logger = logger;
         }
 
-        public async Task<ChatHistory> CreateSummary(
+        public async Task<ChatHistory> CreateSummaryAsync(
             VSCodeChatPayloadDto payload,
-            ChatHistory currentChatContext
+            ChatHistory currentChatContext,
+            CancellationToken cancellationToken = default
         )
         {
             var mnemosyneSettings = _settings.Agents["mnemosyne"];
@@ -56,8 +57,8 @@ namespace ReasonMCP.Agents.Agents
                 var mnemosyneAgentPath = mnemosyneSettings.AgentProfilePath;
                 var mnemosyneAgent = await _agentProfileService.LoadAgentProfileAsync(mnemosyneAgentPath);
 
-                currentChatContext.AddUserMessage(payload.Prompt);
                 currentChatContext.AddSystemMessage(mnemosyneAgent.SystemPrompt);
+                currentChatContext.AddUserMessage(payload.Prompt);
 
                 var executionSettings = new OllamaPromptExecutionSettings
                 {
@@ -73,7 +74,8 @@ namespace ReasonMCP.Agents.Agents
                 var summaryResponse = await _chatCompletionService.GetChatMessageContentAsync(
                     currentChatContext,
                     executionSettings,
-                    _kernel
+                    _kernel,
+                    cancellationToken
                 );
 
                 if (summaryResponse.Content != null)
@@ -83,7 +85,11 @@ namespace ReasonMCP.Agents.Agents
 
                 //  Ensure the prompt is on the new summary
                 summaryHistory.AddUserMessage(payload.Prompt);
-                await WriteSummary(payload, summaryHistory);
+                await WriteSummaryAsync(
+                    payload,
+                    summaryHistory,
+                    cancellationToken
+                );
             }
             catch (Exception ex)
             {
@@ -93,25 +99,40 @@ namespace ReasonMCP.Agents.Agents
             return summaryHistory;
         }
 
-        public async Task WriteSummary(
+        public async Task WriteSummaryAsync(
             VSCodeChatPayloadDto payload,
-            ChatHistory summaryHistory
+            ChatHistory summaryHistory,
+            CancellationToken cancellationToken = default
         )
         {
-            var summaryFilepath = _sessionContextManager.GetSummaryFilePath(payload.AgentId, payload.SessionId);
+            var summaryFilePath = _sessionContextManager
+                .GetSummaryFilePath(
+                    payload.AgentId,
+                    payload.SessionId
+                );
 
             //  update with correct history path
-            summaryFilepath = _settings.RootDirectory + _settings.ChatHistoryDirectory + summaryFilepath;
+            summaryFilePath = _settings.RootDirectory +
+                _settings.ChatHistoryDirectory +
+                _settings.Agents["mnemosyne"].HistoryDirectory +
+                _settings.Agents["mnemosyne"].HistoryFilename + ".jsonl";
 
-            var jsonLine = JsonSerializer.Serialize(summaryHistory, new JsonSerializerOptions
-            {
-                WriteIndented = false
-            });
+            var jsonLine = JsonSerializer.Serialize(
+                summaryHistory,
+                new JsonSerializerOptions
+                {
+                    WriteIndented = false
+                }
+            );
 
-            var fileInfo = new FileInfo(summaryFilepath);
+            var fileInfo = new FileInfo(summaryFilePath);
             fileInfo.Directory?.Create();
 
-            await File.AppendAllTextAsync(summaryFilepath, jsonLine + Environment.NewLine);
+            await File.AppendAllTextAsync(
+                summaryFilePath,
+                jsonLine + Environment.NewLine,
+                cancellationToken
+            );
         }
     }
 

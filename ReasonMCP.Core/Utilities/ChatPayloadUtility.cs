@@ -22,8 +22,14 @@ namespace ReasonMCP.Core.Utilities
 
             foreach (var file in payload.Attachments)
             {
+                var cleanedFileContent = file.Content
+                        .ToString()
+                        .Replace("\r\n", "\n");
+
                 augmentedPrompt.AppendLine($"\n<file name=\"{file.FileName}\">");
-                augmentedPrompt.AppendLine(file.Content);
+
+                //  clean-up line endings for the file only
+                augmentedPrompt.AppendLine(cleanedFileContent);
                 augmentedPrompt.AppendLine("</file>");
             }
 
