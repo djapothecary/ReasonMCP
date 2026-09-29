@@ -148,6 +148,13 @@
         "fullName": "Playbook Processor",
         "description": "Agent specialized in processing Playbooks and dispatch Agentic work",
         "isSticky": true
+      },
+      {
+        "id": "glados.chat",
+        "name": "glados",
+        "fullName": "Genetic Lifeform and Disk Operating System",
+        "description": "GLaDOS parses it and constructs a rigid, multi-step Markdown/XML 'Test Chamber' (the Playbook)",
+        "isSticky": true
       }
     ],
     "languageModelTools": [

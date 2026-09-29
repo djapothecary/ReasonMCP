@@ -155,7 +155,7 @@ namespace ReasonMCP.Agents.Agents
             //  Update with correct history path
             playbookFilePath = _playbookSettings.ReasonMCPRootDirectory +
                 _playbookSettings.DotReasonDirectory +
-                _playbookSettings.PlaybooksDirectory +
+                "\\" + _playbookSettings.PlaybooksDirectory +
                 "\\" + payload.SessionId +
                 ".GLaDOS.playbook.md";
 
