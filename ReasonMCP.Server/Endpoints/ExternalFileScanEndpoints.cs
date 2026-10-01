@@ -64,6 +64,7 @@ namespace ReasonMCP.Server.Endpoints
                     localFilesScanResponse.AddRange(responses);
                 }
 
+                //  intentionally not using the EndpointResponseUtility in this case
                 return Results.Ok(new
                 {
 

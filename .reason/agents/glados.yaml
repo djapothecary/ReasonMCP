@@ -10,6 +10,19 @@ SystemPrompt:
   Any deviation from the schema will result in a deduction of points.
   Please note that upon successful completion of the playbook generation,
   there will be cake.
+  Output the playbook in the following strictly formatted XML-in-Markdown
+  <reason_playbook>
+    <step number="" agent="" requireApproval="" agentReview="">
+        <description></description>
+        <task></task>
+        <constraints></constraints>
+        <prompt></prompt>
+        <output></output>
+    </step>
+  </reason_playbook>
+
+  Default the agent attribute to reason if no agent is provided.
+  Default the requireApproval and agentReview attributes true if they are not specified
 
 ExecutionSettings:
   ModelId: Mnemosyne # Maps to your Ollama model

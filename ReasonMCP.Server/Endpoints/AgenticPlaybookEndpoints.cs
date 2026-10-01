@@ -59,19 +59,14 @@ namespace ReasonMCP.Server.Endpoints
                 var playbookChatHistoryErrorCheck = new ChatHistory();
                 playbookChatHistoryErrorCheck.AddAssistantMessage(playbookResponse);
 
-                var errorCheckedPlaybookResponse = EndpointResponseUtility.CheckResponseErrors(
+                return await EndpointResponseUtility.CheckResponseErrorsAsync(
                     payload,
-                    playbookChatHistoryErrorCheck
-                );
-
-                return Results.Ok(new
-                {
-                    errorCheckedPlaybookResponse
-                }
+                    playbookChatHistoryErrorCheck,
+                    cancellationToken
                 );
             });
 
-            app.MapPost("/api/v1/playbook/create", async (
+            _ = app.MapPost("/api/v1/playbook/create", async (
                 [FromBody] VSCodeChatPayloadDto payload,
                 [FromServices] IServiceScopeFactory scopeFactory,
                 [FromServices] IOptions<PlaybookSettings> settings
@@ -104,16 +99,10 @@ namespace ReasonMCP.Server.Endpoints
                     cancellationToken
                 );
 
-                var errorCheckedGladosResponse = EndpointResponseUtility.CheckResponseErrors(
+                return await EndpointResponseUtility.CheckResponseErrorsAsync(
                     payload,
-                    gladosResponse
-                );
-
-                return Results.Ok(
-                    new
-                    {
-                        errorCheckedGladosResponse
-                    }
+                    gladosResponse,
+                    cancellationToken
                 );
             });
         }

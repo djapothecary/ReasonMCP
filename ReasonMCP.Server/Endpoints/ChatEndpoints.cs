@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ReasonMCP.Core.DTOs;
 using ReasonMCP.Core.Orchestration;
+using ReasonMCP.Core.Utilities;
 
 namespace ReasonMCP.Server.Endpoints
 {
@@ -20,14 +21,18 @@ namespace ReasonMCP.Server.Endpoints
                 Console.WriteLine($"\n[VS CODE INTERCEPT] Received prompt: {payload.Prompt}");
                 Console.WriteLine($"[VS CODE INTERCEPT] History items: {payload.History.Count}");
 
+                //  Create Cancellation Token
+                using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+                var cancellationToken = cts.Token;
+
                 //  Send the message off for processing
                 var response = await orchestrator.ProcessChatAsync(payload);
 
-                return Results.Ok(new
-                {
-                    // response = $"**Ping-Pong Successful!** \n\nReason Backend received the prompt: *\"{payload.Prompt}\"*\n\nHistory contains {payload.History.Count} previous messages."
-                    response
-                });
+                return await EndpointResponseUtility.CheckResponseStringErrorsAsync(
+                    payload,
+                    response,
+                    cancellationToken
+                );
             });
         }
     }
