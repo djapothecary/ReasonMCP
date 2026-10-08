@@ -5,5 +5,6 @@ namespace ReasonMCP.Core.Configurations
         public string FileSystem { get; set; } = "ReadOnly";    //  Readonly, ReadWrite, None
         public bool AllowToolCalling { get; set; } = false;
         public List<string> AllowedTools { get; set; } = [];
+        public List<string> AllowedWorkingDirectories { get; set; } = [];
     }
 }

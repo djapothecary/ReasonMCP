@@ -30,3 +30,9 @@ ExecutionSettings:
   TopP: 0.9
   MaxTokens: 4096
 
+Permissions:
+  FileSystem: ReadOnly, ReadWrite
+  AllowToolCalling: False
+  AllowedTools:
+  AllowedWorkingDirectories:
+

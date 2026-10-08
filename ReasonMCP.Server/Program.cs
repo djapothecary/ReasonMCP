@@ -129,7 +129,8 @@ builder.Services
     .WithTools<CodebaseContextSearchTool>()
     .WithTools<DocumentContextSearchTool>()
     .WithTools<LocalFileSystemTool>()
-    .WithTools<ReferenceContextSearchTool>();
+    .WithTools<ReferenceContextSearchTool>()
+    .WithTools<WriteFileTool>();
 
 builder.Services.AddKernel();
 

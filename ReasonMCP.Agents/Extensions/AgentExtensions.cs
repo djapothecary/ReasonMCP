@@ -63,6 +63,7 @@ namespace ReasonMCP.Agents.Extensions
             builder.Services.AddSingleton<LocalFileSystemTool>();
             builder.Services.AddSingleton<RandomNumberTools>();
             builder.Services.AddSingleton<ReferenceContextSearchTool>();
+            builder.Services.AddSingleton<WriteFileTool>();
 
             return builder;
         }

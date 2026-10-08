@@ -147,7 +147,9 @@ namespace ReasonMCP.Agents.Strategies
                 payload.SessionId
             );
 
-            var agentProfile = await _agentProfileService.LoadAgentProfileAsync(_settings.Agents["reason"].AgentProfilePath);
+            var agentProfile = await _agentProfileService.LoadAgentProfileAsync(
+                    _settings.Agents["reason"].AgentProfilePath
+                );
             var agentResponse = await _reasonAgent.SendPrompt(
                                 agentProfile,
                                 currentContext,

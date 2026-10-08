@@ -11,3 +11,17 @@ SystemPrompt: |
 ExecutionSettings:
   ModelId: Mnemosyne  # <-- Forces Ollama to swap out Qwen and load Phi-3
   Temperature: 0.0 # Zero creativity. Absolute deterministic grading.
+  TopP: 0.9
+  MaxTokens: 16384
+
+# Your custom guardrails
+Permissions:
+  FileSystem: ReadOnly
+  AllowToolCalling: true
+  AllowedTools:
+    - codebase_context_search
+    - document_context_search
+    - reference_context_search
+    - random_number
+    - local_filesystem_tool
+  AllowedWorkingDirectories:

@@ -1,0 +1,13 @@
+Name: Enzo
+Description: The Session Manager. Restores historical sessions and injects context primers.
+SystemPrompt:
+ExecutionSettings:
+  ModelId: # no model needed, just loads previous contexts
+  Temperature: 0.0 # no model needed
+  TopP:
+  MaxTokens:
+Permissions:
+  FileSystem: ReadOnly
+  AllowToolCalling: false
+  AllowedTools:
+  AllowedWorkingDirectories:

@@ -17,3 +17,4 @@ Permissions:
   AllowedTools:
     - execute_xunit_tests
     - read_test_results
+  AllowedWorkingDirectories:

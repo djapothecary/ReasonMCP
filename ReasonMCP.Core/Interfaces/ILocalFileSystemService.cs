@@ -7,7 +7,14 @@ namespace ReasonMCP.Core.Interfaces
         Task<List<FileAttachmentRecord>> GenerateDirectoryListAsync(
             string agentId,
             string absolutePath,
-            CancellationToken cancellationToken
+            CancellationToken cancellationToken = default
+        );
+
+        Task<string> WriteFileAsync(
+            string agentId,
+            string absolutePath,
+            string content,
+            CancellationToken cancellationToken = default
         );
     }
 }

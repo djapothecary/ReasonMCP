@@ -21,5 +21,7 @@ ExecutionSettings:
   MaxTokens: 1024 # Summaries shouldn't be massive
 
 Permissions:
-  FileSystem: None
+  FileSystem: ReadOnly
   AllowToolCalling: false
+  AllowedTools:
+  AllowedWorkingDirectories:

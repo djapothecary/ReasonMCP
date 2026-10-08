@@ -19,3 +19,4 @@ Permissions:
     - trigger_codebase_scan
     - trigger_knowledgebase_scan
     - check_queue_status
+  AllowedWorkingDirectories:

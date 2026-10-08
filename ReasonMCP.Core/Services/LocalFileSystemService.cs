@@ -1,6 +1,5 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 using ReasonMCP.Core.Interfaces;
 using ReasonMCP.Core.Records;
 
@@ -118,5 +117,50 @@ namespace ReasonMCP.Core.Services
             }
         }
 
+        public async Task<string> WriteFileAsync(
+            string agentId,
+            string absolutePath,
+            string content,
+            CancellationToken cancellationToken
+        )
+        {
+            //  1.  Check Global System Lock AND Agent Specific sandboxes
+            // 1. Check Global System Lock (Sync)
+            if (!_securityService.IsPathAllowed(absolutePath))
+            {
+                return $"[SYSTEM DIRECTIVE]: DENIED. '{absolutePath}' violates global policy.";
+            }
+
+            // 2. Check Agent Sandbox (Async!)
+            if (!await _securityService.IsAgentAllowedForWriteHereAsync(agentId, absolutePath))
+            {
+                return $"[SYSTEM DIRECTIVE]: DENIED. You ({agentId}) do not have sandbox permissions for this directory.";
+            }
+
+            try
+            {
+                //  Ensure that the directory exists before writing
+                var directory = Path.GetDirectoryName(absolutePath);
+                if (directory != null && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                //  2.  Write the file asynchronously
+                await File.WriteAllTextAsync(
+                    absolutePath,
+                    content,
+                    cancellationToken
+                );
+
+                _logger.LogInformation("[FILE SYSTEM]: {Agent} successfully wrote to {Path}", agentId, absolutePath);
+                return $"[SUCCESS]: File written successfully to {absolutePath}.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[FILE SYSTEM ERROR]: Failed to write file {Path}", absolutePath);
+                return $"[ERROR]: An unexpected OS error occurred while writing the file: {ex.Message}";
+            }
+        }
     }
 }
