@@ -9,4 +9,5 @@
   <Project Path="ReasonMCP.Enrichment/ReasonMCP.Enrichment.csproj" />
   <Project Path="ReasonMCP.Server/ReasonMCP.Server.csproj" />
   <Project Path="ReasonMCP.Core/ReasonMCP.Core.csproj" />
+  <Project Path="ReasonMCP.Skills/ReasonMCP.Skills.csproj" />
 </Solution>
