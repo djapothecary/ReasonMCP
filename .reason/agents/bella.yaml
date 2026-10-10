@@ -20,7 +20,13 @@ Permissions:
   FileSystem: ReadOnly
   AllowToolCalling: true
   AllowedTools:
-    - CodebaseContextSearchTool
-    - DocumentContextSearchTool
-    - RandomNumberTool
+    - codebase_context_search
+    #- document_context_search
+    #- reference_context_search
+    - random_number
+    - local_filesystem_tool
+    # Microsoft dotnet specific skill tools
+    - explore_skill_categories
+    - get_skills_in_category
+    - load_specific_skill
   AllowedWorkingDirectories:

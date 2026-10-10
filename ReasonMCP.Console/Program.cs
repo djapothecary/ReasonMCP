@@ -38,6 +38,7 @@ builder.Configuration.SetBasePath(@"C:\Source\ReasonMCP\ReasonMCP.Core\SharedCon
     .AddJsonFile("gatewaySettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("playbookSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("referenceScanSettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("skillsSettings.json", optional: true, reloadOnChange: true)
     .AddJsonFile("storageConfigSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("testingSettings.json", optional: false, reloadOnChange: true)
     .Build();
@@ -51,6 +52,7 @@ builder.Services.Configure<GatewaySettings>(builder.Configuration.GetSection("Ga
 builder.Services.Configure<KnowledgebaseScanSettings>(builder.Configuration.GetSection("KnowledgebaseScanSettings"));
 builder.Services.Configure<PlaybookSettings>(builder.Configuration.GetSection("PlaybookSettings"));
 builder.Services.Configure<ReferenceScanSettings>(builder.Configuration.GetSection("ReferenceScanSettings"));
+builder.Services.Configure<SkillSettings>(builder.Configuration.GetSection("SkillsSettings"));
 builder.Services.Configure<StorageConfigSettings>(builder.Configuration.GetSection("StorageConfigSettings"));
 builder.Services.Configure<TestingSettings>(builder.Configuration.GetSection("TestingSettings"));
 
