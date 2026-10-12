@@ -129,6 +129,9 @@ builder.AddSkillsTools();
 //  Register the Background Services
 
 //  The Escape Hatch
+//  If Reason goes rogue, you open PowerShell, type:
+//  echo 1 > C:\Source\EscapeHatch\stop.txt
+//  and the entire .NET architecture instantly self-terminates.
 builder.Services.AddHostedService<EscapeHatchService>();
 
 //  Scanners for Codebase and Documents/Knowledge

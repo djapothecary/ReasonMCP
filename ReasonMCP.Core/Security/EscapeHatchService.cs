@@ -26,6 +26,9 @@ namespace ReasonMCP.Core.Security
         protected override Task ExecuteAsync(
             CancellationToken cancellationToken)
         {
+            //  If Reason goes rogue, you open PowerShell, type:
+            //  echo 1 > C:\Source\EscapeHatch\stop.txt
+            //  and the entire .NET architecture instantly self-terminates.
             var escapeHatchPath = _settings.CurrentValue.EscapeHatchPath;
 
             //  the user has INTENIONALLY turned off the escape hatch
