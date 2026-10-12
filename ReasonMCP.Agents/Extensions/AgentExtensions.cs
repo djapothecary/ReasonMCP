@@ -48,7 +48,7 @@ namespace ReasonMCP.Agents.Extensions
         {
             builder.Services.AddScoped<ChatHistoryService>();
             builder.Services.AddScoped<CurrentChatContextSummarizer>();
-            builder.Services.AddScoped<IAgentProfileService, AgentProfileService>();
+            builder.Services.AddSingleton<IAgentProfileService, AgentProfileService>();
             builder.Services.AddScoped<IGladosAgent, GladosAgent>();
             builder.Services.AddScoped<IMnemosyneAgent, MnemosyneAgent>();
 
@@ -60,10 +60,8 @@ namespace ReasonMCP.Agents.Extensions
         {
             builder.Services.AddSingleton<CodebaseContextSearchTool>();
             builder.Services.AddSingleton<DocumentContextSearchTool>();
-            builder.Services.AddSingleton<LocalFileSystemTool>();
             builder.Services.AddSingleton<RandomNumberTools>();
             builder.Services.AddSingleton<ReferenceContextSearchTool>();
-            builder.Services.AddSingleton<WriteFileTool>();
 
             return builder;
         }

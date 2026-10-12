@@ -16,6 +16,7 @@ using ReasonMCP.Enrichment.Extensions;
 using ReasonMCP.Enrichment.Workers;
 using ReasonMCP.Server.Endpoints;
 using ReasonMCP.Server.Extensions;
+using ReasonMCP.Skills.Extensions;
 using ReasonMCP.Skills.Tools;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,7 +33,7 @@ builder.Configuration.SetBasePath(@"C:\Source\ReasonMCP\ReasonMCP.Core\SharedCon
     .AddJsonFile("gatewaySettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("playbookSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("referenceScanSettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile("skillsSettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("skillSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("storageConfigSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("testingSettings.json", optional: false, reloadOnChange: true)
     .Build();
@@ -114,6 +115,10 @@ builder.AddOrchestrators();
 //  Agentic Playbook Services
 builder.AddAgenticPlaybookServices();
 
+//  Microsoft specific C# and .NET Skills extensions
+builder.AddSkillsServices();
+builder.AddSkillsTools();
+
 //  testing AI Agent chat interception
 // builder.Services.AddSingleton<IFunctionInvocationFilter, ChatInterceptor>();
 
@@ -125,16 +130,7 @@ builder.Services.AddHostedService<AgentTaskWorker>();
 builder.Services.AddSingleton(Channel.CreateUnbounded<object>());
 
 // Add the MCP services: the transport to use and the tools to register.
-builder.Services
-    .AddMcpServer()
-    .WithHttpTransport()
-    .WithTools<RandomNumberTools>()
-    .WithTools<CodebaseContextSearchTool>()
-    .WithTools<DocumentContextSearchTool>()
-    .WithTools<LocalFileSystemTool>()
-    .WithTools<MicrosoftSkillsTools>()
-    .WithTools<ReferenceContextSearchTool>()
-    .WithTools<WriteFileTool>();
+builder.AddReasonMcpServer();
 
 builder.Services.AddKernel();
 

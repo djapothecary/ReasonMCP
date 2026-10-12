@@ -15,6 +15,6 @@ Permissions:
   FileSystem: ReadOnly
   AllowToolCalling: true
   AllowedTools:
-    - execute_xunit_tests
-    - read_test_results
+    - ReadTestsResultsTool
+    - RunUnitTestsTool
   AllowedWorkingDirectories:

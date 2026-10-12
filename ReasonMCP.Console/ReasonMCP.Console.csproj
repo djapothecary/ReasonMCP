@@ -65,6 +65,7 @@
     <ProjectReference Include="..\ReasonMCP.Agents\ReasonMCP.Agents.csproj" />
     <ProjectReference Include="..\ReasonMCP.Core\ReasonMCP.Core.csproj" />
     <ProjectReference Include="..\ReasonMCP.Enrichment\ReasonMCP.Enrichment.csproj" />
+    <ProjectReference Include="..\ReasonMCP.Skills\ReasonMCP.Skills.csproj" />
   </ItemGroup>
 
   <ItemGroup>

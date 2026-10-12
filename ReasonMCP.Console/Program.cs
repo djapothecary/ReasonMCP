@@ -18,6 +18,7 @@ using ReasonMCP.Core.Workers;
 using ReasonMCP.Enrichment.Dispatchers;
 using ReasonMCP.Enrichment.Extensions;
 using ReasonMCP.Enrichment.Workers;
+using ReasonMCP.Skills.Extensions;
 using Spectre.Console;
 using Rule = Spectre.Console.Rule;
 
@@ -38,7 +39,7 @@ builder.Configuration.SetBasePath(@"C:\Source\ReasonMCP\ReasonMCP.Core\SharedCon
     .AddJsonFile("gatewaySettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("playbookSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("referenceScanSettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile("skillsSettings.json", optional: true, reloadOnChange: true)
+    .AddJsonFile("skillSettings.json", optional: true, reloadOnChange: true)
     .AddJsonFile("storageConfigSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("testingSettings.json", optional: false, reloadOnChange: true)
     .Build();
@@ -99,6 +100,10 @@ builder.AddOrchestrators();
 //  Agentic Playbook Services
 builder.AddAgenticPlaybookServices();
 
+//  Microsoft specific C# and .NET Skills extensions
+builder.AddSkillsServices();
+builder.AddSkillsTools();
+
 //  testing AI Agent chat interception
 // builder.Services.AddSingleton<IFunctionInvocationFilter, ChatInterceptor>();
 
@@ -113,7 +118,6 @@ var kernelBuilder = builder.Services.AddKernel();
 
 kernelBuilder.Plugins.AddFromType<CodebaseContextSearchTool>();
 kernelBuilder.Plugins.AddFromType<DocumentContextSearchTool>();
-kernelBuilder.Plugins.AddFromType<LocalFileSystemTool>();
 kernelBuilder.Plugins.AddFromType<ReferenceContextSearchTool>();
 
 using IHost host = builder.Build();

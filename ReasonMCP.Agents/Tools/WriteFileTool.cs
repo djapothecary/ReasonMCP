@@ -6,7 +6,6 @@ using Microsoft.SemanticKernel;
 using ModelContextProtocol.Server;
 using ReasonMCP.Core.Configurations;
 using ReasonMCP.Core.Interfaces;
-using ReasonMCP.Core.Records;
 
 namespace ReasonMCP.Agents.Tools
 {
@@ -14,20 +13,13 @@ namespace ReasonMCP.Agents.Tools
     {
         private readonly ILocalFileSystemService _localFileSystemService;
         private readonly string _agentId;
-        private readonly IOptionsMonitor<FileSystemSecuritySettings> _settings;
-        private readonly ILogger<WriteFileTool> _logger;
-
         public WriteFileTool(
             ILocalFileSystemService localFileSystemService,
-            string agentId,
-            IOptionsMonitor<FileSystemSecuritySettings> settings,
-            ILogger<WriteFileTool> logger
+            string agentId
         )
         {
             _localFileSystemService = localFileSystemService;
             _agentId = agentId;
-            _settings = settings;
-            _logger = logger;
         }
 
         [McpServerTool(Name = "write_file_tool")]

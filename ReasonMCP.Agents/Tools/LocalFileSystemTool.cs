@@ -13,18 +13,18 @@ namespace ReasonMCP.Agents.Tools
     public class LocalFileSystemTool
     {
         private readonly ILocalFileSystemService _localFileSystemService;
-        private readonly IOptionsMonitor<FileSystemSecuritySettings> _settings;
-        private readonly ILogger<LocalFileSystemTool> _logger;
+        private readonly string _agentId;
+        private readonly FileSystemSecuritySettings _securitySettings;
 
         public LocalFileSystemTool(
             ILocalFileSystemService localFileSystemService,
-            IOptionsMonitor<FileSystemSecuritySettings> settings,
-            ILogger<LocalFileSystemTool> logger
+            string agentId,
+            FileSystemSecuritySettings securitySettings
         )
         {
             _localFileSystemService = localFileSystemService;
-            _settings = settings;
-            _logger = logger;
+            _agentId = agentId;
+            _securitySettings = securitySettings;
         }
 
         [McpServerTool(Name = "local_filesystem_tool")]
@@ -41,7 +41,7 @@ namespace ReasonMCP.Agents.Tools
         )
         {
             var localFileSystemToolResponse = new List<FileAttachmentRecord>();
-            if (!_settings.CurrentValue.Enabled)
+            if (!_securitySettings.Enabled)
             {
                 var notEnabledResponse = new FileAttachmentRecord(
                         string.Empty,
