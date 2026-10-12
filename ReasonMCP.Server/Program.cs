@@ -12,6 +12,7 @@ using ReasonMCP.Agents.Tools;
 using ReasonMCP.Core.Configurations;
 using ReasonMCP.Core.Data;
 using ReasonMCP.Core.Extensions;
+using ReasonMCP.Core.Security;
 using ReasonMCP.Core.Workers;
 using ReasonMCP.Enrichment.Extensions;
 using ReasonMCP.Enrichment.Workers;
@@ -126,6 +127,10 @@ builder.AddSkillsTools();
 // builder.Services.AddSingleton<IFunctionInvocationFilter, ChatInterceptor>();
 
 //  Register the Background Services
+
+//  The Escape Hatch
+builder.Services.AddHostedService<EscapeHatchService>();
+
 //  Scanners for Codebase and Documents/Knowledge
 builder.Services.AddHostedService<EnrichmentWorker>();
 builder.Services.AddHostedService<AgentTaskWorker>();
