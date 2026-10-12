@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using ReasonMCP.Agents.Extensions;
 using ReasonMCP.Agents.Tools;
 using ReasonMCP.Core.Configurations;
@@ -29,6 +30,7 @@ builder.Configuration.SetBasePath(@"C:\Source\ReasonMCP\ReasonMCP.Core\SharedCon
     .AddJsonFile("chatSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("codebaseScanSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("documentScanSettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("escapeHatchSettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("fileSystemSecuritySettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("gatewaySettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("playbookSettings.json", optional: false, reloadOnChange: true)
@@ -42,6 +44,7 @@ builder.Services.Configure<AgentTaskWorkerSettings>(builder.Configuration.GetSec
 builder.Services.Configure<ChatSettings>(builder.Configuration.GetSection("ChatSettings"));
 builder.Services.Configure<CodebaseScanSettings>(builder.Configuration.GetSection("CodebaseScanSettings"));
 builder.Services.Configure<DocumentScanSettings>(builder.Configuration.GetSection("DocumentsScanSettings"));
+builder.Services.Configure<EscapeHatchSettings>(builder.Configuration.GetSection("EscapeHatchSettings"));
 builder.Services.Configure<FileSystemSecuritySettings>(builder.Configuration.GetSection("FileSystemSescuritySettings"));
 builder.Services.Configure<GatewaySettings>(builder.Configuration.GetSection("GatewaySettings"));
 builder.Services.Configure<KnowledgebaseScanSettings>(builder.Configuration.GetSection("KnowledgebaseScanSettings"));
