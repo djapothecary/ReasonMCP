@@ -24,6 +24,7 @@ Permissions:
     - DocumentSearchTool
     - ReferenceSearchTool
     - RandomNumberTool
+    - random_number
     - LocalFileTool
     # Microsoft dotnet specific skill tools
     - MicrosoftSkillsTool

@@ -6,6 +6,7 @@ using ReasonMCP.Agents.Tools;
 using ReasonMCP.Core.Configurations;
 using ReasonMCP.Core.Interfaces;
 using ReasonMCP.Core.Services;
+using ReasonMCP.Skills.Tools;
 
 namespace ReasonMCP.Agents.Extensions
 {
@@ -58,10 +59,11 @@ namespace ReasonMCP.Agents.Extensions
         public static IHostApplicationBuilder AddAIPluginsAndTools(
             this IHostApplicationBuilder builder)
         {
-            builder.Services.AddSingleton<CodebaseContextSearchTool>();
-            builder.Services.AddSingleton<DocumentContextSearchTool>();
-            builder.Services.AddSingleton<RandomNumberTools>();
-            builder.Services.AddSingleton<ReferenceContextSearchTool>();
+            builder.Services.AddScoped<CodebaseContextSearchTool>();
+            builder.Services.AddScoped<DocumentContextSearchTool>();
+            builder.Services.AddScoped<MicrosoftSkillsTools>();
+            builder.Services.AddScoped<RandomNumberTools>();
+            builder.Services.AddScoped<ReferenceContextSearchTool>();
 
             return builder;
         }
