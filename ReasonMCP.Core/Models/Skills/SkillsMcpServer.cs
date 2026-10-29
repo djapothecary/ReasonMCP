@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace ReasonMCP.Core.Models
+namespace ReasonMCP.Core.Models.Skills
 {
     public class SkillsMcpServer
     {
