@@ -1,0 +1,1861 @@
+# Unified evaluation workflow for same-repository PRs and scheduled runs.
+# Fork PRs receive secretless status/discovery only; PAT-backed evaluation is
+# disabled until a maintainer promotes the change to a trusted repository branch.
+#
+# IMPORTANT: The /evaluate command runs the workflow YAML from the default
+# branch (main), NOT from the PR branch, for every trigger below (issue_comment,
+# pull_request_review, pull_request_target, workflow_dispatch). Changes to this
+# file in a PR will not take effect until merged. The Vally harness runs the
+# target content checked out from the gate-bound commit, so skill, agent, and
+# eval.yaml changes are evaluated before merge.
+#
+# For same-repository PRs:
+#   - On PR open/sync, the `pr-status` job posts an initial commit status:
+#     - "success" if no skills changed (required check passes immediately)
+#     - "pending" if skills changed (maintainer must trigger /evaluate)
+#   - A maintainer triggers evaluation one of two ways; both bind the run to a
+#     SPECIFIC reviewed commit:
+#     1. Recommended: submit a PR review ("Files changed" -> "Review changes")
+#        whose body contains /evaluate. The run is bound to review.commit_id --
+#        the exact commit reviewed -- with no SHA to copy.
+#     2. Comment "/evaluate <sha>" in the PR conversation. The conversation
+#        comment payload carries no commit id, so an explicit SHA is REQUIRED;
+#        a bare /evaluate only posts guidance. The SHA must belong to the PR.
+#   - The `gate` job validates permissions AND resolves/validates the bound
+#     commit; no downstream job re-reads the live branch head.
+#
+# For scheduled runs:
+#   - Runs daily, evaluates all plugins with skill or custom-agent evals.
+#
+# Model for fork PRs:
+#   - Workflow YAML: always from the default branch (enforced by the
+#     issue_comment / pull_request_review / pull_request_target triggers)
+#   - Skill/test content: inspected only by secretless status/discovery jobs
+#   - PAT-backed evaluation is skipped because eval setup commands and agent
+#     tools are controlled by the PR content
+#   - A maintainer must review and promote the change to a trusted repository
+#     branch before running the full evaluation
+name: evaluation
+
+# For a triage/manual single-PR dispatch, surface the PR + head in the run name.
+# This run name also doubles as the idempotency key the PR-triage worker matches
+# on (eval_run_exists_for_head in pr-triage-act.sh): a workflow_dispatch run's
+# head_sha is the default branch — not the PR head — so the run name is how the
+# worker recognises that an evaluation has already been dispatched for this head.
+# Scheduled runs are tagged "schedule: <profile>" so the skip guard (and the
+# Actions UI) can tell the per-day model profiles apart; each cron runs a
+# different profile and must not suppress the others. For all other events the
+# expression yields '' and GitHub uses the default name.
+run-name: "${{ inputs.pr_number != '' && format('Evaluate PR #{0} @ {1}', inputs.pr_number, inputs.head_sha) || (github.event.schedule == '0 7 * * 1,3,5' && 'schedule: default') || (github.event.schedule == '0 7 * * 2,6' && 'schedule: mid') || (github.event.schedule == '0 7 * * 4' && 'schedule: sol') || (github.event.schedule == '0 7 * * 0' && 'schedule: newer') || '' }}"
+
+on:
+  # Manual trigger for one-off deploys (e.g., AGENTVIZ SPA update),
+  # targeted re-runs of a single plugin, and explicit dashboard-data publishes.
+  # The pr_number/head_sha inputs are also the PR-triage worker's entry point:
+  # the worker dispatches this workflow directly (workflow_dispatch is exempt
+  # from GitHub's GITHUB_TOKEN recursion guard) instead of relying on the
+  # `evaluate-now` label, which never fires when applied by the bot.
+  workflow_dispatch:
+    inputs:
+      plugin:
+        description: "Plugin or agentic-workflows collection to evaluate (leave blank for all)"
+        type: string
+        required: false
+      pr_number:
+        description: "PR number to evaluate. Routes the dispatch through the gate/PR pipeline instead of a full/plugin run."
+        type: string
+        required: false
+      head_sha:
+        description: "Short head SHA of the PR (used for the run name and triage idempotency). The gate resolves this exact commit -- it does NOT re-read the live branch head."
+        type: string
+        required: false
+      matrix_profile:
+        description: "Cross-family model matrix (IMPACT-ANALYSIS.md §10). default = claude-sonnet-5 + gpt-5.6-luna; mid = claude-haiku-4.5 + mai-code-1.1-flash + gpt-5.3-codex; sol = gpt-5.6-sol only; full = default + mid (5 models); newer = gpt-6-astra + claude-opus-5."
+        type: choice
+        required: false
+        default: default
+        options:
+          - default
+          - mid
+          - sol
+          - full
+          - newer
+      publish_eval_data:
+        description: "Publish generated evaluation data to the shared dashboard. Only allowed for manual runs on main without a PR number."
+        type: boolean
+        required: false
+        default: false
+
+  # Same-repo PRs: post initial status
+  pull_request:
+
+  # Fork PRs: post initial status (runs from base branch for security).
+  # Also receives `labeled` events: a human applying the `evaluate-now` label
+  # is one entry point into this pipeline (alongside `/evaluate`). The triage
+  # worker runs as github-actions[bot] and cannot use the label (label events
+  # emitted by GITHUB_TOKEN do not start workflows), so it uses the
+  # workflow_dispatch pr_number input above instead.
+  pull_request_target:
+    types: [opened, synchronize, reopened, labeled]
+
+  # /evaluate command trigger (PR conversation comment). This payload carries
+  # NO commit id, so the gate REQUIRES an explicit `/evaluate <sha>` here and
+  # binds the run to that exact commit (never the live branch head).
+  issue_comment:
+    types: [created]
+
+  # /evaluate submitted inside a PR review ("Files changed" -> "Review changes"
+  # -> Submit review). Unlike issue_comment, this payload carries
+  # review.commit_id -- the exact commit the review was submitted against -- so
+  # the gate binds evaluation to that SHA atomically, with no live re-resolution.
+  # This is the recommended human entry point: the SHA is filled in for the
+  # reviewer automatically. Runs from the default branch with secrets, like
+  # issue_comment/pull_request_target (only the `pull_request` event is
+  # secret-restricted on forks).
+  pull_request_review:
+    types: [submitted]
+
+  # Weekly cadence — one profile per day, keyed off the exact cron string via
+  # github.event.schedule (see the find-skills step). Deterministic on re-run.
+  #   Mon/Wed/Fri -> default (claude-sonnet-5 + gpt-5.6-luna)
+  #   Tue/Sat     -> mid     (claude-haiku-4.5, mai-code-1.1-flash, gpt-5.3-codex)
+  #   Thu         -> sol      (gpt-5.6-sol only)
+  #   Sun         -> newer    (gpt-6-astra, claude-opus-5)
+  schedule:
+    - cron: '0 7 * * 1,3,5'  # default models (Mon/Wed/Fri)
+    - cron: '0 7 * * 2,6'    # cheap/mid models (Tue/Sat)
+    - cron: '0 7 * * 4'      # gpt-5.6-sol (Thu)
+    - cron: '0 7 * * 0'      # frontier/newer models (Sun)
+
+concurrency:
+  # Every /evaluate entry point (comment, review, the `evaluate-now` label, and
+  # the triage worker's workflow_dispatch) gets a UNIQUE group -- keyed by
+  # github.run_id -- so its `gate` job always starts immediately and can
+  # acknowledge the request and post feedback. Duplicate evaluations for the
+  # same PR are then reduced by a best-effort single-flight step in the gate
+  # (it defers to an in-flight run on the same commit and supersedes an older
+  # run on a stale commit); the concurrency primitive cannot express this
+  # because it can't compare the bound commit across runs. A separate job-level
+  # concurrency on the gate caps cheap gate fan-out per PR. Only the lightweight
+  # status-posting runs stay grouped per-PR so a new push cancels a stale run.
+  group: ${{ github.workflow }}-${{ (github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/evaluate')) && format('eval-{0}-{1}', github.event.issue.number, github.run_id) || (github.event_name == 'pull_request_review' && startsWith(github.event.review.body, '/evaluate')) && format('eval-{0}-{1}', github.event.pull_request.number, github.run_id) || (github.event_name == 'pull_request_target' && github.event.action == 'labeled' && github.event.label.name == 'evaluate-now') && format('eval-{0}-{1}', github.event.pull_request.number, github.run_id) || (github.event_name == 'workflow_dispatch' && inputs.pr_number != '') && format('eval-{0}-{1}', inputs.pr_number, github.run_id) || (github.event_name == 'issue_comment' && format('eval-noop-{0}-{1}', github.event.issue.number, github.event.comment.id)) || (github.event_name == 'pull_request_review' && format('eval-noop-review-{0}-{1}', github.event.pull_request.number, github.event.review.id)) || (github.event_name == 'pull_request' && format('eval-status-{0}', github.event.pull_request.number)) || (github.event_name == 'pull_request_target' && format('eval-fork-status-{0}', github.event.pull_request.number)) || github.run_id }}
+  # /evaluate runs use a unique group (above), so this never interrupts an
+  # evaluation; it only lets a new push cancel a stale per-PR status run.
+  cancel-in-progress: true
+
+env:
+  DASHBOARD_RETENTION_DAYS: 14
+  MODEL: claude-opus-4.6
+  JUDGE_MODEL: claude-opus-4.6
+
+permissions:
+  contents: write
+  pull-requests: write
+  statuses: write
+
+jobs:
+  # ==========================================================================
+  # PR STATUS JOBS
+  # Post initial commit status so the required check is never stuck as "Expected".
+  # Posts success (no skills) or pending (needs /evaluate).
+  # ==========================================================================
+
+  # Same-repo PRs: use pull_request trigger (has direct access to PR content)
+  pr-status:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Discover changes requiring evaluation
+        id: discover
+        shell: pwsh
+        run: |
+          $base = "${{ github.event.pull_request.base.sha }}"
+          $head = "${{ github.event.pull_request.head.sha }}"
+          $mergeBase = git merge-base $base $head
+          $changedFiles = git diff --name-only --diff-filter=ACMR $mergeBase $head
+
+          $hasSkillChanges = $changedFiles |
+            Where-Object { $_ -match '^(?:plugins/[^/]+/plugin\.json$|plugins/[^/]+/skills/[^/]+/|plugins/[^/]+/(?:[^/]+/)*[^/]+\.agent\.md$|tests/[^/]+/[^/]+/|tests/agentic-workflows/|agentic-workflows/|\.github/graders/)' } |
+            Select-Object -First 1
+
+          # Evaluation pipeline changes need a re-eval. The native custom-agent
+          # lane executes eng/skill-validator/src, so changes there are evaluator
+          # infrastructure changes. Documentation files don't affect evaluation.
+          $hasInfraChanges = $changedFiles |
+            Where-Object {
+              ($_ -match '^eng/vally-adapter/') -or
+              ($_ -match '^eng/evaluation/(?:find-targets|path-safety|workflow-targets)\.ps1$') -or
+              ($_ -match '^eng/skill-validator/src/') -or
+              ($_ -match '^dotnet-skills\.experiment\.yaml$') -or
+              $_ -match '^\.github/workflows/(evaluation|evaluation-run)\.yml$'
+            } |
+            Select-Object -First 1
+
+          if ($hasSkillChanges -or $hasInfraChanges) {
+            echo "needs_eval=true" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "needs_eval=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Post evaluation commit status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "${{ steps.discover.outputs.needs_eval }}" == "true" ]]; then
+            STATE="pending"
+            DESC="Submit a review with /evaluate, or comment /evaluate ${{ github.event.pull_request.head.sha }}"
+          else
+            STATE="success"
+            DESC="No skills or agents to evaluate"
+          fi
+
+          gh api "repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }}" \
+            -f state="$STATE" \
+            -f context="evaluation-status" \
+            -f description="$DESC" \
+            -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+  # Fork PRs: use pull_request_target (runs from base branch, fetches PR metadata safely)
+  fork-pr-status:
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      github.event.action != 'labeled' &&
+      github.event.action != 'unlabeled' &&
+      github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - name: Checkout base branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch PR head for diff
+        run: git fetch origin +refs/pull/${{ github.event.pull_request.number }}/head
+
+      - name: Discover changes requiring evaluation
+        id: discover
+        shell: pwsh
+        run: |
+          $base = "${{ github.event.pull_request.base.sha }}"
+          $head = "FETCH_HEAD"
+          $mergeBase = git merge-base $base $head
+          $changedFiles = git diff --name-only --diff-filter=ACMR $mergeBase $head
+
+          $hasSkillChanges = $changedFiles |
+            Where-Object { $_ -match '^(?:plugins/[^/]+/plugin\.json$|plugins/[^/]+/skills/[^/]+/|plugins/[^/]+/(?:[^/]+/)*[^/]+\.agent\.md$|tests/[^/]+/[^/]+/|tests/agentic-workflows/|agentic-workflows/|\.github/graders/)' } |
+            Select-Object -First 1
+
+          $hasInfraChanges = $changedFiles |
+            Where-Object {
+              ($_ -match '^eng/vally-adapter/') -or
+              ($_ -match '^eng/evaluation/(?:find-targets|path-safety|workflow-targets)\.ps1$') -or
+              ($_ -match '^eng/skill-validator/src/') -or
+              ($_ -match '^dotnet-skills\.experiment\.yaml$') -or
+              $_ -match '^\.github/workflows/(evaluation|evaluation-run)\.yml$'
+            } |
+            Select-Object -First 1
+
+          if ($hasSkillChanges -or $hasInfraChanges) {
+            echo "needs_eval=true" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "needs_eval=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Post evaluation commit status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "${{ steps.discover.outputs.needs_eval }}" == "true" ]]; then
+            STATE="failure"
+            DESC="Fork PR evaluation requires a trusted branch"
+          else
+            STATE="success"
+            DESC="No skills or agents to evaluate"
+          fi
+
+          gh api "repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }}" \
+            -f state="$STATE" \
+            -f context="evaluation-status" \
+            -f description="$DESC" \
+            -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+  # ==========================================================================
+  # GATE JOB
+  # Validate the evaluation trigger AND bind the run to one specific commit
+  # (never the live branch head). Four entry points:
+  #   1. /evaluate comment (issue_comment) -- original human path. Carries NO
+  #      commit id, so it REQUIRES an explicit "/evaluate <sha>" that belongs to
+  #      the PR; a bare /evaluate only posts guidance.
+  #   2. /evaluate review (pull_request_review submitted) -- recommended human
+  #      path. Bound to review.commit_id, the exact commit reviewed.
+  #   3. evaluate-now label (pull_request_target labeled) -- a human applying
+  #      the label (the bot cannot: GITHUB_TOKEN label events don't start runs).
+  #      Bound to the head SHA in the label event payload.
+  #   4. workflow_dispatch with pr_number -- the pr-triage worker's path. It runs
+  #      as github-actions[bot] and dispatches this workflow directly, since
+  #      workflow_dispatch is exempt from the GITHUB_TOKEN recursion guard. Bound
+  #      to the worker's observed head SHA (resolved from short to full).
+  # All must come from a trusted actor (write+ on the repo, or the workflow's
+  # own github-actions[bot] identity for paths 3 and 4).
+  # ==========================================================================
+  gate:
+    if: >-
+      (github.event.issue.pull_request &&
+       startsWith(github.event.comment.body, '/evaluate'))
+      ||
+      (github.event_name == 'pull_request_review' &&
+       github.event.action == 'submitted' &&
+       startsWith(github.event.review.body, '/evaluate'))
+      ||
+      (github.event_name == 'pull_request_target' &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'evaluate-now')
+      ||
+      (github.event_name == 'workflow_dispatch' &&
+       inputs.pr_number != '')
+    runs-on: ubuntu-latest
+    # Cap concurrent gate jobs per PR: a burst of /evaluate comments cannot fan
+    # out into unbounded runners. The gate is cheap (permission check + bind);
+    # the expensive discover/evaluate jobs are NOT in this group and are
+    # single-flighted separately, so this never interrupts a running evaluation
+    # -- it only coalesces a flood of cheap gate jobs down to one per PR.
+    # Trade-off: GitHub keeps a single pending job per group, so a third
+    # /evaluate arriving while one gate runs and one is pending cancels the
+    # pending one. The queue only ever holds cheap gates (seconds), never a
+    # running evaluation, so the window is small; and the surviving gate still
+    # evaluates the newest commit, so no request is lost -- only the middle
+    # request of a same-PR burst misses its own acknowledgement.
+    concurrency:
+      group: "${{ github.workflow }}-gate-${{ (github.event_name == 'issue_comment') && github.event.issue.number || (github.event_name == 'pull_request_review' || github.event_name == 'pull_request_target') && github.event.pull_request.number || (github.event_name == 'workflow_dispatch') && inputs.pr_number || github.run_id }}"
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+      issues: write
+      # gh run cancel (single-flight: supersede a stale in-flight run)
+      actions: write
+    outputs:
+      head_sha: ${{ steps.pr.outputs.head_sha }}
+      base_sha: ${{ steps.pr.outputs.base_sha }}
+      pr_number: ${{ steps.pr.outputs.pr_number }}
+      is_fork: ${{ steps.pr.outputs.is_fork }}
+      # 'true' only when a specific commit was bound and validated. A bare
+      # /evaluate (comment path, no SHA) sets this 'false' so downstream jobs
+      # skip and the gate only posts guidance.
+      should_eval: ${{ steps.pr.outputs.should_eval }}
+    steps:
+      - name: Check actor permissions
+        id: perms
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMENT_ACTOR: ${{ github.event.comment.user.login }}
+          REVIEW_ACTOR: ${{ github.event.review.user.login }}
+          SENDER_ACTOR: ${{ github.event.sender.login }}
+        run: |
+          if [[ "${{ github.event_name }}" == "issue_comment" ]]; then
+            ACTOR="$COMMENT_ACTOR"
+          elif [[ "${{ github.event_name }}" == "pull_request_review" ]]; then
+            ACTOR="$REVIEW_ACTOR"
+          else
+            ACTOR="$SENDER_ACTOR"
+          fi
+          # The triage worker dispatches this workflow as github-actions[bot]
+          # (workflow_dispatch). A human may instead apply the evaluate-now label,
+          # which arrives under that human's identity. The bot identity has no
+          # entry in /collaborators/* but is implicitly trusted because only this
+          # repository's own GITHUB_TOKEN can act under it.
+          if [[ "$ACTOR" == "github-actions[bot]" ]]; then
+            echo "Actor is github-actions[bot] — trusted by construction"
+            exit 0
+          fi
+          PERMISSION=$(gh api "repos/${{ github.repository }}/collaborators/${ACTOR}/permission" --jq '.permission')
+          echo "Actor ${ACTOR} has permission: $PERMISSION"
+          if [[ "$PERMISSION" != "admin" && "$PERMISSION" != "write" && "$PERMISSION" != "maintain" ]]; then
+            echo "::error::Actor does not have write access"
+            exit 1
+          fi
+
+      - name: Acknowledge the request
+        # Fires immediately after the permission check passes, so an authorized
+        # /evaluate always gets visible feedback (👀) up front -- before the
+        # longer resolve/bind work -- regardless of whether it ends up running,
+        # posting guidance, or deferring to an in-flight run. Only the comment
+        # path has a comment to react to. Paired with the cleanup step below:
+        # any path that stops inside the gate clears the reaction again, since
+        # only a real evaluation reaches `report-status`, which normally does.
+        if: github.event_name == 'issue_comment'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
+            -X POST -f content='eyes' || true
+
+      - name: Resolve and bind the evaluated commit
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          # Every trigger-supplied value is read via env (never interpolated into
+          # the script body) so validation runs before the value reaches any gh
+          # api call -- a crafted comment/input cannot inject shell or traversal.
+          PR_NUMBER_INPUT: ${{ inputs.pr_number }}
+          DISPATCH_SHA_INPUT: ${{ inputs.head_sha }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          REVIEW_SHA: ${{ github.event.review.commit_id }}
+          LABEL_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          ISSUE_PR_NUMBER: ${{ github.event.issue.number }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          REPO='${{ github.repository }}'
+
+          # ----- 1) Resolve the PR number -------------------------------------
+          case "$EVENT_NAME" in
+            issue_comment)       PR_NUMBER="$ISSUE_PR_NUMBER" ;;
+            pull_request_review) PR_NUMBER="$EVENT_PR_NUMBER" ;;
+            workflow_dispatch)
+              PR_NUMBER="$PR_NUMBER_INPUT"
+              if [[ ! "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+                echo "::error::workflow_dispatch input pr_number='$PR_NUMBER' must be a positive integer"
+                exit 1
+              fi ;;
+            *)                   PR_NUMBER="$EVENT_PR_NUMBER" ;;
+          esac
+          echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
+
+          # ----- 2) Determine the commit this trigger BINDS to ----------------
+          # Each trigger names one specific commit at the moment it fired.
+          # Downstream jobs use that commit and never re-read the live branch
+          # head, so evaluation always runs the reviewed commit.
+          REQUESTED=""
+          case "$EVENT_NAME" in
+            pull_request_review) REQUESTED="$REVIEW_SHA" ;;         # commit the review was submitted against
+            pull_request_target) REQUESTED="$LABEL_HEAD_SHA" ;;     # head at label time (from the event payload)
+            workflow_dispatch)   REQUESTED="$DISPATCH_SHA_INPUT" ;; # triage worker's observed head (short ok)
+            issue_comment)
+              # Require an explicit SHA: "/evaluate <7-40 hex>". The issue_comment
+              # payload carries no commit id, so a bare /evaluate cannot be bound.
+              # Parse with a bash regex (portable; avoids sed word-boundary quirks).
+              FIRST_LINE="${COMMENT_BODY%%$'\n'*}"      # first line only
+              FIRST_LINE="${FIRST_LINE//$'\r'/}"        # strip trailing CR
+              if [[ "$FIRST_LINE" =~ ^[[:space:]]*/evaluate[[:space:]]+([0-9a-fA-F]{7,40})([^0-9a-fA-F]|$) ]]; then
+                REQUESTED="${BASH_REMATCH[1]}"
+              fi
+              ;;
+          esac
+
+          # ----- 3) Bare /evaluate (comment path, no SHA): guide, do not run --
+          if [[ -z "$REQUESTED" && "$EVENT_NAME" == "issue_comment" ]]; then
+            echo "should_eval=false" >> "$GITHUB_OUTPUT"
+            # Look up the current head so we can hand back a copy-paste-ready
+            # command instead of a placeholder. This is only a *suggestion*: when
+            # the user posts it, the gate re-reads and validates whatever SHA they
+            # typed, so surfacing the live head here introduces no trust gap.
+            HEAD_NOW="$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" --jq '.head.sha' 2>/dev/null || true)"
+            if [[ -n "$HEAD_NOW" ]]; then
+              READY="/evaluate ${HEAD_NOW}"
+            else
+              READY="/evaluate <full-head-sha>"
+            fi
+            # $'...' is ANSI-C quoting (real newlines, literal backticks) but does
+            # NOT expand variables, so splice $READY in via string concatenation.
+            BODY=$'👋 `/evaluate` needs the **exact commit** to evaluate.\n\n**Two ways to run it:**\n\n1. **Review flow (recommended — no SHA to copy):** open **Files changed → Review changes**, type `/evaluate` in the review box, and **Submit review**. GitHub binds the run to the exact commit you reviewed.\n2. **Comment flow:** copy-paste this command for the current head:\n\n```\n'"$READY"$'\n```'
+            gh pr comment "$PR_NUMBER" --repo "$REPO" --body "$BODY" || true
+            echo "Bare /evaluate with no SHA — posted guidance (head=${HEAD_NOW:-unknown}), not evaluating."
+            exit 0
+          fi
+
+          # ----- 4) Validate shape --------------------------------------------
+          if [[ -z "$REQUESTED" ]]; then
+            echo "::error::No commit SHA is bound to this ${EVENT_NAME} trigger; refusing to evaluate the live branch head."
+            exit 1
+          fi
+          if [[ ! "$REQUESTED" =~ ^[0-9a-fA-F]{7,40}$ ]]; then
+            echo "::error::Requested commit '$REQUESTED' is not a valid 7-40 char hex SHA."
+            exit 1
+          fi
+
+          # ----- 5) Resolve to the FULL 40-char SHA of THAT SPECIFIC commit ---
+          # `commits/<sha>` resolves the named object; it does NOT follow the
+          # branch, so a short SHA maps to exactly the commit the trigger meant.
+          FULL_SHA="$(gh api "repos/${REPO}/commits/${REQUESTED}" --jq '.sha' 2>/dev/null || true)"
+          # A missing commit makes `gh api` emit an error body that can land on
+          # stdout, so only accept a real 40-char hex object id; anything else
+          # (empty or an error payload) counts as "not found".
+          if [[ ! "$FULL_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            echo "::error::Commit ${REQUESTED} was not found in ${REPO}."
+            if [[ "$EVENT_NAME" == "issue_comment" ]]; then
+              gh pr comment "$PR_NUMBER" --repo "$REPO" --body "❌ \`/evaluate ${REQUESTED}\` — I could not find that commit in this repository. **Preferred:** open **Files changed → Review changes**, type \`/evaluate\`, and **Submit review** — GitHub binds the exact commit automatically, no SHA to copy. Or comment \`/evaluate <full-head-sha>\` using this PR's current head." || true
+            fi
+            exit 1
+          fi
+
+          # ----- 6) PR metadata + fork detection (NOT used as the eval target) -
+          PR_DATA="$(gh api "repos/${REPO}/pulls/${PR_NUMBER}")"
+          PR_HEAD="$(echo "$PR_DATA" | jq -r '.head.sha')"
+          BASE_SHA="$(echo "$PR_DATA" | jq -r '.base.sha')"
+          HEAD_REPO="$(echo "$PR_DATA" | jq -r '.head.repo.full_name')"
+          BASE_REPO="$(echo "$PR_DATA" | jq -r '.base.repo.full_name')"
+          if [[ "$HEAD_REPO" != "$BASE_REPO" ]]; then IS_FORK=true; else IS_FORK=false; fi
+
+          # ----- 7) Reachability for the user-typed comment path --------------
+          # A maintainer typing "/evaluate <sha>" names the commit by hand, so
+          # confirm it belongs to this PR (its head or one of its own commits)
+          # before evaluating. Uses the fork-aware pulls/N/commits list (its
+          # commits live in the base repo via refs/pull/N/*). The review/label/
+          # dispatch paths name a PR-bound commit by construction and skip this
+          # check; if that commit is no longer present, discover fails closed.
+          if [[ "$EVENT_NAME" == "issue_comment" && "$FULL_SHA" != "$PR_HEAD" ]]; then
+            REACHABLE=false
+            # Primary check: membership in the PR's own commits. Fork-aware
+            # (their commits live in the base repo via refs/pull/N/*) and
+            # restricts to commits actually introduced by the PR. Capture the
+            # list first, then match via a here-string: piping gh into `grep -q`
+            # would let grep close the pipe on first match and, under
+            # `set -o pipefail`, surface gh's SIGPIPE as the pipeline status --
+            # falsely rejecting a valid commit.
+            PR_COMMITS="$(gh api --paginate "repos/${REPO}/pulls/${PR_NUMBER}/commits" --jq '.[].sha' 2>/dev/null || true)"
+            if grep -qxF "$FULL_SHA" <<< "$PR_COMMITS"; then
+              REACHABLE=true
+            else
+              # Fallback for PRs with >250 commits: the pulls/N/commits API is
+              # hard-capped at 250 regardless of pagination, so a valid older
+              # commit can be missing from the list. Confirm ancestry instead --
+              # the bound commit must be an ancestor of (or equal to) the current
+              # PR head. The compare API is not subject to the 250 cap. "ahead"
+              # means PR_HEAD is ahead of FULL_SHA (i.e. FULL_SHA is an ancestor);
+              # "identical" means they are the same commit. Any other status, or
+              # any error, leaves REACHABLE=false (fail closed).
+              CMP_STATUS="$(gh api "repos/${REPO}/compare/${FULL_SHA}...${PR_HEAD}" --jq '.status' 2>/dev/null || true)"
+              if [[ "$CMP_STATUS" == "ahead" || "$CMP_STATUS" == "identical" ]]; then
+                REACHABLE=true
+              fi
+            fi
+            if [[ "$REACHABLE" != "true" ]]; then
+              echo "::error::Commit ${FULL_SHA} is not part of PR #${PR_NUMBER}."
+              gh pr comment "$PR_NUMBER" --repo "$REPO" --body "❌ Commit \`${FULL_SHA}\` is not part of this PR. **Preferred:** submit a review with \`/evaluate\` (**Files changed → Review changes → Submit review**) — GitHub binds the current head automatically. Or comment \`/evaluate <current-head-sha>\` using this PR's current head." || true
+              exit 1
+            fi
+          fi
+
+          # ----- 7b) Warn (log + PR comment) when NOT evaluating the current tip
+          # Any trigger can bind a non-head commit: a comment naming an earlier
+          # SHA, or a push that landed after the review/label/dispatch was bound.
+          # Surface it visibly so a reviewer notices the evaluated code is not the
+          # current head -- without blocking, since binding to that commit is the
+          # whole point.
+          if [[ "$FULL_SHA" != "$PR_HEAD" ]]; then
+            echo "::warning::Evaluating ${FULL_SHA}, which is NOT the current head of PR #${PR_NUMBER} (${PR_HEAD}); bound via ${EVENT_NAME}."
+            SHORT_EVAL="${FULL_SHA:0:7}"
+            SHORT_HEAD="${PR_HEAD:0:7}"
+            gh pr comment "$PR_NUMBER" --repo "$REPO" --body "⚠️ Evaluating commit \`${SHORT_EVAL}\`, which is **not** the current head of this PR (\`${SHORT_HEAD}\`). This run is bound to \`${SHORT_EVAL}\` (via ${EVENT_NAME}); any newer commits are **not** included. To evaluate the latest, **preferred:** submit a review with \`/evaluate\` (**Files changed → Review changes → Submit review**), or comment \`/evaluate ${PR_HEAD}\`." || true
+          fi
+
+          # ----- 7c) Single-flight: reduce duplicate evaluations (best-effort) -
+          # The workflow concurrency group is unique per run, so every gate
+          # starts and can post feedback. This step then reduces duplicate
+          # evaluations for the same PR. It is best-effort by design and never a
+          # security control: each run is independently bound to its own
+          # validated commit, and the expensive discover/evaluate jobs are only
+          # ever reached AFTER the write-access check above -- so a missed match
+          # can only cost a duplicate run, never run a wrong commit or let an
+          # unauthorized actor evaluate anything.
+          # We list other in-flight/queued evaluation runs and key sibling
+          # identity on (head repository, head branch) taken from PR_DATA (the
+          # real PR): that pair uniquely identifies a PR's source -- including
+          # forks, where two forks that share a branch name (e.g. `main`) still
+          # differ by repository, so we can never cancel or defer to a run from
+          # an unrelated repository. Because the key comes from PR_DATA, a run of
+          # ANY trigger type can discover the review/label sibling runs (those
+          # report the PR head repo/branch); comment/dispatch runs report the
+          # default branch, so two of those on the same commit may not see each
+          # other -- an authorized-only, cost-only gap.
+          # (head repo, head branch) alone is not a PR identity, so two further
+          # filters narrow the candidates before anything is cancelled:
+          #   * `event` must be one of this workflow's evaluation entry points.
+          #     That drops `schedule`/`push` runs (which report the default
+          #     branch, and would collide with a PR whose head branch is also the
+          #     default branch) and the `pull_request` status-only runs, whose
+          #     jobs are still undecided in the first moments of a run and would
+          #     otherwise look like a real evaluation.
+          #   * when the run payload lists associated pull requests, this PR's
+          #     number must be among them -- so the same head branch feeding two
+          #     PRs with different bases can never cross-cancel. The list is
+          #     empty for fork runs, which fall back to the repo/branch key.
+          # Then:
+          #   * a run already evaluating the SAME commit -> defer (link, no dup);
+          #   * an OLDER run for this PR on a DIFFERENT commit -> supersede.
+          # Numeric run-id ordering breaks the symmetric race: of two runs that
+          # see each other, only the newer cancels, so exactly one wins. That
+          # ordering is overridden in exactly one direction: a run deliberately
+          # bound to an OLDER commit (`/evaluate <old-sha>`) never cancels, and
+          # is never cancelled by, a run covering the PR's current head --
+          # otherwise an archaeological re-run would kill head coverage and leave
+          # the head's required check pending with nothing left to resolve it.
+          SELF_ID="${GITHUB_RUN_ID}"
+          PR_BRANCH="$(echo "$PR_DATA" | jq -r '.head.ref')"
+          ACTIVE="$(
+            { gh api --paginate "repos/${REPO}/actions/workflows/evaluation.yml/runs?status=in_progress&per_page=100" --jq '.workflow_runs[]' 2>/dev/null || true
+              gh api --paginate "repos/${REPO}/actions/workflows/evaluation.yml/runs?status=queued&per_page=100"      --jq '.workflow_runs[]' 2>/dev/null || true
+            } | jq -c --arg repo "$HEAD_REPO" --arg br "$PR_BRANCH" --argjson self "$SELF_ID" --argjson pr "$PR_NUMBER" \
+                'select(
+                   (.event == "issue_comment" or .event == "pull_request_review"
+                    or .event == "pull_request_target" or .event == "workflow_dispatch")
+                   and (.head_repository.full_name // "") == $repo
+                   and .head_branch == $br
+                   and .id != $self
+                   and (((.pull_requests // []) | length) == 0
+                        or (((.pull_requests // []) | map(.number)) | index($pr)) != null)
+                 )' || true
+          )"
+          while IFS= read -r RUN; do
+            [[ -z "$RUN" ]] && continue
+            RID="$(jq -r '.id' <<< "$RUN")"
+            RSHA="$(jq -r '.head_sha' <<< "$RUN")"
+            RURL="$(jq -r '.html_url' <<< "$RUN")"
+            [[ "$RID" =~ ^[0-9]+$ ]] || continue
+            # Ignore placeholder status-only runs (fork-pr-status): a real
+            # evaluation has a non-skipped gate or discover job. A transient
+            # jobs-API error must never abort the gate, so fail open (|| true)
+            # and treat an unreadable run as "not a real eval".
+            REAL="$( { gh api --paginate "repos/${REPO}/actions/runs/${RID}/jobs" --jq '[.jobs[] | select((.name == "gate" or .name == "discover") and .conclusion != "skipped")] | length' 2>/dev/null || true; } | awk '{s+=$1} END{print s+0}')"
+            [[ "${REAL:-0}" -gt 0 ]] || continue
+            if [[ "$RSHA" == "$FULL_SHA" ]]; then
+              # Same commit already under evaluation for this PR source.
+              if [[ "$RID" -lt "$SELF_ID" ]]; then
+                echo "should_eval=false" >> "$GITHUB_OUTPUT"
+                echo "Deferring to in-flight run ${RID} for ${FULL_SHA}."
+                gh pr comment "$PR_NUMBER" --repo "$REPO" --body "⏳ Commit \`${FULL_SHA:0:7}\` is already being evaluated — follow it here: ${RURL}. Not starting a duplicate run." || true
+                exit 0
+              fi
+              # Otherwise the sibling is newer; it will defer to us -- keep going.
+            elif [[ "$RID" -lt "$SELF_ID" ]]; then
+              # We are the newer run for a DIFFERENT commit. Supersede the older
+              # one unless we are the archaeological case: bound to a commit that
+              # is not the PR head while the older run covers the head.
+              if [[ "$FULL_SHA" == "$PR_HEAD" || "$RSHA" != "$PR_HEAD" ]]; then
+                echo "Superseding older run ${RID} (${RSHA:0:7}) with ${FULL_SHA:0:7}."
+                gh run cancel "$RID" --repo "$REPO" || true
+              else
+                echo "Older run ${RID} covers the current head (${RSHA:0:7}); leaving it to finish."
+              fi
+            else
+              # The sibling is newer. Yield to it -- unless it is bound to a
+              # non-head commit while we cover the head, in which case both are
+              # legitimate and only the newer one ever cancels, so nothing can
+              # cancel us. Exactly one run survives in every symmetric case.
+              if [[ "$RSHA" == "$PR_HEAD" || "$FULL_SHA" != "$PR_HEAD" ]]; then
+                echo "should_eval=false" >> "$GITHUB_OUTPUT"
+                echo "Superseded by newer run ${RID} (${RSHA:0:7}); yielding."
+                exit 0
+              fi
+              echo "Newer run ${RID} is bound to ${RSHA:0:7}, not the current head; continuing."
+            fi
+          done <<< "$ACTIVE"
+
+          # ----- 8) Emit the bound, validated target --------------------------
+          echo "PR #${PR_NUMBER}: bound=${FULL_SHA} head=${PR_HEAD} base=${BASE_SHA} fork=${IS_FORK} (trigger: ${EVENT_NAME})"
+          echo "is_fork=${IS_FORK}" >> "$GITHUB_OUTPUT"
+          echo "head_sha=${FULL_SHA}" >> "$GITHUB_OUTPUT"
+          echo "base_sha=${BASE_SHA}" >> "$GITHUB_OUTPUT"
+          echo "should_eval=true" >> "$GITHUB_OUTPUT"
+
+      - name: Clear the acknowledgement when this run will not evaluate
+        # The 👀 added above means "this request is being worked on"; the
+        # `report-status` job removes it when the evaluation finishes. But that
+        # job only runs when should_eval == 'true', so every path that ends
+        # inside the gate -- bare /evaluate guidance, an unresolvable or
+        # out-of-PR commit (gate failure), and deferring/yielding to a sibling
+        # run -- would leave the comment marked in-progress forever. Clear it
+        # here instead. `always()` so it also covers the failure paths.
+        if: always() && github.event_name == 'issue_comment' && steps.pr.outputs.should_eval != 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          REACTION_ID=$(gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
+            --jq '.[] | select(.content == "eyes" and .user.login == "github-actions[bot]") | .id' | head -1 || echo "")
+          if [[ -n "$REACTION_ID" && "$REACTION_ID" != "null" ]]; then
+            gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions/${REACTION_ID}" \
+              -X DELETE || true
+          fi
+
+      - name: Remove evaluate-now label
+        if: github.event_name == 'pull_request_target' || github.event_name == 'workflow_dispatch'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # For the label entry point, removing the label consumes the trigger so
+          # re-applying re-fires. For the workflow_dispatch entry point there is no
+          # label to consume, but we still strip any stale human-applied
+          # evaluate-now label so it doesn't linger. Removal uses the workflow's
+          # own GITHUB_TOKEN; per GitHub's recursion rules, label events emitted by
+          # GITHUB_TOKEN do not start new workflow runs.
+          gh pr edit "${{ steps.pr.outputs.pr_number }}" \
+            --repo "${{ github.repository }}" \
+            --remove-label "evaluate-now" || true
+
+      - name: Set pending commit status
+        if: steps.pr.outputs.should_eval == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${{ github.repository }}/statuses/${{ steps.pr.outputs.head_sha }}" \
+            -f state=pending \
+            -f context="evaluation-status" \
+            -f description="Evaluation in progress..." \
+            -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+  # ==========================================================================
+  # DISCOVER JOB
+  # Find skills and custom agents to evaluate based on changed files.
+  # ==========================================================================
+  discover:
+    needs: gate
+    if: >-
+      always() &&
+      (((needs.gate.result == 'success' && needs.gate.outputs.should_eval == 'true')) || github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.pr_number == '')) &&
+      (github.event_name != 'schedule' || github.repository == 'dotnet/skills')
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      entries: ${{ steps.find.outputs.entries }}
+      has_entries: ${{ steps.find.outputs.has_entries }}
+      is_infra: ${{ steps.find.outputs.is_infra }}
+      plugins: ${{ steps.find.outputs.plugins }}
+      has_plugins: ${{ steps.find.outputs.has_plugins }}
+    steps:
+      - name: Check for new commits since last evaluation
+        if: github.event_name == 'schedule'
+        id: check-changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Bypass the skip guard on manual reruns so "Re-run jobs" always executes.
+          if [ "${GITHUB_RUN_ATTEMPT}" != "1" ]; then
+            echo "Manual rerun (attempt ${GITHUB_RUN_ATTEMPT}) — bypassing skip guard"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Determine whether a new evaluation is needed by inspecting the most
+          # recent completed scheduled run OF THE SAME PROFILE. Each cron entry
+          # runs a different model profile (default/mid/sol/newer) and tags its
+          # run-name "schedule: <profile>". A scheduled run is only suppressed by
+          # a prior SUCCESSFUL run of its OWN profile at the same commit —
+          # otherwise the first profile to fire each week would skip-guard all the
+          # other profiles whenever no new
+          # commit had landed between them.
+          case "${{ github.event.schedule }}" in
+            "0 7 * * 1,3,5") PROFILE="default" ;;
+            "0 7 * * 2,6")   PROFILE="mid" ;;
+            "0 7 * * 4")     PROFILE="sol" ;;
+            "0 7 * * 0")     PROFILE="newer" ;;
+            *)               PROFILE="default" ;;
+          esac
+          LATEST=$(gh api "repos/${{ github.repository }}/actions/workflows/evaluation.yml/runs?event=schedule&status=completed&per_page=30" \
+            --jq "[.workflow_runs[] | select(.display_title == \"schedule: ${PROFILE}\")][0] // empty | \"\(.head_sha) \(.conclusion)\"" 2>/dev/null) || LATEST=""
+
+          if [ -z "$LATEST" ]; then
+            echo "No previous completed scheduled run found — proceeding"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          LAST_SHA="${LATEST%% *}"
+          LAST_CONCLUSION="${LATEST##* }"
+          CURRENT_SHA="${{ github.sha }}"
+
+          if [ "$LAST_SHA" = "$CURRENT_SHA" ] && [ "$LAST_CONCLUSION" = "success" ]; then
+            echo "Last scheduled evaluation at $LAST_SHA succeeded — skipping"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            if [ "$LAST_SHA" != "$CURRENT_SHA" ]; then
+              COUNT=$(gh api "repos/${{ github.repository }}/compare/${LAST_SHA}...${CURRENT_SHA}" --jq '.total_commits' 2>/dev/null) || COUNT="unknown"
+              echo "$COUNT new commit(s) since last evaluation ($LAST_SHA)"
+            else
+              echo "Last scheduled evaluation at $LAST_SHA concluded with '$LAST_CONCLUSION' — retrying"
+            fi
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout repository
+        if: github.event_name != 'schedule' || steps.check-changes.outputs.has_changes == 'true' || github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch PR head
+        if: needs.gate.outputs.pr_number != ''
+        # Fetch the PR ref to bring its objects (incl. the gate-bound commit,
+        # which is the head or an ancestor of it) into the local repo. We do NOT
+        # use the ref tip as the eval target -- that would re-resolve the live
+        # head; the gate-bound SHA is used below instead.
+        run: git fetch origin +refs/pull/${{ needs.gate.outputs.pr_number }}/head:refs/remotes/origin/pr-head
+
+      - name: Find targets to evaluate
+        if: github.event_name != 'schedule' || steps.check-changes.outputs.has_changes == 'true' || github.event_name == 'workflow_dispatch'
+        id: find
+        env:
+          INPUT_PLUGIN: ${{ inputs.plugin }}
+          MATRIX_PROFILE_INPUT: ${{ inputs.matrix_profile }}
+          EVAL_EVENT_NAME: ${{ github.event_name }}
+          EVAL_COMMENT_BODY: ${{ github.event.comment.body }}
+          EVAL_REVIEW_BODY: ${{ github.event.review.body }}
+          EVAL_SCHEDULE: ${{ github.event.schedule }}
+          GATE_PR_NUMBER: ${{ needs.gate.outputs.pr_number }}
+          GATE_BASE_SHA: ${{ needs.gate.outputs.base_sha }}
+          GATE_HEAD_SHA: ${{ needs.gate.outputs.head_sha }}
+        run: |
+          . (Join-Path $PWD "eng/evaluation/find-targets.ps1")
+        shell: pwsh
+
+  # ==========================================================================
+  # EVALUATE
+  # Run the eval harness across changed skills via the reusable
+  # evaluation-run.yml workflow. This is the sole LLM eval engine — it
+  # produces the vally-results-* artifacts every downstream job consumes.
+  # (The static-analysis linter is a separate workflow, skill-check.yml.)
+  # ==========================================================================
+  evaluate:
+    needs: [gate, discover]
+    if: >-
+      always() &&
+      needs.discover.outputs.has_entries == 'true' &&
+      needs.discover.result == 'success' &&
+      needs.gate.outputs.is_fork != 'true' &&
+      (needs.gate.result == 'success' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    uses: ./.github/workflows/evaluation-run.yml
+    with:
+      entries: ${{ needs.discover.outputs.entries }}
+      head_sha: ${{ needs.gate.outputs.head_sha }}
+    # Forward ONLY the Copilot PAT pool across the workflow_call boundary. A
+    # reusable workflow does not inherit the caller's org/repo secrets, so the
+    # pool would read empty on this path unless it is passed explicitly. We map
+    # the 10 named tokens rather than using `secrets: inherit` — inherit would
+    # forward every repo/org secret into the reusable workflow and reverse the
+    # blast-radius reduction from #868; named mapping crosses only these tokens.
+    # This job is a top-level caller, so `secrets.COPILOT_PAT_*` resolves from the
+    # existing ORG secrets — the same pool the scheduled validate-pat-pool workflow
+    # reads — so no `copilot-pat-pool` environment-secret configuration is needed.
+    secrets:
+      COPILOT_PAT_0: ${{ secrets.COPILOT_PAT_0 }}
+      COPILOT_PAT_1: ${{ secrets.COPILOT_PAT_1 }}
+      COPILOT_PAT_2: ${{ secrets.COPILOT_PAT_2 }}
+      COPILOT_PAT_3: ${{ secrets.COPILOT_PAT_3 }}
+      COPILOT_PAT_4: ${{ secrets.COPILOT_PAT_4 }}
+      COPILOT_PAT_5: ${{ secrets.COPILOT_PAT_5 }}
+      COPILOT_PAT_6: ${{ secrets.COPILOT_PAT_6 }}
+      COPILOT_PAT_7: ${{ secrets.COPILOT_PAT_7 }}
+      COPILOT_PAT_8: ${{ secrets.COPILOT_PAT_8 }}
+      COPILOT_PAT_9: ${{ secrets.COPILOT_PAT_9 }}
+
+  # ==========================================================================
+  # COMMENT ON PR
+  # Post consolidated evaluation results as a PR comment.
+  # ==========================================================================
+  comment-on-pr:
+    needs: [gate, discover, evaluate, publish-session-data]
+    if: >-
+      always() &&
+      needs.gate.outputs.is_fork != 'true' &&
+      needs.gate.outputs.pr_number != '' &&
+      needs.discover.outputs.has_entries == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Checkout adapter tooling
+        if: needs.evaluate.result != 'skipped'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            eng/vally-adapter
+
+      - name: Download all result artifacts
+        if: needs.evaluate.result != 'skipped'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          pattern: vally-results-*
+          path: all-results/
+          merge-multiple: false
+        continue-on-error: ${{ needs.evaluate.result != 'success' }}
+
+      - name: Consolidate and post results
+        if: always()
+        continue-on-error: true
+        env:
+          EVALUATE_RESULT: ${{ needs.evaluate.result }}
+          EXPECTED_ENTRIES: ${{ needs.discover.outputs.entries }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_NUMBER=${{ needs.gate.outputs.pr_number }}
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          SESSION_DATA_NOTE=""
+          if [[ "${{ needs.publish-session-data.outputs.status }}" == "degraded" ]]; then
+            SESSION_DATA_NOTE="⚠️ Session replay telemetry was not published because the auxiliary dotnet/skills-data publisher failed. The evaluation verdicts above remain authoritative; maintainers must repair SKILLS_DATA_TOKEN or the publisher before replay links are available."
+          fi
+
+          mkdir -p all-results
+          # Never count the agent timeout-retry tree: it carries a second,
+          # narrower native copy of one scenario for audit, not a skill result.
+          # Its raw aggregate is renamed retry-results.json.
+          JSON_FILES=$(find all-results/ -name results.json -not -path '*/_agent-timeout-retry/*' 2>/dev/null || true)
+          MATRIX_MANIFEST_VALID=true
+          if ! EXPECTED_LEG_COUNT=$(printf '%s' "$EXPECTED_ENTRIES" | jq -e 'if type == "array" then length else error("expected matrix entries must be an array") end'); then
+            MATRIX_MANIFEST_VALID=false
+            EXPECTED_LEG_COUNT=0
+          fi
+          OBSERVED_LEG_COUNT=$(find all-results/ -name adapter-summary.json -type f 2>/dev/null | wc -l | tr -d ' ')
+          # Per-leg adapter summaries prove completeness only inside artifacts
+          # that exist. Never turn a surviving subset into a matrix-wide verdict.
+          if [[ "$MATRIX_MANIFEST_VALID" != "true" || "$EVALUATE_RESULT" != "success" || "$OBSERVED_LEG_COUNT" -ne "$EXPECTED_LEG_COUNT" ]]; then
+            if [[ "$MATRIX_MANIFEST_VALID" != "true" ]]; then
+              BODY=$(printf '❌ Evaluation matrix metadata is invalid: the discovered entry list was missing, malformed, or not a JSON array. Check the discover job output in the [workflow run](%s); no quality verdict was published.' "$RUN_URL")
+            elif [[ "$EVALUATE_RESULT" == "skipped" ]]; then
+              BODY="❌ Evaluation did not complete (an upstream job failed or was skipped, so evaluation never ran). [View workflow run](${RUN_URL})"
+            elif [[ "$EVALUATE_RESULT" == "success" ]]; then
+              BODY=$(printf '❌ Evaluation result artifacts are incomplete: expected %s matrix leg artifact(s), but found %s. Check the [workflow run](%s) artifact upload and download logs, then comment `/evaluate %s` to retry this exact commit.' "$EXPECTED_LEG_COUNT" "$OBSERVED_LEG_COUNT" "$RUN_URL" "${{ needs.gate.outputs.head_sha }}")
+            else
+              BODY=$(printf '❌ Evaluation did not complete successfully (the evaluate job reported `%s`). Check the [workflow run](%s) logs, then comment `/evaluate %s` to retry this exact commit.' "$EVALUATE_RESULT" "$RUN_URL" "${{ needs.gate.outputs.head_sha }}")
+            fi
+
+            if [ -n "$JSON_FILES" ]; then
+              PARTIAL_COUNT=$(printf '%s\n' "$JSON_FILES" | sed '/^$/d' | wc -l | tr -d ' ')
+              BODY=$(printf '%s\n\n%s partial result file(s) were preserved for diagnosis but were not consolidated because the full matrix did not complete.' "$BODY" "$PARTIAL_COUNT")
+            fi
+            if [ -n "$SESSION_DATA_NOTE" ]; then
+              BODY=$(printf '%s\n\n%s' "$BODY" "$SESSION_DATA_NOTE")
+            fi
+
+            {
+              echo "## ❌ Evaluation incomplete"
+              echo ""
+              printf '%s\n' "$BODY"
+            } >> "$GITHUB_STEP_SUMMARY"
+            gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" -X POST -f body="$BODY"
+            exit 0
+          fi
+
+          # Only a successful full matrix may be consolidated into verdicts.
+          if [ -n "$JSON_FILES" ]; then
+            # Full metrics for the step summary and a decision-first repair view
+            # for the PR comment. Both bind the report to the evaluated commit.
+            node eng/vally-adapter/consolidate.mjs --format full --root all-results/ --output summary-body.md --commit "${{ needs.gate.outputs.head_sha }}"
+            node eng/vally-adapter/consolidate.mjs --format simple --root all-results/ --output simplified-body.md --commit "${{ needs.gate.outputs.head_sha }}"
+
+            INVESTIGATE_PROMPT=""
+            # Any non-pass or comparison warning needs repair guidance, but the
+            # prompt must preserve the distinction between invalid evidence,
+            # unproven improvement, and report-only preference loss.
+            if jq -se '[.[].verdicts[] | select(.state != "VALID_PASS" or ((.errors // []) | length > 0) or ((.recoveredErrors // []) | length > 0))] | length > 0' $JSON_FILES > /dev/null 2>&1; then
+              RUN_ID="${{ github.run_id }}"
+              INVESTIGATE_PROMPT=$(printf '\n> **To investigate non-passing or warning results**, paste this to your AI coding agent:\n>\n> _For PR %s in %s, download eval artifacts with `gh run download %s --repo %s --pattern "vally-results-*" --dir ./eval-results`, then fetch https://raw.githubusercontent.com/%s/%s/eng/vally-adapter/InvestigatingResults.md and follow it. Classify each result as measurement-invalid, underpowered, not-proven, preference-loss, or passing-with-warning. Use stateReason, result accounting, weak scenarios, and judge evidence to give the cause and exact next fix._' \
+                "${PR_NUMBER}" "${{ github.repository }}" "${RUN_ID}" "${{ github.repository }}" "${{ github.repository }}" "${{ needs.gate.outputs.head_sha }}")
+            fi
+
+            # PR comment: simplified table + "Full results" link + investigation prompt
+            {
+              cat simplified-body.md
+              echo ""
+              echo "[🔍 Full Results - all metrics and investigation details]($RUN_URL)"
+              if [ -n "$INVESTIGATE_PROMPT" ]; then
+                echo "$INVESTIGATE_PROMPT"
+              fi
+            } > consolidated-comment.md
+
+            # Append AGENTVIZ replay link if session data was published
+            if [[ "${{ needs.publish-session-data.outputs.status }}" == "published" ]]; then
+              # Session data lives in the standalone dotnet/skills-data repo.
+              MANIFEST_URL="https://raw.githubusercontent.com/dotnet/skills-data/dashboard-session-data/data/manifest.json"
+              # Derive the Pages base URL from the repository (org.github.io/repo)
+              ORG=$(echo "${{ github.repository }}" | cut -d/ -f1)
+              REPO=$(echo "${{ github.repository }}" | cut -d/ -f2)
+              REPLAY_URL="https://${ORG}.github.io/${REPO}/replay/index.html"
+              MANIFEST_ENCODED=$(printf '%s' "$MANIFEST_URL" | jq -sRr @uri)
+              FULL_URL="${REPLAY_URL}?manifest=${MANIFEST_ENCODED}&tag=pr-${PR_NUMBER}"
+              echo "" >> consolidated-comment.md
+              echo "**[▶ Sessions Visualisation](${FULL_URL})** -- interactive replay of all evaluation sessions" >> consolidated-comment.md
+              ANALYTICS_BASE_URL="https://server.mangowater-996ff7b2.swedencentral.azurecontainerapps.io/"
+              FACET_ENCODED=$(printf '%s' "label:pr-${PR_NUMBER}" | jq -sRr @uri)
+              ANALYTICS_URL="${ANALYTICS_BASE_URL}?facet=${FACET_ENCODED}"
+              echo "**[📊 Session Analytics (preview)](${ANALYTICS_URL})** -- aggregated metrics across evaluation sessions" >> consolidated-comment.md
+            elif [ -n "$SESSION_DATA_NOTE" ]; then
+              echo "" >> consolidated-comment.md
+              echo "$SESSION_DATA_NOTE" >> consolidated-comment.md
+            fi
+
+            # Action summary: full table (all columns) + investigation prompt
+            {
+              cat summary-body.md
+              if [ -n "$SESSION_DATA_NOTE" ]; then
+                echo ""
+                echo "$SESSION_DATA_NOTE"
+              fi
+              if [ -n "$INVESTIGATE_PROMPT" ]; then
+                echo "$INVESTIGATE_PROMPT"
+              fi
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
+              -X POST -F "body=@consolidated-comment.md"
+          else
+            # A successful matrix with zero verdicts is an infrastructure fault,
+            # not evidence about skill quality.
+            BODY=$(printf '❌ Evaluation ran but produced no results.\n\nThe evaluate job completed but no `results.json` verdicts were generated. This is usually a **transient infrastructure failure** — commonly an LLM-session auth error (`Session was not created with authentication info or custom provider`) — not a problem with your skill. Check the [workflow run](%s) logs, then comment `/evaluate %s` to retry this exact commit.' "${RUN_URL}" "${{ needs.gate.outputs.head_sha }}")
+            if [ -n "$SESSION_DATA_NOTE" ]; then
+              BODY=$(printf '%s\n\n%s' "$BODY" "$SESSION_DATA_NOTE")
+            fi
+            gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" -X POST -f body="$BODY"
+          fi
+
+  # ==========================================================================
+  # REPORT STATUS
+  # Post final evaluation status via commit status API.
+  # ==========================================================================
+  report-status:
+    needs: [gate, discover, evaluate]
+    if: always() && needs.gate.result == 'success' && needs.gate.outputs.should_eval == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Remove eyes reaction from trigger comment
+        if: github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          REACTION_ID=$(gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
+            --jq '.[] | select(.content == "eyes" and .user.login == "github-actions[bot]") | .id' | head -1 || echo "")
+          if [[ -n "$REACTION_ID" && "$REACTION_ID" != "null" ]]; then
+            gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions/${REACTION_ID}" \
+              -X DELETE || true
+          fi
+
+      - name: Set final commit status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "${{ needs.evaluate.result }}" == "skipped" && "${{ needs.discover.result }}" == "success" && "${{ needs.discover.outputs.has_entries }}" != "true" ]]; then
+            STATE="success"
+            DESC="No skills or agents to evaluate"
+          elif [[ "${{ needs.gate.outputs.is_fork }}" == "true" ]]; then
+            STATE="failure"
+            DESC="Fork PR evaluation requires a trusted branch"
+          elif [[ "${{ needs.evaluate.result }}" == "success" ]]; then
+            STATE="success"
+            DESC="Evaluation passed"
+          elif [[ "${{ needs.evaluate.result }}" == "failure" ]]; then
+            STATE="failure"
+            DESC="Evaluation failed"
+          else
+            STATE="error"
+            DESC="Evaluation did not complete (evaluate: ${{ needs.evaluate.result }}, discover: ${{ needs.discover.result }})"
+          fi
+          gh api "repos/${{ github.repository }}/statuses/${{ needs.gate.outputs.head_sha }}" \
+            -f state="$STATE" \
+            -f context="evaluation-status" \
+            -f description="$DESC" \
+            -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Post completion comment for skipped evaluation
+        if: needs.evaluate.result == 'skipped'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_NUMBER=${{ needs.gate.outputs.pr_number }}
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          if [[ "${{ needs.discover.result }}" == "success" && "${{ needs.discover.outputs.has_entries }}" != "true" ]]; then
+            BODY="⏭️ No skills or agents to evaluate — no changed targets with eval specs were found in this PR. [View workflow run](${RUN_URL})"
+          elif [[ "${{ needs.gate.outputs.is_fork }}" == "true" ]]; then
+            BODY="🔒 Secret-backed evaluation is disabled for fork PRs. A maintainer must review and promote the change to a trusted repository branch before running \`/evaluate\`. [View workflow run](${RUN_URL})"
+          else
+            BODY="❌ Evaluation did not complete (upstream job failed or was skipped). [View workflow run](${RUN_URL})"
+          fi
+          gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" -X POST -f body="$BODY"
+
+  # ==========================================================================
+  # PUBLISH TOKEN DATA
+  # Both scheduled and PR runs: generate token-usage data → dashboard-token-data
+  # ==========================================================================
+  publish-token-data:
+    needs: [gate, discover, evaluate]
+    if: >-
+      always() &&
+      !cancelled() &&
+      needs.discover.result == 'success' &&
+      needs.discover.outputs.has_plugins == 'true' &&
+      needs.gate.outputs.is_fork != 'true' &&
+      (
+        github.ref == 'refs/heads/main' ||
+        needs.gate.result == 'success'
+      )
+    concurrency:
+      group: publish-token-data
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
+        with:
+          persist-credentials: false
+
+      - name: Download evaluation artifacts
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          pattern: vally-results-*
+          path: all-results/
+          merge-multiple: false
+        continue-on-error: ${{ needs.evaluate.result != 'success' }}
+
+      - name: Fetch existing token data from dashboard-token-data
+        run: |
+          git fetch --depth=1 origin dashboard-token-data:dashboard-token-data 2>/dev/null || true
+          mkdir -p /tmp/token-data/data
+          git checkout dashboard-token-data -- data/token-usage.json 2>/dev/null && \
+            cp data/token-usage.json /tmp/token-data/data/ && \
+            git checkout HEAD -- . || true
+
+      - name: Get PR title
+        if: needs.gate.outputs.pr_number != ''
+        id: pr-info
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_TITLE=$(gh api "repos/${{ github.repository }}/pulls/${{ needs.gate.outputs.pr_number }}" --jq '.title' 2>/dev/null) || PR_TITLE=""
+          echo "pr_title=${PR_TITLE}" >> $GITHUB_OUTPUT
+
+      - name: Generate token usage data
+        env:
+          PR_TITLE: ${{ steps.pr-info.outputs.pr_title }}
+        run: |
+          $source = if ("${{ needs.gate.outputs.pr_number }}" -ne "") { "pr" } else { "scheduled" }
+          $plugins = '${{ needs.discover.outputs.plugins }}' | ConvertFrom-Json
+          New-Item -ItemType Directory -Force -Path "/tmp/combined" | Out-Null
+          foreach ($plugin in $plugins) {
+            # Vally artifacts are named vally-results-$plugin (scheduled/infra),
+            # vally-results-${plugin}--${skill} (individual skill-change PRs), or
+            # vally-results-${plugin}--shard-${tag}[--${model}] (sharded and/or
+            # cross-family matrix runs). The adapter writes one results.json per
+            # skill at <plugin>/<skill>/results.json inside each artifact. The
+            # vally-results-$plugin--* glob therefore matches every shard AND every
+            # executor model. Group the gathered results.json by their own
+            # executor model BEFORE merging, so each (plugin, model) is aggregated
+            # and stamped independently. Merging all models into one file (the old
+            # behavior) stamped every verdict with $parsed[0].model and collapsed
+            # a skill that ran on N models into a single mislabeled row.
+            $artifactDirs = @(Get-ChildItem -Path "all-results" -Directory -ErrorAction SilentlyContinue |
+              Where-Object { $_.Name -eq "vally-results-$plugin" -or $_.Name -like "vally-results-$plugin--*" })
+            if ($artifactDirs.Count -eq 0) {
+              Write-Warning "No artifacts found for $plugin, skipping"
+              continue
+            }
+            $resultFiles = @($artifactDirs | ForEach-Object {
+              Get-ChildItem -Path $_.FullName -Recurse -Filter "results.json" -File -ErrorAction SilentlyContinue
+            } | Where-Object { $_.FullName -notmatch '[\\/]_agent-timeout-retry[\\/]' })
+            if ($resultFiles.Count -eq 0) {
+              Write-Warning "No results.json found for $plugin, skipping"
+              continue
+            }
+
+            $parsed = @($resultFiles | ForEach-Object { Get-Content $_.FullName -Raw | ConvertFrom-Json })
+            # One group per executor model. For a one-model profile (e.g. sol)
+            # every file shares one model, so this yields exactly one group.
+            $modelGroups = @($parsed | Group-Object -Property { "$($_.model)" })
+            foreach ($mg in $modelGroups) {
+              $groupParsed = @($mg.Group)
+              $verdicts = @($groupParsed | ForEach-Object { $_.verdicts })
+              if ($verdicts.Count -eq 0) {
+                Write-Warning "No verdicts found for $plugin (model '$($mg.Name)'), skipping"
+                continue
+              }
+              $combined = [ordered]@{
+                model      = $groupParsed[0].model
+                judgeModel = $groupParsed[0].judgeModel
+                timestamp  = $groupParsed[0].timestamp
+                verdicts   = $verdicts
+              }
+              $safeModel = ("$($groupParsed[0].model)" -replace '[^A-Za-z0-9._-]', '_')
+              if (-not $safeModel) { $safeModel = 'default' }
+              $combinedFile = "/tmp/combined/$plugin--$safeModel.results.json"
+              $combined | ConvertTo-Json -Depth 30 | Out-File -FilePath $combinedFile -Encoding utf8
+
+              Write-Host "`n=== Collecting token usage for: $plugin (model '$($groupParsed[0].model)', from $($groupParsed.Count) results.json) ==="
+              $params = @{
+                ResultsFile   = $combinedFile
+                PluginName    = $plugin
+                OutputDir     = "/tmp/token-data/data"
+                Source        = $source
+                RetentionDays = $env:DASHBOARD_RETENTION_DAYS
+              }
+              if ($source -eq "pr") {
+                $params.PRNumber = ${{ needs.gate.outputs.pr_number }}
+                $params.PRTitle = $env:PR_TITLE
+              }
+              $params.SkipBenchmarkData = $true
+              & ./eng/dashboard/generate-benchmark-data.ps1 @params
+            }
+          }
+        shell: pwsh
+
+      - name: Push to dashboard-token-data branch
+        run: |
+          cd /tmp
+          REPO_URL="https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+
+          if git ls-remote --exit-code --heads "$REPO_URL" dashboard-token-data > /dev/null 2>&1; then
+            git clone --depth=1 --branch dashboard-token-data --single-branch "$REPO_URL" token-deploy
+          else
+            mkdir token-deploy && cd token-deploy && git init && git checkout -b dashboard-token-data
+            git remote add origin "$REPO_URL"
+            cd /tmp
+          fi
+
+          cd /tmp/token-deploy
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Remove any stale files so this branch stays token-only
+          git rm -rf data/ --ignore-unmatch --quiet 2>/dev/null || true
+          mkdir -p data
+          # Ensure token-usage.json exists; create an empty fallback if missing
+          if [ ! -f /tmp/token-data/data/token-usage.json ]; then
+            mkdir -p /tmp/token-data/data
+            printf '{ "entries": [] }\n' > /tmp/token-data/data/token-usage.json
+          fi
+          cp /tmp/token-data/data/token-usage.json data/
+
+          git add data/token-usage.json
+          git diff --cached --quiet && echo "No changes to deploy" && exit 0
+
+          if [[ -n "${{ needs.gate.outputs.pr_number }}" ]]; then
+            git commit -m "Update PR token usage data (PR #${{ needs.gate.outputs.pr_number }})"
+          else
+            git commit -m "Update scheduled token usage data"
+          fi
+          git push origin dashboard-token-data
+
+  # ==========================================================================
+  # PUBLISH SESSION DATA
+  # Both scheduled and PR runs: flatten JSONL sessions → dashboard-session-data
+  # branch on dotnet/skills-data (separate repo to keep this one small).
+  # ==========================================================================
+  publish-session-data:
+    needs: [gate, discover, evaluate]
+    # Session replay is auxiliary for PRs: a publisher failure must stay visible
+    # without overriding authoritative evaluation results. Scheduled/main
+    # publishing remains strict and still fails the workflow.
+    continue-on-error: ${{ needs.gate.outputs.pr_number != '' }}
+    outputs:
+      status: ${{ steps.publish-status.outputs.status }}
+    if: >-
+      always() && !cancelled() &&
+      needs.discover.result == 'success' &&
+      needs.discover.outputs.has_plugins == 'true' &&
+      needs.gate.outputs.is_fork != 'true' &&
+      (
+        github.ref == 'refs/heads/main' ||
+        needs.gate.result == 'success'
+      )
+    runs-on: ubuntu-latest
+    concurrency:
+      group: publish-session-data
+      cancel-in-progress: false
+    steps:
+      - name: Validate session data credentials
+        id: auth
+        continue-on-error: ${{ needs.gate.outputs.pr_number != '' }}
+        env:
+          # Cross-repo PAT with contents:write on dotnet/skills-data.
+          # GITHUB_TOKEN cannot push to a different repo, so a fine-grained PAT is required.
+          SKILLS_DATA_TOKEN: ${{ secrets.SKILLS_DATA_TOKEN }}
+          IS_PR: ${{ needs.gate.outputs.pr_number != '' }}
+        run: |
+          if [ -z "$SKILLS_DATA_TOKEN" ]; then
+            if [ "$IS_PR" = "true" ]; then
+              echo "::warning title=Session telemetry token is missing::SKILLS_DATA_TOKEN is not configured. Session replay publishing is degraded for this PR; evaluation verdicts remain authoritative."
+            else
+              echo "::error title=Session data token is missing::SKILLS_DATA_TOKEN is not configured. Add or rotate the repository secret before scheduled/main publishing can succeed."
+            fi
+            exit 2
+          fi
+          set +e
+          REPO_URL="https://x-access-token:${SKILLS_DATA_TOKEN}@github.com/dotnet/skills-data.git"
+          AUTH_DIR="$RUNNER_TEMP/session-data-auth-preflight"
+          rm -rf "$AUTH_DIR"
+          git init --quiet "$AUTH_DIR"
+          git -C "$AUTH_DIR" config user.name "github-actions[bot]"
+          git -C "$AUTH_DIR" config user.email "github-actions[bot]@users.noreply.github.com"
+          git -C "$AUTH_DIR" commit --allow-empty --quiet -m "Session data write preflight"
+          AUTH_REF="session-data-auth-preflight-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git -C "$AUTH_DIR" push --dry-run "$REPO_URL" "HEAD:refs/heads/$AUTH_REF" > /dev/null 2>&1
+          AUTH_STATUS=$?
+          rm -rf "$AUTH_DIR"
+          set -e
+          if [ "$AUTH_STATUS" -ne 0 ]; then
+            if [ "$IS_PR" = "true" ]; then
+              echo "::warning title=Session telemetry write preflight failed::SKILLS_DATA_TOKEN could not authenticate for a dry-run write to dotnet/skills-data. Session replay publishing is degraded for this PR; evaluation verdicts remain authoritative."
+            else
+              echo "::error title=Session data write preflight failed::SKILLS_DATA_TOKEN could not authenticate for a dry-run write to dotnet/skills-data. Rotate or repair the repository secret before scheduled/main publishing can succeed."
+            fi
+            echo "git push --dry-run preflight exited $AUTH_STATUS; credential-bearing remote output was suppressed." >&2
+            exit "$AUTH_STATUS"
+          fi
+
+      - name: Checkout repository
+        id: checkout
+        if: steps.auth.outcome == 'success'
+        continue-on-error: ${{ needs.gate.outputs.pr_number != '' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
+        with:
+          persist-credentials: false
+
+      - name: Download evaluation artifacts
+        id: download
+        if: steps.auth.outcome == 'success' && steps.checkout.outcome == 'success'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          pattern: vally-results-*
+          path: all-results/
+          merge-multiple: false
+        continue-on-error: ${{ needs.gate.outputs.pr_number != '' || needs.evaluate.result != 'success' }}
+
+      - name: Inspect downloaded artifacts
+        id: inspect
+        if: always()
+        continue-on-error: ${{ needs.gate.outputs.pr_number != '' }}
+        run: |
+          echo "=== all-results/ directory listing (3 levels) ==="
+          if [ -d all-results ]; then
+            find all-results -maxdepth 3 -ls 2>/dev/null | head -80
+            echo "---"
+            echo "executor-session-logs dirs:"
+            find all-results -type d -name 'executor-session-logs' 2>/dev/null
+            echo "session metadata.json files:"
+            find all-results -path '*executor-session-logs*' -name 'metadata.json' 2>/dev/null | head -20
+            echo "events.jsonl files:"
+            find all-results -path '*executor-session-logs*' -name 'events.jsonl' 2>/dev/null | head -20
+          else
+            echo "all-results/ directory does not exist!"
+          fi
+
+      - name: Determine source metadata
+        id: meta
+        if: steps.download.outcome == 'success'
+        continue-on-error: ${{ needs.gate.outputs.pr_number != '' }}
+        run: |
+          if [ -n "${{ needs.gate.outputs.pr_number }}" ]; then
+            echo "source=pr" >> "$GITHUB_OUTPUT"
+            echo "pr_number=${{ needs.gate.outputs.pr_number }}" >> "$GITHUB_OUTPUT"
+            echo "subdir=pr/${{ needs.gate.outputs.pr_number }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "source=scheduled" >> "$GITHUB_OUTPUT"
+            echo "pr_number=" >> "$GITHUB_OUTPUT"
+            echo "subdir=scheduled/$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build session manifest
+        id: build
+        if: steps.meta.outcome == 'success'
+        continue-on-error: ${{ needs.gate.outputs.pr_number != '' }}
+        shell: pwsh
+        run: |
+          ./eng/dashboard/build-replay-sessions.ps1 `
+            -ResultsDir all-results `
+            -OutputDir staging `
+            -Source ${{ steps.meta.outputs.source }} `
+            -PrNumber "${{ steps.meta.outputs.pr_number }}"
+
+      - name: Clone existing session data branch
+        id: clone
+        if: steps.build.outcome == 'success'
+        continue-on-error: ${{ needs.gate.outputs.pr_number != '' }}
+        env:
+          SKILLS_DATA_TOKEN: ${{ secrets.SKILLS_DATA_TOKEN }}
+        run: |
+          cd /tmp
+          REPO_URL="https://x-access-token:${SKILLS_DATA_TOKEN}@github.com/dotnet/skills-data.git"
+          if git ls-remote --exit-code --heads "$REPO_URL" dashboard-session-data > /dev/null 2>&1; then
+            git clone --depth=1 --branch dashboard-session-data --single-branch "$REPO_URL" session-deploy
+          else
+            mkdir session-deploy && cd session-deploy && git init && git checkout -b dashboard-session-data
+            git remote add origin "$REPO_URL"
+            cd /tmp
+          fi
+
+          cd /tmp/session-deploy
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge and purge old sessions
+        id: merge
+        if: steps.clone.outcome == 'success'
+        continue-on-error: ${{ needs.gate.outputs.pr_number != '' }}
+        shell: pwsh
+        run: |
+          ./eng/dashboard/purge-replay-sessions.ps1 `
+            -ExistingDir /tmp/session-deploy/data `
+            -NewDir staging `
+            -OutputDir /tmp/session-deploy/data `
+            -RetentionDays 7
+
+      - name: Push to dashboard-session-data branch (dotnet/skills-data)
+        id: push
+        if: steps.merge.outcome == 'success'
+        continue-on-error: ${{ needs.gate.outputs.pr_number != '' }}
+        run: |
+          cd /tmp/session-deploy
+          git add data/
+          if git diff --cached --quiet; then
+            echo "No changes to deploy"
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ -n "${{ needs.gate.outputs.pr_number }}" ]]; then
+            git commit -m "Update session data (PR #${{ needs.gate.outputs.pr_number }})"
+          else
+            git commit -m "Update scheduled session data"
+          fi
+          git push origin dashboard-session-data
+          echo "published=true" >> "$GITHUB_OUTPUT"
+
+      - name: Report session publishing outcome
+        id: publish-status
+        if: always()
+        env:
+          IS_PR: ${{ needs.gate.outputs.pr_number != '' }}
+          CHECKOUT_OUTCOME: ${{ steps.checkout.outcome }}
+          DOWNLOAD_OUTCOME: ${{ steps.download.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          AUTH_OUTCOME: ${{ steps.auth.outcome }}
+          CLONE_OUTCOME: ${{ steps.clone.outcome }}
+          MERGE_OUTCOME: ${{ steps.merge.outcome }}
+          PUSH_OUTCOME: ${{ steps.push.outcome }}
+          PUBLISHED: ${{ steps.push.outputs.published }}
+        run: |
+          OUTCOMES="$CHECKOUT_OUTCOME $DOWNLOAD_OUTCOME $BUILD_OUTCOME $AUTH_OUTCOME $CLONE_OUTCOME $MERGE_OUTCOME $PUSH_OUTCOME"
+          if [[ "$OUTCOMES" == *failure* || "$OUTCOMES" == *cancelled* || "$OUTCOMES" == *skipped* || "$PUBLISHED" != "true" ]]; then
+            if [ "$IS_PR" = "true" ]; then
+              echo "status=degraded" >> "$GITHUB_OUTPUT"
+              echo "::warning title=Session replay telemetry degraded::The auxiliary session-data publisher failed. Evaluation results remain authoritative, but this PR will not include replay links."
+              exit 0
+            fi
+            echo "status=failed" >> "$GITHUB_OUTPUT"
+            echo "::error title=Session data publishing failed::Scheduled/main publishing is strict; repair the publisher before the workflow can succeed."
+            exit 1
+          fi
+          echo "status=published" >> "$GITHUB_OUTPUT"
+
+  # ==========================================================================
+  # PUBLISH EVAL DATA
+  # Scheduled runs and explicit main-only manual publishes:
+  # generate benchmark data → dashboard-eval-data.
+  # ==========================================================================
+  publish-eval-data:
+    needs: [gate, discover, evaluate]
+    if: >-
+      always() &&
+      !cancelled() &&
+      needs.discover.result == 'success' &&
+      needs.discover.outputs.has_plugins == 'true' &&
+      (
+        github.event_name == 'schedule' ||
+        (
+          github.event_name == 'workflow_dispatch' &&
+          inputs.publish_eval_data &&
+          inputs.pr_number == '' &&
+          github.repository == 'dotnet/skills' &&
+          github.ref == 'refs/heads/main' &&
+          needs.evaluate.result == 'success'
+        )
+      )
+    concurrency:
+      group: publish-eval-data
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
+        with:
+          persist-credentials: false
+
+      - name: Download evaluation artifacts
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          pattern: vally-results-*
+          path: all-results/
+          merge-multiple: false
+        continue-on-error: ${{ needs.evaluate.result != 'success' }}
+
+      - name: Fetch existing eval data from dashboard-eval-data
+        run: |
+          git fetch --depth=1 origin dashboard-eval-data:dashboard-eval-data 2>/dev/null || true
+          mkdir -p /tmp/eval-data/data
+          git checkout dashboard-eval-data -- data/ 2>/dev/null && \
+            cp -r data/* /tmp/eval-data/data/ && \
+            git checkout HEAD -- . || true
+          # The completed Opus-vs-Haiku experiment is no longer updated.
+          rm -f /tmp/eval-data/data/judge-comparison.json
+
+      - name: Generate benchmark data
+        run: |
+          $sha = "${{ github.sha }}"
+          $commitMsg = git log -1 --format='%s' $sha
+          $commitTimestamp = git log -1 --format='%aI' $sha
+          $commitAuthor = git log -1 --format='%an' $sha
+
+          $commitJson = @{
+            id        = $sha
+            message   = $commitMsg
+            timestamp = $commitTimestamp
+            url       = "https://github.com/${{ github.repository }}/commit/$sha"
+            author    = @{ name = $commitAuthor; username = "${{ github.actor }}" }
+          } | ConvertTo-Json -Compress
+
+          $plugins = '${{ needs.discover.outputs.plugins }}' | ConvertFrom-Json
+          foreach ($plugin in $plugins) {
+            # A plugin may have been fanned out into multiple shards by the
+            # discover job (artifact names "vally-results-<plugin>--shard-<tag>"),
+            # a single artifact ("vally-results-<plugin>"), or run across several
+            # executor models by the cross-family matrix (names carry a --<model>
+            # suffix). The adapter writes one results.json per skill at
+            # <plugin>/<skill>/results.json inside each artifact, so gather every
+            # results.json across all matching artifacts, then group by executor
+            # model. The dashboard records ONE datapoint per plugin PER MODEL per
+            # scheduled run: merging all models into one file (the old behavior)
+            # stamped every entry with the first file's model and lost the model
+            # dimension entirely.
+            $artifactDirs = @(Get-ChildItem -Path "all-results" -Directory -ErrorAction SilentlyContinue |
+              Where-Object { $_.Name -eq "vally-results-$plugin" -or $_.Name -like "vally-results-$plugin--*" })
+
+            if ($artifactDirs.Count -eq 0) {
+              Write-Warning "No run results found for $plugin, skipping"
+              continue
+            }
+
+            $resultsFiles = @($artifactDirs | ForEach-Object {
+              Get-ChildItem -Path $_.FullName -Recurse -Filter "results.json" -File -ErrorAction SilentlyContinue |
+                Where-Object { $_.FullName -notmatch '[\\/]_agent-timeout-retry[\\/]' } |
+                ForEach-Object { $_.FullName }
+            })
+
+            if ($resultsFiles.Count -eq 0) {
+              Write-Warning "No results.json found in any artifact for $plugin, skipping"
+              continue
+            }
+
+            # Parse once, then group by the (executor model, judge model) pair
+            # recorded inside each results.json. The model+judge key keeps the
+            # published dimensions correct if judge routing changes again.
+            $parsed = @($resultsFiles | Sort-Object | ForEach-Object {
+              [pscustomobject]@{ File = $_; Json = (Get-Content $_ -Raw | ConvertFrom-Json) }
+            })
+            $modelGroups = @($parsed | Group-Object -Property { "$($_.Json.model)|$($_.Json.judgeModel)" })
+
+            $existingFile = "/tmp/eval-data/data/$plugin.json"
+            # Quality/Efficiency views key on executor model alone, so emit them
+            # once per model. Track which executor models already emitted them; the
+            # second+ judge of one model runs SkillValue-only to avoid duplicate
+            # same-model Quality/Efficiency points that would inflate those windows.
+            $qeEmittedModels = @{}
+            foreach ($mg in $modelGroups) {
+              $group = @($mg.Group)
+              # Merge this (model, judge) pair's per-skill/per-shard verdicts into a
+              # single synthetic results.json. Schema: { model, judgeModel, verdicts[], ... }.
+              # Concat the verdicts arrays and keep top-level scalars from the first
+              # file of the group (all now share the same model AND judgeModel).
+              $merged = $null
+              $allVerdicts = [System.Collections.Generic.List[object]]::new()
+              foreach ($item in $group) {
+                $r = $item.Json
+                if ($null -eq $merged) { $merged = $r }
+                if ($r.verdicts) { foreach ($v in $r.verdicts) { $allVerdicts.Add($v) } }
+              }
+              $merged.verdicts = $allVerdicts.ToArray()
+              $safeModel = ("$($merged.model)" -replace '[^A-Za-z0-9._-]', '_')
+              if (-not $safeModel) { $safeModel = 'default' }
+              # Include the judge in the filename so two judges of one executor write
+              # to distinct synthetic files instead of overwriting each other.
+              $safeJudge = ("$($merged.judgeModel)" -replace '[^A-Za-z0-9._-]', '_')
+              if (-not $safeJudge) { $safeJudge = 'nojudge' }
+              $mergedDir = "all-results/_merged"
+              New-Item -ItemType Directory -Force -Path $mergedDir | Out-Null
+              $resultsFile = Join-Path $mergedDir "$plugin--$safeModel--$safeJudge.results.json"
+              $merged | ConvertTo-Json -Depth 100 | Out-File -FilePath $resultsFile -Encoding utf8
+
+              Write-Host "`n=== Generating benchmark data for: $plugin (model '$($merged.model)', judge '$($merged.judgeModel)', $($allVerdicts.Count) verdicts from $($group.Count) results.json) ==="
+              $params = @{
+                ResultsFile    = $resultsFile
+                PluginName     = $plugin
+                OutputDir      = "/tmp/eval-data/data"
+                CommitJson     = $commitJson
+                RetentionDays  = $env:DASHBOARD_RETENTION_DAYS
+                Source         = 'scheduled'
+                SkipTokenUsage = $true
+              }
+              # Emit Quality/Efficiency once per executor model; SkillValue every
+              # (model, judge). The first judge of a model writes all three; later
+              # judges of the same model write SkillValue only.
+              $execModel = "$($merged.model)"
+              if ($qeEmittedModels.ContainsKey($execModel)) {
+                $params.SkillValueOnly = $true
+              } else {
+                $qeEmittedModels[$execModel] = $true
+              }
+              # Accumulate: each model's entry appends to $plugin.json. The first
+              # iteration reads the fetched history; later iterations read the file
+              # the previous iteration just wrote (same path as OutputDir/$plugin.json).
+              if ((Test-Path $existingFile) -and (Get-Content $existingFile -Raw -ErrorAction SilentlyContinue)) {
+                $params.ExistingDataFile = $existingFile
+              }
+              & ./eng/dashboard/generate-benchmark-data.ps1 @params
+            }
+          }
+
+          # Purge entries older than retention window
+          & ./eng/dashboard/generate-benchmark-data.ps1 -PurgeStaleFiles -DataDir "/tmp/eval-data/data" -RetentionDays $env:DASHBOARD_RETENTION_DAYS
+
+          # Generate components.json manifest (exclude token-usage.json and the
+          # isolated judge-comparison.json if present — neither is a dashboard plugin)
+          $plugins = Get-ChildItem -Path "/tmp/eval-data/data" -Filter "*.json" -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -notin @("components.json", "token-usage.json", "judge-comparison.json") } |
+            ForEach-Object { $_.BaseName }
+          @($plugins) | ConvertTo-Json -AsArray | Out-File -FilePath "/tmp/eval-data/data/components.json" -Encoding utf8
+        shell: pwsh
+
+      - name: Push to dashboard-eval-data branch
+        run: |
+          cd /tmp
+          REPO_URL="https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+
+          if git ls-remote --exit-code --heads "$REPO_URL" dashboard-eval-data > /dev/null 2>&1; then
+            git clone --depth=1 --branch dashboard-eval-data --single-branch "$REPO_URL" eval-deploy
+          else
+            mkdir eval-deploy && cd eval-deploy && git init && git checkout -b dashboard-eval-data
+            git remote add origin "$REPO_URL"
+            cd /tmp
+          fi
+
+          cd /tmp/eval-deploy
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Remove stale files so this branch only contains current eval data
+          git rm -rf data/ --ignore-unmatch --quiet 2>/dev/null || true
+          mkdir -p data
+          # Copy only eval data files (not token-usage.json)
+          cp /tmp/eval-data/data/components.json data/
+          for f in /tmp/eval-data/data/*.json; do
+            fname=$(basename "$f")
+            [ "$fname" = "token-usage.json" ] && continue
+            cp "$f" "data/$fname"
+          done
+
+          git add data/
+          git diff --cached --quiet && echo "No changes to deploy" && exit 0
+          git commit -m "Update benchmark data"
+          git push origin dashboard-eval-data
+
+  # ==========================================================================
+  # DEPLOY DASHBOARD
+  # Scheduled runs + manual dispatch on main: assemble data from both
+  # branches + UI → gh-pages. An explicit manual eval-data publish must
+  # succeed before deployment; unflagged manual UI deploys remain unchanged.
+  # ==========================================================================
+  deploy-dashboard:
+    needs: [discover, publish-token-data, publish-eval-data, publish-session-data]
+    if: >-
+      always() &&
+      !cancelled() &&
+      (
+        (needs.discover.result == 'success' && needs.discover.outputs.has_plugins == 'true' && github.event_name == 'schedule') ||
+        (
+          github.event_name == 'workflow_dispatch' &&
+          inputs.pr_number == '' &&
+          github.ref == 'refs/heads/main' &&
+          (
+            !inputs.publish_eval_data ||
+            (
+              github.repository == 'dotnet/skills' &&
+              needs.publish-eval-data.result == 'success'
+            )
+          )
+        )
+      )
+    concurrency:
+      group: deploy-dashboard
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository (for dashboard UI files)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 20
+
+      - name: Fetch eval data from dashboard-eval-data branch
+        run: |
+          mkdir -p /tmp/gh-pages/data
+          git fetch --depth=1 origin dashboard-eval-data:dashboard-eval-data 2>/dev/null || true
+          git checkout dashboard-eval-data -- data/ 2>/dev/null && \
+            cp -r data/* /tmp/gh-pages/data/ && \
+            git checkout HEAD -- . || true
+
+      - name: Fetch token data from dashboard-token-data branch
+        run: |
+          git fetch --depth=1 origin dashboard-token-data:dashboard-token-data 2>/dev/null || true
+          git show dashboard-token-data:data/token-usage.json > /tmp/gh-pages/data/token-usage.json 2>/dev/null || \
+            echo '{"entries":[]}' > /tmp/gh-pages/data/token-usage.json
+
+      - name: Check if AGENTVIZ SPA needs update
+        id: check-replay
+        run: |
+          AGENTVIZ_REPO="https://github.com/jayparikh/agentviz.git"
+          AGENTVIZ_BRANCH="main"
+
+          # Resolve the latest commit on the AGENTVIZ branch (no clone needed)
+          TARGET_SHA=$(git ls-remote "$AGENTVIZ_REPO" "refs/heads/$AGENTVIZ_BRANCH" | cut -f1)
+          if [ -z "$TARGET_SHA" ]; then
+            echo "::error::Could not resolve AGENTVIZ branch $AGENTVIZ_BRANCH"
+            exit 1
+          fi
+          echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
+          echo "AGENTVIZ target commit: $TARGET_SHA"
+
+          # Read the currently deployed commit SHA from gh-pages (no clone needed)
+          DEPLOYED_SHA=""
+          DEPLOYED_SHA=$(curl -fsSL \
+            "https://raw.githubusercontent.com/${{ github.repository }}/gh-pages/replay/.agentviz-commit" \
+            2>/dev/null) || true
+          echo "deployed_sha=$DEPLOYED_SHA" >> "$GITHUB_OUTPUT"
+
+          if [ "$TARGET_SHA" = "$DEPLOYED_SHA" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "AGENTVIZ SPA is up-to-date (commit $TARGET_SHA), skipping build."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "AGENTVIZ SPA needs update: deployed=$DEPLOYED_SHA target=$TARGET_SHA"
+          fi
+
+      - name: Build AGENTVIZ SPA
+        if: steps.check-replay.outputs.skip != 'true'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v4
+        id: agentviz-cache
+        with:
+          path: /tmp/agentviz-dist
+          key: agentviz-dist-${{ steps.check-replay.outputs.target_sha }}
+
+      - name: Build AGENTVIZ SPA (on cache miss)
+        if: steps.check-replay.outputs.skip != 'true' && steps.agentviz-cache.outputs.cache-hit != 'true'
+        run: |
+          TARGET_SHA="${{ steps.check-replay.outputs.target_sha }}"
+
+          git clone https://github.com/jayparikh/agentviz.git /tmp/agentviz-src
+          cd /tmp/agentviz-src
+
+          # Check out the exact resolved commit for deterministic builds
+          if ! git checkout "$TARGET_SHA"; then
+            echo "::error::Failed to check out AGENTVIZ commit $TARGET_SHA"
+            exit 1
+          fi
+
+          npm ci
+          npm run build
+          mkdir -p /tmp/agentviz-dist
+          cp -r dist/* /tmp/agentviz-dist/
+
+      - name: Deploy to GitHub Pages
+        run: |
+          cd /tmp
+          REPO_URL="https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+
+          if git ls-remote --exit-code --heads "$REPO_URL" gh-pages > /dev/null 2>&1; then
+            git clone --depth=1 --branch gh-pages --single-branch "$REPO_URL" deploy
+          else
+            mkdir deploy && cd deploy && git init && git checkout -b gh-pages
+            git remote add origin "$REPO_URL"
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            cd /tmp
+          fi
+
+          cd /tmp/deploy
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Copy data from both branches
+          mkdir -p data
+          cp /tmp/gh-pages/data/*.json data/
+
+          # Copy dashboard UI from source tree
+          cp ${{ github.workspace }}/eng/dashboard/dashboard.html index.html
+          cp ${{ github.workspace }}/eng/dashboard/dashboard-freshness.js dashboard-freshness.js
+          cp ${{ github.workspace }}/eng/dashboard/dashboard-verdict.js dashboard-verdict.js
+          cp ${{ github.workspace }}/eng/dashboard/dashboard.js dashboard.js
+          cp ${{ github.workspace }}/eng/dashboard/token-usage.js token-usage.js
+          cp ${{ github.workspace }}/eng/dashboard/skill-value.js skill-value.js
+
+          # Record the exact main revision that supplied the deployed UI. Evidence
+          # entries already carry their evaluated commit, so the browser can warn
+          # when retained evidence predates this deployment without querying GitHub.
+          DASHBOARD_SHA=$(git -C "${{ github.workspace }}" rev-parse HEAD)
+          DASHBOARD_TIMESTAMP=$(git -C "${{ github.workspace }}" log -1 --format='%aI' "$DASHBOARD_SHA")
+          DASHBOARD_MESSAGE=$(git -C "${{ github.workspace }}" log -1 --format='%s' "$DASHBOARD_SHA")
+          jq -n \
+            --arg id "$DASHBOARD_SHA" \
+            --arg timestamp "$DASHBOARD_TIMESTAMP" \
+            --arg message "$DASHBOARD_MESSAGE" \
+            --arg url "${{ github.server_url }}/${{ github.repository }}/commit/$DASHBOARD_SHA" \
+            --arg deployedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{schemaVersion: 1, deployedAt: $deployedAt, deployedCommit: {id: $id, timestamp: $timestamp, message: $message, url: $url}}' \
+            > data/dashboard-meta.json
+
+          # Deploy AGENTVIZ SPA (skip if already present and unchanged)
+          if [ "${{ steps.check-replay.outputs.skip }}" != "true" ]; then
+            rm -rf replay
+            mkdir -p replay
+            if [ -d /tmp/agentviz-dist ]; then
+              cp -r /tmp/agentviz-dist/* replay/
+            else
+              echo "::error::No AGENTVIZ build artifacts found"
+              exit 1
+            fi
+            echo "${{ steps.check-replay.outputs.target_sha }}" > replay/.agentviz-commit
+          fi
+
+          git add .
+          git diff --cached --quiet && echo "No changes to deploy" && exit 0
+          git commit -m "Update dashboard"
+          git push origin gh-pages
