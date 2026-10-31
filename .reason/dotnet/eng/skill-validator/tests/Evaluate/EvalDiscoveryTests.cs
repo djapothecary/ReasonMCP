@@ -1,0 +1,355 @@
+using SkillValidator.Evaluate;
+using SkillValidator.Shared;
+
+namespace SkillValidator.Tests;
+
+[TestClass]
+public class EvalDiscoveryTests
+{
+    public TestContext TestContext { get; set; } = null!;
+
+    [TestMethod]
+    public async Task FindsPluginMcpServersInParentDirectory()
+    {
+        var tmpDir = Path.Combine(Path.GetTempPath(), $"skill-test-{Guid.NewGuid():N}");
+        var skillDir = Path.Combine(tmpDir, "my-skill");
+        Directory.CreateDirectory(skillDir);
+        try
+        {
+            var pluginJson = """
+                {
+                    "mcpServers": {
+                        "test-mcp": {
+                            "command": "dotnet",
+                            "args": ["run"],
+                            "tools": ["load_data"]
+                        }
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(Path.Combine(tmpDir, "plugin.json"), pluginJson, TestContext.CancellationToken);
+
+            var result = await EvaluateCommand.FindPluginMcpServers(skillDir);
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result!.ContainsKey("test-mcp"));
+            Assert.AreEqual("dotnet", result["test-mcp"].Command);
+        }
+        finally
+        {
+            Directory.Delete(tmpDir, true);
+        }
+    }
+
+    [TestMethod]
+    public async Task FindsPluginMcpServersInGrandparentDirectory()
+    {
+        // Simulates the real layout: plugin.json is at dotnet-msbuild/,
+        // skill dir is at dotnet-msbuild/skills/my-skill/
+        var tmpDir = Path.Combine(Path.GetTempPath(), $"skill-test-{Guid.NewGuid():N}");
+        var skillDir = Path.Combine(tmpDir, "skills", "my-skill");
+        Directory.CreateDirectory(skillDir);
+        try
+        {
+            var pluginJson = """
+                {
+                    "mcpServers": {
+                        "test-mcp": {
+                            "command": "dotnet",
+                            "args": ["run"],
+                            "tools": ["load_data"]
+                        }
+                    }
+                }
+                """;
+            await File.WriteAllTextAsync(Path.Combine(tmpDir, "plugin.json"), pluginJson, TestContext.CancellationToken);
+
+            var result = await EvaluateCommand.FindPluginMcpServers(skillDir);
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result!.ContainsKey("test-mcp"));
+            Assert.AreEqual("dotnet", result["test-mcp"].Command);
+        }
+        finally
+        {
+            Directory.Delete(tmpDir, true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ReturnsNullWhenNoPluginJson()
+    {
+        var tmpDir = Path.Combine(Path.GetTempPath(), $"skill-test-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tmpDir);
+        try
+        {
+            var result = await EvaluateCommand.FindPluginMcpServers(tmpDir);
+            Assert.IsNull(result);
+        }
+        finally
+        {
+            Directory.Delete(tmpDir, true);
+        }
+    }
+
+    [TestMethod]
+    public async Task RejectsReferencedMcpFileThroughSymlink()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"skill-mcp-link-{Guid.NewGuid():N}");
+        var pluginDir = Path.Combine(root, "plugin");
+        var skillDir = Path.Combine(pluginDir, "skills", "my-skill");
+        var outsideMcp = Path.Combine(root, "outside.mcp.json");
+        var linkedMcp = Path.Combine(pluginDir, ".mcp.json");
+        Directory.CreateDirectory(skillDir);
+        await File.WriteAllTextAsync(
+            Path.Combine(pluginDir, "plugin.json"),
+            """{"mcpServers":"./.mcp.json"}""",
+            TestContext.CancellationToken);
+        await File.WriteAllTextAsync(
+            outsideMcp,
+            """{"mcpServers":{"external":{"command":"dotnet","args":["run"]}}}""",
+            TestContext.CancellationToken);
+        if (!SymlinkTestHelper.TryCreateFile(linkedMcp, outsideMcp))
+        {
+            Directory.Delete(root, true);
+            return;
+        }
+
+        try
+        {
+            var result = await EvaluateCommand.FindPluginMcpServers(skillDir);
+
+            Assert.IsNull(result);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ResolveEvalPathFindsNestedTestDir()
+    {
+        // Layout: tests/<plugin-name>/<skill-name>/eval.yaml
+        var tmpDir = Path.Combine(Path.GetTempPath(), $"skill-test-{Guid.NewGuid():N}");
+        var skillDir = Path.Combine(tmpDir, "plugins", "my-plugin", "skills", "my-skill");
+        var testsDir = Path.Combine(tmpDir, "tests");
+        var evalDir = Path.Combine(testsDir, "my-plugin", "my-skill");
+        Directory.CreateDirectory(skillDir);
+        Directory.CreateDirectory(evalDir);
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(skillDir, "SKILL.md"), "---\nname: my-skill\ndescription: test\n---\nBody", TestContext.CancellationToken);
+            await File.WriteAllTextAsync(Path.Combine(evalDir, "eval.yaml"), "scenarios:\n  - name: test\n    prompt: hi\n    assertions:\n      - type: exit_success", TestContext.CancellationToken);
+
+            var skills = await SkillDiscovery.DiscoverSkills(skillDir);
+            var evalSkills = await EvaluateCommand.LoadAndParseEvalData(skills, testsDir);
+            Assert.ContainsSingle(evalSkills);
+            Assert.IsNotNull(evalSkills[0].EvalPath);
+            Assert.Contains("my-plugin", evalSkills[0].EvalPath!);
+        }
+        finally
+        {
+            Directory.Delete(tmpDir, true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ResolveEvalPathPrefersFlatLayout()
+    {
+        // When both flat and nested exist, flat wins
+        var tmpDir = Path.Combine(Path.GetTempPath(), $"skill-test-{Guid.NewGuid():N}");
+        var skillDir = Path.Combine(tmpDir, "my-skill");
+        var testsDir = Path.Combine(tmpDir, "tests");
+        var flatEvalDir = Path.Combine(testsDir, "my-skill");
+        var nestedEvalDir = Path.Combine(testsDir, "some-plugin", "my-skill");
+        Directory.CreateDirectory(skillDir);
+        Directory.CreateDirectory(flatEvalDir);
+        Directory.CreateDirectory(nestedEvalDir);
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(skillDir, "SKILL.md"), "---\nname: my-skill\ndescription: test\n---\nBody", TestContext.CancellationToken);
+            await File.WriteAllTextAsync(Path.Combine(flatEvalDir, "eval.yaml"), "scenarios:\n  - name: test\n    prompt: hi\n    assertions:\n      - type: exit_success", TestContext.CancellationToken);
+            await File.WriteAllTextAsync(Path.Combine(nestedEvalDir, "eval.yaml"), "scenarios:\n  - name: test\n    prompt: hi\n    assertions:\n      - type: exit_success", TestContext.CancellationToken);
+
+            var skills = await SkillDiscovery.DiscoverSkills(skillDir);
+            var evalSkills = await EvaluateCommand.LoadAndParseEvalData(skills, testsDir);
+            Assert.ContainsSingle(evalSkills);
+            Assert.IsNotNull(evalSkills[0].EvalPath);
+            // Flat path should win
+            Assert.DoesNotContain("some-plugin", evalSkills[0].EvalPath!);
+        }
+        finally
+        {
+            Directory.Delete(tmpDir, true);
+        }
+    }
+
+    [TestMethod]
+    public async Task LoadAndParseEvalDataParsesVallyStimuli()
+    {
+        var tmpDir = Path.Combine(Path.GetTempPath(), $"skill-test-{Guid.NewGuid():N}");
+        var skillDir = Path.Combine(tmpDir, "my-skill");
+        var testsDir = Path.Combine(tmpDir, "tests");
+        var evalDir = Path.Combine(testsDir, "my-skill");
+        Directory.CreateDirectory(skillDir);
+        Directory.CreateDirectory(evalDir);
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(skillDir, "SKILL.md"),
+                "---\nname: my-skill\ndescription: test\n---\nBody",
+                TestContext.CancellationToken);
+            await File.WriteAllTextAsync(
+                Path.Combine(evalDir, "eval.yaml"),
+                """
+                name: my-skill
+                stimuli:
+                  - name: Vally test
+                    prompt: Do the thing.
+                    graders:
+                      - type: output-contains
+                        config:
+                          substring: done
+                      - type: run-command
+                        config:
+                          command: node
+                          args:
+                            - -e
+                            - process.stdout.write('checked')
+                          stdout_contains: checked
+                """,
+                TestContext.CancellationToken);
+
+            var skills = await SkillDiscovery.DiscoverSkills(skillDir);
+            var loaded = Assert.ContainsSingle(
+                await EvaluateCommand.LoadAndParseEvalData(skills, testsDir));
+            var scenario = Assert.ContainsSingle(loaded.EvalConfig!.Scenarios);
+            Assert.AreEqual(2, scenario.Assertions!.Count);
+            var outputAssertion = scenario.Assertions[0];
+            var commandAssertion = scenario.Assertions[1];
+
+            Assert.AreEqual("Vally test", scenario.Name);
+            Assert.AreEqual(AssertionType.OutputContains, outputAssertion.Type);
+            Assert.AreEqual("done", outputAssertion.Value);
+            Assert.AreEqual(AssertionType.RunCommandAndAssert, commandAssertion.Type);
+            Assert.AreEqual("node", commandAssertion.CommandArgs!.CommandToRun);
+            Assert.IsNotNull(commandAssertion.CommandArgs.ArgumentList);
+            Assert.AreSequenceEqual(["-e", "process.stdout.write('checked')"], commandAssertion.CommandArgs.ArgumentList!);
+            Assert.IsNull(commandAssertion.CommandArgs.CommandArguments);
+            Assert.AreEqual("checked", commandAssertion.CommandArgs.ExpectedStdOutContains);
+        }
+        finally
+        {
+            Directory.Delete(tmpDir, true);
+        }
+    }
+}
+
+[TestClass]
+public class ValidateEvalPromptsTests
+{
+    private static (SkillInfo Skill, EvalConfig EvalConfig) MakeSkillWithEval(string content, string name, List<EvalScenario> scenarios)
+    {
+        var skill = new SkillInfo(
+            Name: name,
+            Description: "Test skill",
+            Path: "/tmp/test-skill",
+            SkillMdPath: "/tmp/test-skill/SKILL.md",
+            SkillMdContent: content);
+        var evalConfig = new EvalConfig(scenarios);
+        return (skill, evalConfig);
+    }
+
+    [TestMethod]
+    public void ErrorsWhenEvalPromptMentionsSkillName()
+    {
+        var content = "---\nname: migrate-app\n---\n# Title\n1. Step\n```bash\necho\n```\n" + new string('x', 4000);
+        var scenarios = new List<EvalScenario>
+        {
+            new("basic", "Use the migrate-app skill to help me migrate my project")
+        };
+        var (skill, evalConfig) = MakeSkillWithEval(content, "migrate-app", scenarios);
+        var errors = EvaluateCommand.ValidateEvalPrompts(skill, evalConfig);
+        Assert.IsTrue((errors).Any(e => e.Contains("mentions target name") && e.Contains("migrate-app")));
+    }
+
+    [TestMethod]
+    public void NoErrorWhenEvalPromptDoesNotMentionSkillName()
+    {
+        var content = "---\nname: migrate-app\n---\n# Title\n1. Step\n```bash\necho\n```\n" + new string('x', 4000);
+        var scenarios = new List<EvalScenario>
+        {
+            new("basic", "Help me migrate my project to the latest framework")
+        };
+        var (skill, evalConfig) = MakeSkillWithEval(content, "migrate-app", scenarios);
+        var errors = EvaluateCommand.ValidateEvalPrompts(skill, evalConfig);
+        Assert.IsFalse((errors).Any(e => e.Contains("mentions target name")));
+    }
+
+    [TestMethod]
+    public void NoErrorWhenSkillNameIsEmpty()
+    {
+        var content = "---\nname: \n---\n# Title\n1. Step\n```bash\necho\n```\n" + new string('x', 4000);
+        var scenarios = new List<EvalScenario>
+        {
+            new("basic", "Help me migrate my project")
+        };
+        var (skill, evalConfig) = MakeSkillWithEval(content, "", scenarios);
+        var errors = EvaluateCommand.ValidateEvalPrompts(skill, evalConfig);
+        Assert.IsFalse((errors).Any(e => e.Contains("mentions target name")));
+    }
+}
+
+[TestClass]
+public class GroupSkillsByPluginTests
+{
+    [TestMethod]
+    public void GroupsSkillsUnderSamePlugin()
+    {
+        var tmpDir = Path.Combine(Path.GetTempPath(), $"group-test-{Guid.NewGuid():N}");
+        var pluginDir = Path.Combine(tmpDir, "my-plugin");
+        var skillDir1 = Path.Combine(pluginDir, "skills", "skill-a");
+        var skillDir2 = Path.Combine(pluginDir, "skills", "skill-b");
+        Directory.CreateDirectory(skillDir1);
+        Directory.CreateDirectory(skillDir2);
+        try
+        {
+            File.WriteAllText(Path.Combine(pluginDir, "plugin.json"), """{ "name": "my-plugin" }""");
+
+            var skills = new[]
+            {
+                new SkillInfo("skill-a", "A", skillDir1, Path.Combine(skillDir1, "SKILL.md"), "# A"),
+                new SkillInfo("skill-b", "B", skillDir2, Path.Combine(skillDir2, "SKILL.md"), "# B"),
+            };
+
+            var (groups, errors) = EvaluateCommand.GroupSkillsByPlugin(skills);
+            Assert.IsEmpty(errors);
+            Assert.ContainsSingle(groups);
+            var (plugin, grouped) = groups.Values.First();
+            Assert.AreEqual(2, grouped.Count);
+        }
+        finally
+        {
+            Directory.Delete(tmpDir, true);
+        }
+    }
+
+    [TestMethod]
+    public void ReportsErrorForStandaloneSkill()
+    {
+        var tmpDir = Path.Combine(Path.GetTempPath(), $"group-test-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(tmpDir);
+        try
+        {
+            // No plugin.json in parents
+            var skill = new SkillInfo("orphan", "O", tmpDir, Path.Combine(tmpDir, "SKILL.md"), "# O");
+            var (groups, errors) = EvaluateCommand.GroupSkillsByPlugin([skill]);
+            Assert.IsEmpty(groups);
+            Assert.ContainsSingle(errors);
+            Assert.Contains("orphan", errors[0]);
+        }
+        finally
+        {
+            Directory.Delete(tmpDir, true);
+        }
+    }
+}

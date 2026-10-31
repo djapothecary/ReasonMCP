@@ -1,0 +1,15 @@
+<Project Sdk="MSTest.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\SkillValidator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="fixtures\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="fixtures" />
+    <None Include="..\..\..\tests\dotnet-test\agent.test-engineer\eval.yaml"
+          Link="fixtures\generator.eval.yaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\tests\dotnet-test\agent.test-quality-auditor\eval.yaml"
+          Link="fixtures\auditor.eval.yaml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
