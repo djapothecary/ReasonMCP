@@ -1,7 +1,7 @@
 
 # Reason MCP 🧠
 
-**A high-performance, locally-hosted Model Context Protocol (MCP) server built in C# and .NET Core, designed for seamless integration with [Continue.dev](https://continue.dev).**
+**A high-performance, locally-hosted Model Context Protocol (MCP) server built in C# and .NET Core**
 
 ## 📖 The Story of "Reason"
 
