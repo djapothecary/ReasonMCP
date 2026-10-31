@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyDescriptionAttribute("Validate that agent skills meaningfully improve agent performance")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1e0b4dc843cf6e48b98e1488c14468f01dc2b408")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4008788383bac0554ba0d805c9dd0fdf8b8446b7")]
 [assembly: System.Reflection.AssemblyProductAttribute("skill-validator")]
 [assembly: System.Reflection.AssemblyTitleAttribute("skill-validator")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "XOtv64cnDxc=",
+  "success": true,
+  "projectFilePath": "c:\\Source\\ReasonMCP\\.reason\\dotnet\\tests\\dotnet-advanced\\vectorization\\fixtures\\product\\Product.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\djapo\\.nuget\\packages\\system.numerics.tensors\\10.0.0\\system.numerics.tensors.10.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
