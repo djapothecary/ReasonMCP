@@ -1,0 +1,301 @@
+using System.Collections.Concurrent;
+using GitHub.Copilot;
+using GitHub.Copilot.Rpc;
+using SkillValidator.Shared;
+
+namespace SkillValidator.Evaluate;
+
+/// <summary>
+/// A local-filesystem implementation of <see cref="SessionFsProvider"/> that
+/// maps SDK session-state I/O requests to physical files under a given root
+/// directory.  Required since Copilot SDK no longer ships a built-in
+/// default; without this handler, <c>events.jsonl</c> files are never written.
+/// </summary>
+internal sealed class LocalSessionFsHandler : SessionFsProvider
+{
+    private readonly string _stateRoot;
+    private readonly string _workspaceRoot;
+    private readonly string[] _allowedAbsoluteRoots;
+    private readonly string[] _writableAbsoluteRoots;
+    private readonly bool _offlineWorkflow;
+    // The SDK can report "timeout while waiting for mutex to become available"
+    // when multiple session-state writes race on the same JSONL file, so serialize
+    // writes per resolved path inside the handler as well.
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _pathLocks =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    public LocalSessionFsHandler(
+        string stateRoot,
+        string workspaceRoot,
+        IEnumerable<string> allowedAbsoluteRoots,
+        bool offlineWorkflow = false,
+        IEnumerable<string>? writableAbsoluteRoots = null)
+    {
+        _stateRoot = NormalizeRoot(stateRoot);
+        _workspaceRoot = NormalizeRoot(workspaceRoot);
+        _offlineWorkflow = offlineWorkflow;
+        var pathComparer = OperatingSystem.IsWindows()
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal;
+        _allowedAbsoluteRoots = allowedAbsoluteRoots
+            .Select(NormalizeRoot)
+            .Distinct(pathComparer)
+            .ToArray();
+        _writableAbsoluteRoots = (writableAbsoluteRoots ?? [])
+            .Select(NormalizeRoot)
+            .Distinct(pathComparer)
+            .ToArray();
+        if (_allowedAbsoluteRoots.Length == 0)
+            throw new ArgumentException("At least one absolute-path root is required.", nameof(allowedAbsoluteRoots));
+        if (_writableAbsoluteRoots.Any(root => !_allowedAbsoluteRoots.Contains(root, pathComparer)))
+            throw new ArgumentException("Writable roots must also be allowed absolute-path roots.", nameof(writableAbsoluteRoots));
+        Directory.CreateDirectory(_stateRoot);
+        Directory.CreateDirectory(_workspaceRoot);
+    }
+
+    private static string NormalizeRoot(string path)
+    {
+        var full = Path.GetFullPath(path);
+        return Path.EndsInDirectorySeparator(full)
+            ? full
+            : full + Path.DirectorySeparatorChar;
+    }
+
+    internal static bool IsSessionStatePath(string path)
+    {
+        if (Path.IsPathFullyQualified(path))
+            return false;
+
+        var normalized = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+        return normalized.Equals("session-state", StringComparison.OrdinalIgnoreCase)
+            || normalized.StartsWith(
+                "session-state" + Path.DirectorySeparatorChar,
+                StringComparison.OrdinalIgnoreCase);
+    }
+
+    internal static bool IsWorkflowProposalPath(string? path, string workDir)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return false;
+        try
+        {
+            var full = Path.GetFullPath(Path.Combine(workDir, path));
+            var proposal = Path.Combine(Path.GetFullPath(workDir), "result.json");
+            return full.Equals(proposal, OperatingSystem.IsWindows()
+                ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+        }
+        catch (Exception error) when (error is ArgumentException or NotSupportedException)
+        {
+            return false;
+        }
+    }
+
+    private void EnsureWritable(ResolvedPath resolved)
+    {
+        if (_offlineWorkflow && !IsEvaluatorStateRoot(resolved.Root)
+            && !IsWorkflowProposalPath(resolved.FullPath, _workspaceRoot))
+        {
+            throw new UnauthorizedAccessException(
+                "Offline workflow inputs and resources are read-only; only result.json may be written.");
+        }
+    }
+
+    private bool IsEvaluatorStateRoot(string root)
+    {
+        var comparer = OperatingSystem.IsWindows()
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal;
+        return comparer.Equals(root, _stateRoot)
+            || _writableAbsoluteRoots.Contains(root, comparer);
+    }
+
+    /// <summary>Resolve an SDK-provided path to an absolute local path, guarding against traversal.</summary>
+    internal string ResolvePath(string path) => ResolvePathInfo(path).FullPath;
+
+    private ResolvedPath ResolvePathInfo(string path)
+    {
+        string root;
+        string full;
+        if (Path.IsPathFullyQualified(path))
+        {
+            full = Path.GetFullPath(path);
+            root = FindAllowedAbsoluteRoot(full)
+                ?? throw new UnauthorizedAccessException($"Path outside allowed roots: {path}");
+        }
+        else
+        {
+            root = IsSessionStatePath(path) ? _stateRoot : _workspaceRoot;
+            full = Path.GetFullPath(Path.Combine(root, path));
+        }
+
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        if (!full.Equals(Path.TrimEndingDirectorySeparator(root), comparison)
+            && !full.StartsWith(root, comparison))
+        {
+            throw new UnauthorizedAccessException($"Path traversal blocked: {path}");
+        }
+        if (PathSafety.ContainsReparsePoint(
+            Path.TrimEndingDirectorySeparator(root),
+            Path.TrimEndingDirectorySeparator(full),
+            missingPathIsUnsafe: false))
+        {
+            throw new UnauthorizedAccessException($"Symbolic-link traversal blocked: {path}");
+        }
+        return new ResolvedPath(root, full);
+    }
+
+    private string? FindAllowedAbsoluteRoot(string fullPath)
+    {
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        return _allowedAbsoluteRoots.FirstOrDefault(root =>
+            fullPath.Equals(Path.TrimEndingDirectorySeparator(root), comparison)
+            || fullPath.StartsWith(root, comparison));
+    }
+
+    private async Task ExecuteWithPathLockAsync(string path, Func<Task> action, CancellationToken cancellationToken)
+    {
+        var pathLock = _pathLocks.GetOrAdd(path, static _ => new SemaphoreSlim(1, 1));
+        await pathLock.WaitAsync(cancellationToken);
+        try
+        {
+            await action();
+        }
+        finally
+        {
+            pathLock.Release();
+        }
+    }
+
+    protected override async Task<string> ReadFileAsync(string path, CancellationToken cancellationToken)
+    {
+        var resolved = ResolvePathInfo(path);
+        return await SecureFileSystem.ReadAllTextAsync(
+            resolved.Root,
+            resolved.FullPath,
+            cancellationToken);
+    }
+
+    protected override Task WriteFileAsync(string path, string content, int? mode, CancellationToken cancellationToken)
+    {
+        var resolved = ResolvePathInfo(path);
+        EnsureWritable(resolved);
+        return ExecuteWithPathLockAsync(resolved.FullPath, () =>
+            SecureFileSystem.WriteAllTextAsync(
+                resolved.Root,
+                resolved.FullPath,
+                content,
+                append: false,
+                cancellationToken), cancellationToken);
+    }
+
+    protected override Task AppendFileAsync(string path, string content, int? mode, CancellationToken cancellationToken)
+    {
+        var resolved = ResolvePathInfo(path);
+        EnsureWritable(resolved);
+        return ExecuteWithPathLockAsync(resolved.FullPath, () =>
+            SecureFileSystem.WriteAllTextAsync(
+                resolved.Root,
+                resolved.FullPath,
+                content,
+                append: true,
+                cancellationToken), cancellationToken);
+    }
+
+    protected override Task<bool> ExistsAsync(string path, CancellationToken cancellationToken)
+    {
+        var resolved = ResolvePathInfo(path);
+        var exists = SecureFileSystem.Exists(
+            resolved.Root,
+            resolved.FullPath);
+        return Task.FromResult(exists);
+    }
+
+    protected override Task<SessionFsStatResult> StatAsync(string path, CancellationToken cancellationToken)
+    {
+        var resolved = ResolvePathInfo(path);
+        var status = SecureFileSystem.GetStatus(
+            resolved.Root,
+            resolved.FullPath);
+        return Task.FromResult(new SessionFsStatResult
+        {
+            IsFile = status.IsFile,
+            IsDirectory = status.IsDirectory,
+            Size = status.Size,
+            Mtime = status.Mtime,
+            Birthtime = status.Birthtime,
+        });
+    }
+
+    protected override Task MakeDirectoryAsync(string path, bool recursive, int? mode, CancellationToken cancellationToken)
+    {
+        var resolved = ResolvePathInfo(path);
+        if (_offlineWorkflow && !IsEvaluatorStateRoot(resolved.Root))
+        {
+            if (Directory.Exists(resolved.FullPath))
+                return Task.CompletedTask;
+            throw new UnauthorizedAccessException("Offline workflow directories are read-only.");
+        }
+        SecureFileSystem.CreateDirectory(resolved.Root, resolved.FullPath);
+        return Task.CompletedTask;
+    }
+
+    protected override Task<IList<string>> ReadDirectoryAsync(string path, CancellationToken cancellationToken)
+    {
+        var resolved = ResolvePathInfo(path);
+        var entries = SecureFileSystem.EnumerateDirectory(
+            resolved.Root,
+            resolved.FullPath);
+        return Task.FromResult<IList<string>>(entries.Select(entry => entry.Name).ToList());
+    }
+
+    protected override Task<IList<SessionFsReaddirWithTypesEntry>> ReadDirectoryWithTypesAsync(string path, CancellationToken cancellationToken)
+    {
+        var resolved = ResolvePathInfo(path);
+        var entries = SecureFileSystem.EnumerateDirectory(
+                resolved.Root,
+                resolved.FullPath)
+            .Select(entry =>
+            {
+                return new SessionFsReaddirWithTypesEntry
+                {
+                    Name = entry.Name,
+                    Type = entry.IsDirectory
+                        ? SessionFsReaddirWithTypesEntryType.Directory
+                        : SessionFsReaddirWithTypesEntryType.File,
+                };
+            })
+            .ToList();
+        return Task.FromResult<IList<SessionFsReaddirWithTypesEntry>>(entries);
+    }
+
+    protected override Task RemoveAsync(string path, bool recursive, bool force, CancellationToken cancellationToken)
+    {
+        var resolved = ResolvePathInfo(path);
+        EnsureWritable(resolved);
+        SecureFileSystem.Remove(
+            resolved.Root,
+            resolved.FullPath,
+            recursive);
+        return Task.CompletedTask;
+    }
+
+    protected override Task RenameAsync(string src, string dest, CancellationToken cancellationToken)
+    {
+        var resolvedSrc = ResolvePathInfo(src);
+        var resolvedDest = ResolvePathInfo(dest);
+        EnsureWritable(resolvedSrc);
+        EnsureWritable(resolvedDest);
+        SecureFileSystem.Rename(
+            resolvedSrc.Root,
+            resolvedSrc.FullPath,
+            resolvedDest.Root,
+            resolvedDest.FullPath);
+        return Task.CompletedTask;
+    }
+
+    private readonly record struct ResolvedPath(string Root, string FullPath);
+}

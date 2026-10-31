@@ -1,0 +1,3330 @@
+{
+  "version": 3,
+  "targets": {
+    "net10.0": {
+      "GitHub.Copilot.SDK/1.0.28": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.AI.Abstractions": "10.2.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.2"
+        },
+        "compile": {
+          "lib/net10.0/GitHub.Copilot.SDK.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/GitHub.Copilot.SDK.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "build/GitHub.Copilot.SDK.props": {},
+          "build/GitHub.Copilot.SDK.targets": {}
+        }
+      },
+      "Google.Protobuf/3.30.2": {
+        "type": "package",
+        "compile": {
+          "lib/net5.0/Google.Protobuf.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net5.0/Google.Protobuf.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "Microsoft.Bcl.Memory/10.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Bcl.Memory.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Bcl.Memory.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Data.Sqlite/10.0.14": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Data.Sqlite.Core": "10.0.14",
+          "SQLitePCLRaw.bundle_e_sqlite3": "2.1.13",
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/_._": {}
+        }
+      },
+      "Microsoft.Data.Sqlite.Core/10.0.14": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.Data.Sqlite.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Data.Sqlite.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.DotNet.ILCompiler/10.0.6": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.DotNet.ILCompiler.props": {}
+        }
+      },
+      "Microsoft.Extensions.AI.Abstractions/10.2.0": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.2": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.FileSystemGlobbing/10.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.FileSystemGlobbing.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.FileSystemGlobbing.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions/10.0.2": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.2"
+        },
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/Microsoft.Extensions.Logging.Abstractions.targets": {}
+        }
+      },
+      "Microsoft.ML.Tokenizers/2.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Google.Protobuf": "3.30.2"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.ML.Tokenizers.Data.Cl100kBase/2.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Google.Protobuf": "3.30.2",
+          "Microsoft.ML.Tokenizers": "2.0.1"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.Data.Cl100kBase.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.Data.Cl100kBase.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.NET.ILLink.Tasks/10.0.6": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "SQLitePCLRaw.bundle_e_sqlite3/2.1.13": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.lib.e_sqlite3": "2.1.13",
+          "SQLitePCLRaw.provider.e_sqlite3": "2.1.13"
+        },
+        "compile": {
+          "lib/netstandard2.0/SQLitePCLRaw.batteries_v2.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SQLitePCLRaw.batteries_v2.dll": {}
+        }
+      },
+      "SQLitePCLRaw.core/2.1.13": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/SQLitePCLRaw.core.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SQLitePCLRaw.core.dll": {}
+        }
+      },
+      "SQLitePCLRaw.lib.e_sqlite3/3.53.3": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "build": {
+          "buildTransitive/net9.0/SQLitePCLRaw.lib.e_sqlite3.targets": {}
+        },
+        "runtimeTargets": {
+          "runtimes/android-arm/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "android-arm"
+          },
+          "runtimes/android-arm64/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "android-arm64"
+          },
+          "runtimes/android-x64/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "android-x64"
+          },
+          "runtimes/android-x86/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "android-x86"
+          },
+          "runtimes/browser-wasm/nativeassets/net9.0/e_sqlite3.a": {
+            "assetType": "native",
+            "rid": "browser-wasm"
+          },
+          "runtimes/ios-arm/native/e_sqlite3.a": {
+            "assetType": "native",
+            "rid": "ios-arm"
+          },
+          "runtimes/ios-arm64/native/e_sqlite3.a": {
+            "assetType": "native",
+            "rid": "ios-arm64"
+          },
+          "runtimes/iossimulator-arm64/native/e_sqlite3.a": {
+            "assetType": "native",
+            "rid": "iossimulator-arm64"
+          },
+          "runtimes/iossimulator-x64/native/e_sqlite3.a": {
+            "assetType": "native",
+            "rid": "iossimulator-x64"
+          },
+          "runtimes/linux-arm/native/libe_sqlite3.a": {
+            "assetType": "native",
+            "rid": "linux-arm"
+          },
+          "runtimes/linux-arm/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-arm"
+          },
+          "runtimes/linux-arm64/native/libe_sqlite3.a": {
+            "assetType": "native",
+            "rid": "linux-arm64"
+          },
+          "runtimes/linux-arm64/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-arm64"
+          },
+          "runtimes/linux-armel/native/libe_sqlite3.a": {
+            "assetType": "native",
+            "rid": "linux-armel"
+          },
+          "runtimes/linux-armel/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-armel"
+          },
+          "runtimes/linux-mips64/native/libe_sqlite3.a": {
+            "assetType": "native",
+            "rid": "linux-mips64"
+          },
+          "runtimes/linux-mips64/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-mips64"
+          },
+          "runtimes/linux-musl-arm/native/libe_sqlite3.a": {
+            "assetType": "native",
+            "rid": "linux-musl-arm"
+          },
+          "runtimes/linux-musl-arm/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-musl-arm"
+          },
+          "runtimes/linux-musl-arm64/native/libe_sqlite3.a": {
+            "assetType": "native",
+            "rid": "linux-musl-arm64"
+          },
+          "runtimes/linux-musl-arm64/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-musl-arm64"
+          },
+          "runtimes/linux-musl-riscv64/native/libe_sqlite3.a": {
+            "assetType": "native",
+            "rid": "linux-musl-riscv64"
+          },
+          "runtimes/linux-musl-riscv64/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-musl-riscv64"
+          },
+          "runtimes/linux-musl-s390x/native/libe_sqlite3.a": {
+            "assetType": "native",
+            "rid": "linux-musl-s390x"
+          },
+          "runtimes/linux-musl-s390x/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-musl-s390x"
+          },
+          "runtimes/linux-musl-x64/native/libe_sqlite3.a": {
+            "assetType": "native",
+            "rid": "linux-musl-x64"
+          },
+          "runtimes/linux-musl-x64/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-musl-x64"
+          },
+          "runtimes/linux-ppc64le/native/libe_sqlite3.a": {
+            "assetType": "native",
+            "rid": "linux-ppc64le"
+          },
+          "runtimes/linux-ppc64le/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-ppc64le"
+          },
+          "runtimes/linux-riscv64/native/libe_sqlite3.a": {
+            "assetType": "native",
+            "rid": "linux-riscv64"
+          },
+          "runtimes/linux-riscv64/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-riscv64"
+          },
+          "runtimes/linux-s390x/native/libe_sqlite3.a": {
+            "assetType": "native",
+            "rid": "linux-s390x"
+          },
+          "runtimes/linux-s390x/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-s390x"
+          },
+          "runtimes/linux-x64/native/libe_sqlite3.a": {
+            "assetType": "native",
+            "rid": "linux-x64"
+          },
+          "runtimes/linux-x64/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-x64"
+          },
+          "runtimes/linux-x86/native/libe_sqlite3.a": {
+            "assetType": "native",
+            "rid": "linux-x86"
+          },
+          "runtimes/linux-x86/native/libe_sqlite3.so": {
+            "assetType": "native",
+            "rid": "linux-x86"
+          },
+          "runtimes/maccatalyst-arm64/native/libe_sqlite3.dylib": {
+            "assetType": "native",
+            "rid": "maccatalyst-arm64"
+          },
+          "runtimes/maccatalyst-x64/native/libe_sqlite3.dylib": {
+            "assetType": "native",
+            "rid": "maccatalyst-x64"
+          },
+          "runtimes/osx-arm64/native/libe_sqlite3.dylib": {
+            "assetType": "native",
+            "rid": "osx-arm64"
+          },
+          "runtimes/osx-x64/native/libe_sqlite3.dylib": {
+            "assetType": "native",
+            "rid": "osx-x64"
+          },
+          "runtimes/win-arm64/native/e_sqlite3.dll": {
+            "assetType": "native",
+            "rid": "win-arm64"
+          },
+          "runtimes/win-x64/native/e_sqlite3.dll": {
+            "assetType": "native",
+            "rid": "win-x64"
+          },
+          "runtimes/win-x86/native/e_sqlite3.dll": {
+            "assetType": "native",
+            "rid": "win-x86"
+          }
+        }
+      },
+      "SQLitePCLRaw.provider.e_sqlite3/2.1.13": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll": {}
+        }
+      },
+      "System.CommandLine/2.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/System.CommandLine.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/System.CommandLine.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "resource": {
+          "lib/net8.0/cs/System.CommandLine.resources.dll": {
+            "locale": "cs"
+          },
+          "lib/net8.0/de/System.CommandLine.resources.dll": {
+            "locale": "de"
+          },
+          "lib/net8.0/es/System.CommandLine.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net8.0/fr/System.CommandLine.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net8.0/it/System.CommandLine.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net8.0/ja/System.CommandLine.resources.dll": {
+            "locale": "ja"
+          },
+          "lib/net8.0/ko/System.CommandLine.resources.dll": {
+            "locale": "ko"
+          },
+          "lib/net8.0/pl/System.CommandLine.resources.dll": {
+            "locale": "pl"
+          },
+          "lib/net8.0/pt-BR/System.CommandLine.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "lib/net8.0/ru/System.CommandLine.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net8.0/tr/System.CommandLine.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net8.0/zh-Hans/System.CommandLine.resources.dll": {
+            "locale": "zh-Hans"
+          },
+          "lib/net8.0/zh-Hant/System.CommandLine.resources.dll": {
+            "locale": "zh-Hant"
+          }
+        }
+      },
+      "Vecc.YamlDotNet.Analyzers.StaticGenerator/18.1.0": {
+        "type": "package"
+      },
+      "YamlDotNet/18.1.0": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/YamlDotNet.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/YamlDotNet.dll": {
+            "related": ".xml"
+          }
+        }
+      }
+    },
+    "net10.0/linux-arm64": {
+      "GitHub.Copilot.SDK/1.0.28": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.AI.Abstractions": "10.2.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.2"
+        },
+        "compile": {
+          "lib/net10.0/GitHub.Copilot.SDK.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/GitHub.Copilot.SDK.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "build/GitHub.Copilot.SDK.props": {},
+          "build/GitHub.Copilot.SDK.targets": {}
+        }
+      },
+      "Google.Protobuf/3.30.2": {
+        "type": "package",
+        "compile": {
+          "lib/net5.0/Google.Protobuf.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net5.0/Google.Protobuf.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "Microsoft.Bcl.Memory/10.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Bcl.Memory.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Bcl.Memory.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Data.Sqlite/10.0.14": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Data.Sqlite.Core": "10.0.14",
+          "SQLitePCLRaw.bundle_e_sqlite3": "2.1.13",
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/_._": {}
+        }
+      },
+      "Microsoft.Data.Sqlite.Core/10.0.14": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.Data.Sqlite.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Data.Sqlite.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.DotNet.ILCompiler/10.0.6": {
+        "type": "package",
+        "dependencies": {
+          "runtime.linux-arm64.Microsoft.DotNet.ILCompiler": "10.0.6"
+        },
+        "build": {
+          "build/Microsoft.DotNet.ILCompiler.props": {}
+        }
+      },
+      "Microsoft.Extensions.AI.Abstractions/10.2.0": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.2": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.FileSystemGlobbing/10.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.FileSystemGlobbing.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.FileSystemGlobbing.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions/10.0.2": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.2"
+        },
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/Microsoft.Extensions.Logging.Abstractions.targets": {}
+        }
+      },
+      "Microsoft.ML.Tokenizers/2.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Google.Protobuf": "3.30.2"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.ML.Tokenizers.Data.Cl100kBase/2.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Google.Protobuf": "3.30.2",
+          "Microsoft.ML.Tokenizers": "2.0.1"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.Data.Cl100kBase.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.Data.Cl100kBase.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.NET.ILLink.Tasks/10.0.6": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "SQLitePCLRaw.bundle_e_sqlite3/2.1.13": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.lib.e_sqlite3": "2.1.13",
+          "SQLitePCLRaw.provider.e_sqlite3": "2.1.13"
+        },
+        "compile": {
+          "lib/netstandard2.0/SQLitePCLRaw.batteries_v2.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SQLitePCLRaw.batteries_v2.dll": {}
+        }
+      },
+      "SQLitePCLRaw.core/2.1.13": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/SQLitePCLRaw.core.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SQLitePCLRaw.core.dll": {}
+        }
+      },
+      "SQLitePCLRaw.lib.e_sqlite3/3.53.3": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "native": {
+          "runtimes/linux-arm64/native/libe_sqlite3.a": {},
+          "runtimes/linux-arm64/native/libe_sqlite3.so": {}
+        },
+        "build": {
+          "buildTransitive/net9.0/SQLitePCLRaw.lib.e_sqlite3.targets": {}
+        }
+      },
+      "SQLitePCLRaw.provider.e_sqlite3/2.1.13": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll": {}
+        }
+      },
+      "System.CommandLine/2.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/System.CommandLine.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/System.CommandLine.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "resource": {
+          "lib/net8.0/cs/System.CommandLine.resources.dll": {
+            "locale": "cs"
+          },
+          "lib/net8.0/de/System.CommandLine.resources.dll": {
+            "locale": "de"
+          },
+          "lib/net8.0/es/System.CommandLine.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net8.0/fr/System.CommandLine.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net8.0/it/System.CommandLine.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net8.0/ja/System.CommandLine.resources.dll": {
+            "locale": "ja"
+          },
+          "lib/net8.0/ko/System.CommandLine.resources.dll": {
+            "locale": "ko"
+          },
+          "lib/net8.0/pl/System.CommandLine.resources.dll": {
+            "locale": "pl"
+          },
+          "lib/net8.0/pt-BR/System.CommandLine.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "lib/net8.0/ru/System.CommandLine.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net8.0/tr/System.CommandLine.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net8.0/zh-Hans/System.CommandLine.resources.dll": {
+            "locale": "zh-Hans"
+          },
+          "lib/net8.0/zh-Hant/System.CommandLine.resources.dll": {
+            "locale": "zh-Hant"
+          }
+        }
+      },
+      "Vecc.YamlDotNet.Analyzers.StaticGenerator/18.1.0": {
+        "type": "package"
+      },
+      "YamlDotNet/18.1.0": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/YamlDotNet.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/YamlDotNet.dll": {
+            "related": ".xml"
+          }
+        }
+      }
+    },
+    "net10.0/linux-x64": {
+      "GitHub.Copilot.SDK/1.0.28": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.AI.Abstractions": "10.2.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.2"
+        },
+        "compile": {
+          "lib/net10.0/GitHub.Copilot.SDK.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/GitHub.Copilot.SDK.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "build/GitHub.Copilot.SDK.props": {},
+          "build/GitHub.Copilot.SDK.targets": {}
+        }
+      },
+      "Google.Protobuf/3.30.2": {
+        "type": "package",
+        "compile": {
+          "lib/net5.0/Google.Protobuf.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net5.0/Google.Protobuf.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "Microsoft.Bcl.Memory/10.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Bcl.Memory.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Bcl.Memory.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Data.Sqlite/10.0.14": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Data.Sqlite.Core": "10.0.14",
+          "SQLitePCLRaw.bundle_e_sqlite3": "2.1.13",
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/_._": {}
+        }
+      },
+      "Microsoft.Data.Sqlite.Core/10.0.14": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.Data.Sqlite.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Data.Sqlite.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.DotNet.ILCompiler/10.0.6": {
+        "type": "package",
+        "dependencies": {
+          "runtime.linux-x64.Microsoft.DotNet.ILCompiler": "10.0.6"
+        },
+        "build": {
+          "build/Microsoft.DotNet.ILCompiler.props": {}
+        }
+      },
+      "Microsoft.Extensions.AI.Abstractions/10.2.0": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.2": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.FileSystemGlobbing/10.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.FileSystemGlobbing.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.FileSystemGlobbing.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions/10.0.2": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.2"
+        },
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/Microsoft.Extensions.Logging.Abstractions.targets": {}
+        }
+      },
+      "Microsoft.ML.Tokenizers/2.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Google.Protobuf": "3.30.2"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.ML.Tokenizers.Data.Cl100kBase/2.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Google.Protobuf": "3.30.2",
+          "Microsoft.ML.Tokenizers": "2.0.1"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.Data.Cl100kBase.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.Data.Cl100kBase.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.NET.ILLink.Tasks/10.0.6": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "SQLitePCLRaw.bundle_e_sqlite3/2.1.13": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.lib.e_sqlite3": "2.1.13",
+          "SQLitePCLRaw.provider.e_sqlite3": "2.1.13"
+        },
+        "compile": {
+          "lib/netstandard2.0/SQLitePCLRaw.batteries_v2.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SQLitePCLRaw.batteries_v2.dll": {}
+        }
+      },
+      "SQLitePCLRaw.core/2.1.13": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/SQLitePCLRaw.core.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SQLitePCLRaw.core.dll": {}
+        }
+      },
+      "SQLitePCLRaw.lib.e_sqlite3/3.53.3": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "native": {
+          "runtimes/linux-x64/native/libe_sqlite3.a": {},
+          "runtimes/linux-x64/native/libe_sqlite3.so": {}
+        },
+        "build": {
+          "buildTransitive/net9.0/SQLitePCLRaw.lib.e_sqlite3.targets": {}
+        }
+      },
+      "SQLitePCLRaw.provider.e_sqlite3/2.1.13": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll": {}
+        }
+      },
+      "System.CommandLine/2.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/System.CommandLine.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/System.CommandLine.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "resource": {
+          "lib/net8.0/cs/System.CommandLine.resources.dll": {
+            "locale": "cs"
+          },
+          "lib/net8.0/de/System.CommandLine.resources.dll": {
+            "locale": "de"
+          },
+          "lib/net8.0/es/System.CommandLine.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net8.0/fr/System.CommandLine.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net8.0/it/System.CommandLine.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net8.0/ja/System.CommandLine.resources.dll": {
+            "locale": "ja"
+          },
+          "lib/net8.0/ko/System.CommandLine.resources.dll": {
+            "locale": "ko"
+          },
+          "lib/net8.0/pl/System.CommandLine.resources.dll": {
+            "locale": "pl"
+          },
+          "lib/net8.0/pt-BR/System.CommandLine.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "lib/net8.0/ru/System.CommandLine.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net8.0/tr/System.CommandLine.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net8.0/zh-Hans/System.CommandLine.resources.dll": {
+            "locale": "zh-Hans"
+          },
+          "lib/net8.0/zh-Hant/System.CommandLine.resources.dll": {
+            "locale": "zh-Hant"
+          }
+        }
+      },
+      "Vecc.YamlDotNet.Analyzers.StaticGenerator/18.1.0": {
+        "type": "package"
+      },
+      "YamlDotNet/18.1.0": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/YamlDotNet.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/YamlDotNet.dll": {
+            "related": ".xml"
+          }
+        }
+      }
+    },
+    "net10.0/osx-arm64": {
+      "GitHub.Copilot.SDK/1.0.28": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.AI.Abstractions": "10.2.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.2"
+        },
+        "compile": {
+          "lib/net10.0/GitHub.Copilot.SDK.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/GitHub.Copilot.SDK.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "build/GitHub.Copilot.SDK.props": {},
+          "build/GitHub.Copilot.SDK.targets": {}
+        }
+      },
+      "Google.Protobuf/3.30.2": {
+        "type": "package",
+        "compile": {
+          "lib/net5.0/Google.Protobuf.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net5.0/Google.Protobuf.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "Microsoft.Bcl.Memory/10.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Bcl.Memory.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Bcl.Memory.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Data.Sqlite/10.0.14": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Data.Sqlite.Core": "10.0.14",
+          "SQLitePCLRaw.bundle_e_sqlite3": "2.1.13",
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/_._": {}
+        }
+      },
+      "Microsoft.Data.Sqlite.Core/10.0.14": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.Data.Sqlite.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Data.Sqlite.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.DotNet.ILCompiler/10.0.6": {
+        "type": "package",
+        "dependencies": {
+          "runtime.osx-arm64.Microsoft.DotNet.ILCompiler": "10.0.6"
+        },
+        "build": {
+          "build/Microsoft.DotNet.ILCompiler.props": {}
+        }
+      },
+      "Microsoft.Extensions.AI.Abstractions/10.2.0": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.2": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.FileSystemGlobbing/10.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.FileSystemGlobbing.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.FileSystemGlobbing.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions/10.0.2": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.2"
+        },
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/Microsoft.Extensions.Logging.Abstractions.targets": {}
+        }
+      },
+      "Microsoft.ML.Tokenizers/2.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Google.Protobuf": "3.30.2"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.ML.Tokenizers.Data.Cl100kBase/2.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Google.Protobuf": "3.30.2",
+          "Microsoft.ML.Tokenizers": "2.0.1"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.Data.Cl100kBase.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.Data.Cl100kBase.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.NET.ILLink.Tasks/10.0.6": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "SQLitePCLRaw.bundle_e_sqlite3/2.1.13": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.lib.e_sqlite3": "2.1.13",
+          "SQLitePCLRaw.provider.e_sqlite3": "2.1.13"
+        },
+        "compile": {
+          "lib/netstandard2.0/SQLitePCLRaw.batteries_v2.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SQLitePCLRaw.batteries_v2.dll": {}
+        }
+      },
+      "SQLitePCLRaw.core/2.1.13": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/SQLitePCLRaw.core.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SQLitePCLRaw.core.dll": {}
+        }
+      },
+      "SQLitePCLRaw.lib.e_sqlite3/3.53.3": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "native": {
+          "runtimes/osx-arm64/native/libe_sqlite3.dylib": {}
+        },
+        "build": {
+          "buildTransitive/net9.0/SQLitePCLRaw.lib.e_sqlite3.targets": {}
+        }
+      },
+      "SQLitePCLRaw.provider.e_sqlite3/2.1.13": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll": {}
+        }
+      },
+      "System.CommandLine/2.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/System.CommandLine.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/System.CommandLine.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "resource": {
+          "lib/net8.0/cs/System.CommandLine.resources.dll": {
+            "locale": "cs"
+          },
+          "lib/net8.0/de/System.CommandLine.resources.dll": {
+            "locale": "de"
+          },
+          "lib/net8.0/es/System.CommandLine.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net8.0/fr/System.CommandLine.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net8.0/it/System.CommandLine.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net8.0/ja/System.CommandLine.resources.dll": {
+            "locale": "ja"
+          },
+          "lib/net8.0/ko/System.CommandLine.resources.dll": {
+            "locale": "ko"
+          },
+          "lib/net8.0/pl/System.CommandLine.resources.dll": {
+            "locale": "pl"
+          },
+          "lib/net8.0/pt-BR/System.CommandLine.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "lib/net8.0/ru/System.CommandLine.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net8.0/tr/System.CommandLine.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net8.0/zh-Hans/System.CommandLine.resources.dll": {
+            "locale": "zh-Hans"
+          },
+          "lib/net8.0/zh-Hant/System.CommandLine.resources.dll": {
+            "locale": "zh-Hant"
+          }
+        }
+      },
+      "Vecc.YamlDotNet.Analyzers.StaticGenerator/18.1.0": {
+        "type": "package"
+      },
+      "YamlDotNet/18.1.0": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/YamlDotNet.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/YamlDotNet.dll": {
+            "related": ".xml"
+          }
+        }
+      }
+    },
+    "net10.0/win-arm64": {
+      "GitHub.Copilot.SDK/1.0.28": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.AI.Abstractions": "10.2.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.2"
+        },
+        "compile": {
+          "lib/net10.0/GitHub.Copilot.SDK.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/GitHub.Copilot.SDK.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "build/GitHub.Copilot.SDK.props": {},
+          "build/GitHub.Copilot.SDK.targets": {}
+        }
+      },
+      "Google.Protobuf/3.30.2": {
+        "type": "package",
+        "compile": {
+          "lib/net5.0/Google.Protobuf.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net5.0/Google.Protobuf.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "Microsoft.Bcl.Memory/10.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Bcl.Memory.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Bcl.Memory.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Data.Sqlite/10.0.14": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Data.Sqlite.Core": "10.0.14",
+          "SQLitePCLRaw.bundle_e_sqlite3": "2.1.13",
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/_._": {}
+        }
+      },
+      "Microsoft.Data.Sqlite.Core/10.0.14": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.Data.Sqlite.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Data.Sqlite.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.DotNet.ILCompiler/10.0.6": {
+        "type": "package",
+        "dependencies": {
+          "runtime.win-arm64.Microsoft.DotNet.ILCompiler": "10.0.6"
+        },
+        "build": {
+          "build/Microsoft.DotNet.ILCompiler.props": {}
+        }
+      },
+      "Microsoft.Extensions.AI.Abstractions/10.2.0": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.2": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.FileSystemGlobbing/10.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.FileSystemGlobbing.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.FileSystemGlobbing.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions/10.0.2": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.2"
+        },
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/Microsoft.Extensions.Logging.Abstractions.targets": {}
+        }
+      },
+      "Microsoft.ML.Tokenizers/2.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Google.Protobuf": "3.30.2"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.ML.Tokenizers.Data.Cl100kBase/2.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Google.Protobuf": "3.30.2",
+          "Microsoft.ML.Tokenizers": "2.0.1"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.Data.Cl100kBase.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.Data.Cl100kBase.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.NET.ILLink.Tasks/10.0.6": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "SQLitePCLRaw.bundle_e_sqlite3/2.1.13": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.lib.e_sqlite3": "2.1.13",
+          "SQLitePCLRaw.provider.e_sqlite3": "2.1.13"
+        },
+        "compile": {
+          "lib/netstandard2.0/SQLitePCLRaw.batteries_v2.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SQLitePCLRaw.batteries_v2.dll": {}
+        }
+      },
+      "SQLitePCLRaw.core/2.1.13": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/SQLitePCLRaw.core.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SQLitePCLRaw.core.dll": {}
+        }
+      },
+      "SQLitePCLRaw.lib.e_sqlite3/3.53.3": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "native": {
+          "runtimes/win-arm64/native/e_sqlite3.dll": {}
+        },
+        "build": {
+          "buildTransitive/net9.0/SQLitePCLRaw.lib.e_sqlite3.targets": {}
+        }
+      },
+      "SQLitePCLRaw.provider.e_sqlite3/2.1.13": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll": {}
+        }
+      },
+      "System.CommandLine/2.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/System.CommandLine.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/System.CommandLine.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "resource": {
+          "lib/net8.0/cs/System.CommandLine.resources.dll": {
+            "locale": "cs"
+          },
+          "lib/net8.0/de/System.CommandLine.resources.dll": {
+            "locale": "de"
+          },
+          "lib/net8.0/es/System.CommandLine.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net8.0/fr/System.CommandLine.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net8.0/it/System.CommandLine.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net8.0/ja/System.CommandLine.resources.dll": {
+            "locale": "ja"
+          },
+          "lib/net8.0/ko/System.CommandLine.resources.dll": {
+            "locale": "ko"
+          },
+          "lib/net8.0/pl/System.CommandLine.resources.dll": {
+            "locale": "pl"
+          },
+          "lib/net8.0/pt-BR/System.CommandLine.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "lib/net8.0/ru/System.CommandLine.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net8.0/tr/System.CommandLine.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net8.0/zh-Hans/System.CommandLine.resources.dll": {
+            "locale": "zh-Hans"
+          },
+          "lib/net8.0/zh-Hant/System.CommandLine.resources.dll": {
+            "locale": "zh-Hant"
+          }
+        }
+      },
+      "Vecc.YamlDotNet.Analyzers.StaticGenerator/18.1.0": {
+        "type": "package"
+      },
+      "YamlDotNet/18.1.0": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/YamlDotNet.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/YamlDotNet.dll": {
+            "related": ".xml"
+          }
+        }
+      }
+    },
+    "net10.0/win-x64": {
+      "GitHub.Copilot.SDK/1.0.28": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.AI.Abstractions": "10.2.0",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.2"
+        },
+        "compile": {
+          "lib/net10.0/GitHub.Copilot.SDK.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/GitHub.Copilot.SDK.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "build/GitHub.Copilot.SDK.props": {},
+          "build/GitHub.Copilot.SDK.targets": {}
+        }
+      },
+      "Google.Protobuf/3.30.2": {
+        "type": "package",
+        "compile": {
+          "lib/net5.0/Google.Protobuf.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net5.0/Google.Protobuf.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "Microsoft.Bcl.Memory/10.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Bcl.Memory.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Bcl.Memory.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Data.Sqlite/10.0.14": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Data.Sqlite.Core": "10.0.14",
+          "SQLitePCLRaw.bundle_e_sqlite3": "2.1.13",
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/_._": {}
+        }
+      },
+      "Microsoft.Data.Sqlite.Core/10.0.14": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.Data.Sqlite.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.Data.Sqlite.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.DotNet.ILCompiler/10.0.6": {
+        "type": "package",
+        "dependencies": {
+          "runtime.win-x64.Microsoft.DotNet.ILCompiler": "10.0.6"
+        },
+        "build": {
+          "build/Microsoft.DotNet.ILCompiler.props": {}
+        }
+      },
+      "Microsoft.Extensions.AI.Abstractions/10.2.0": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.2": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.FileSystemGlobbing/10.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.FileSystemGlobbing.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.FileSystemGlobbing.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions/10.0.2": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.2"
+        },
+        "compile": {
+          "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/Microsoft.Extensions.Logging.Abstractions.targets": {}
+        }
+      },
+      "Microsoft.ML.Tokenizers/2.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Google.Protobuf": "3.30.2"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.ML.Tokenizers.Data.Cl100kBase/2.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Google.Protobuf": "3.30.2",
+          "Microsoft.ML.Tokenizers": "2.0.1"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.Data.Cl100kBase.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.ML.Tokenizers.Data.Cl100kBase.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Microsoft.NET.ILLink.Tasks/10.0.6": {
+        "type": "package",
+        "build": {
+          "build/Microsoft.NET.ILLink.Tasks.props": {}
+        }
+      },
+      "runtime.win-x64.Microsoft.DotNet.ILCompiler/10.0.6": {
+        "type": "package"
+      },
+      "SQLitePCLRaw.bundle_e_sqlite3/2.1.13": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.lib.e_sqlite3": "2.1.13",
+          "SQLitePCLRaw.provider.e_sqlite3": "2.1.13"
+        },
+        "compile": {
+          "lib/netstandard2.0/SQLitePCLRaw.batteries_v2.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SQLitePCLRaw.batteries_v2.dll": {}
+        }
+      },
+      "SQLitePCLRaw.core/2.1.13": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/SQLitePCLRaw.core.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SQLitePCLRaw.core.dll": {}
+        }
+      },
+      "SQLitePCLRaw.lib.e_sqlite3/3.53.3": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/_._": {}
+        },
+        "native": {
+          "runtimes/win-x64/native/e_sqlite3.dll": {}
+        },
+        "build": {
+          "buildTransitive/net9.0/SQLitePCLRaw.lib.e_sqlite3.targets": {}
+        }
+      },
+      "SQLitePCLRaw.provider.e_sqlite3/2.1.13": {
+        "type": "package",
+        "dependencies": {
+          "SQLitePCLRaw.core": "2.1.13"
+        },
+        "compile": {
+          "lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll": {}
+        }
+      },
+      "System.CommandLine/2.0.14": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/System.CommandLine.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/System.CommandLine.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "resource": {
+          "lib/net8.0/cs/System.CommandLine.resources.dll": {
+            "locale": "cs"
+          },
+          "lib/net8.0/de/System.CommandLine.resources.dll": {
+            "locale": "de"
+          },
+          "lib/net8.0/es/System.CommandLine.resources.dll": {
+            "locale": "es"
+          },
+          "lib/net8.0/fr/System.CommandLine.resources.dll": {
+            "locale": "fr"
+          },
+          "lib/net8.0/it/System.CommandLine.resources.dll": {
+            "locale": "it"
+          },
+          "lib/net8.0/ja/System.CommandLine.resources.dll": {
+            "locale": "ja"
+          },
+          "lib/net8.0/ko/System.CommandLine.resources.dll": {
+            "locale": "ko"
+          },
+          "lib/net8.0/pl/System.CommandLine.resources.dll": {
+            "locale": "pl"
+          },
+          "lib/net8.0/pt-BR/System.CommandLine.resources.dll": {
+            "locale": "pt-BR"
+          },
+          "lib/net8.0/ru/System.CommandLine.resources.dll": {
+            "locale": "ru"
+          },
+          "lib/net8.0/tr/System.CommandLine.resources.dll": {
+            "locale": "tr"
+          },
+          "lib/net8.0/zh-Hans/System.CommandLine.resources.dll": {
+            "locale": "zh-Hans"
+          },
+          "lib/net8.0/zh-Hant/System.CommandLine.resources.dll": {
+            "locale": "zh-Hant"
+          }
+        }
+      },
+      "Vecc.YamlDotNet.Analyzers.StaticGenerator/18.1.0": {
+        "type": "package"
+      },
+      "YamlDotNet/18.1.0": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/YamlDotNet.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/YamlDotNet.dll": {
+            "related": ".xml"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "GitHub.Copilot.SDK/1.0.28": {
+      "sha512": "mYmpMjEHTQBUM71UAtO86e6uZ/ACPOLEhMS00ZqRMdAqmblygMtqo5uJbLFh6FCl0RzdwFH9j9g7EGpdfg6Hcg==",
+      "type": "package",
+      "path": "github.copilot.sdk/1.0.28",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "build/GitHub.Copilot.SDK.props",
+        "build/GitHub.Copilot.SDK.targets",
+        "copilot.png",
+        "github.copilot.sdk.1.0.28.nupkg.sha512",
+        "github.copilot.sdk.nuspec",
+        "lib/net10.0/GitHub.Copilot.SDK.dll",
+        "lib/net10.0/GitHub.Copilot.SDK.xml",
+        "lib/net8.0/GitHub.Copilot.SDK.dll",
+        "lib/net8.0/GitHub.Copilot.SDK.xml",
+        "lib/netstandard2.0/GitHub.Copilot.SDK.dll",
+        "lib/netstandard2.0/GitHub.Copilot.SDK.xml"
+      ]
+    },
+    "Google.Protobuf/3.30.2": {
+      "sha512": "Y2aOVLIt75yeeEWigg9V9YnjsEm53sADtLGq0gLhwaXpk3iu8tYSoauolyhenagA2sWno2TQ2WujI0HQd6s1Vw==",
+      "type": "package",
+      "path": "google.protobuf/3.30.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "google.protobuf.3.30.2.nupkg.sha512",
+        "google.protobuf.nuspec",
+        "lib/net45/Google.Protobuf.dll",
+        "lib/net45/Google.Protobuf.pdb",
+        "lib/net45/Google.Protobuf.xml",
+        "lib/net5.0/Google.Protobuf.dll",
+        "lib/net5.0/Google.Protobuf.pdb",
+        "lib/net5.0/Google.Protobuf.xml",
+        "lib/netstandard1.1/Google.Protobuf.dll",
+        "lib/netstandard1.1/Google.Protobuf.pdb",
+        "lib/netstandard1.1/Google.Protobuf.xml",
+        "lib/netstandard2.0/Google.Protobuf.dll",
+        "lib/netstandard2.0/Google.Protobuf.pdb",
+        "lib/netstandard2.0/Google.Protobuf.xml"
+      ]
+    },
+    "Microsoft.Bcl.Memory/10.0.14": {
+      "sha512": "jo1HIWeMOhYoyGrFVIGYdLEDsioD+djIXSqtzIpv3bp4bk/d/K58vYdJGlWBh9AqFaTPUUMtTdl2a9mcf/wduA==",
+      "type": "package",
+      "path": "microsoft.bcl.memory/10.0.14",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/Microsoft.Bcl.Memory.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/Microsoft.Bcl.Memory.targets",
+        "lib/net10.0/Microsoft.Bcl.Memory.dll",
+        "lib/net10.0/Microsoft.Bcl.Memory.xml",
+        "lib/net462/Microsoft.Bcl.Memory.dll",
+        "lib/net462/Microsoft.Bcl.Memory.xml",
+        "lib/net8.0/Microsoft.Bcl.Memory.dll",
+        "lib/net8.0/Microsoft.Bcl.Memory.xml",
+        "lib/net9.0/Microsoft.Bcl.Memory.dll",
+        "lib/net9.0/Microsoft.Bcl.Memory.xml",
+        "lib/netstandard2.0/Microsoft.Bcl.Memory.dll",
+        "lib/netstandard2.0/Microsoft.Bcl.Memory.xml",
+        "lib/netstandard2.1/Microsoft.Bcl.Memory.dll",
+        "lib/netstandard2.1/Microsoft.Bcl.Memory.xml",
+        "microsoft.bcl.memory.10.0.14.nupkg.sha512",
+        "microsoft.bcl.memory.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "Microsoft.Data.Sqlite/10.0.14": {
+      "sha512": "muyroan6rKrf0omZL8UF7Kw5uOGp/yBg1L/XWvkFN3WhKaNtK2IWqRZw93nIwVqjhTVDO0l4CEGhHIh+mb+sKg==",
+      "type": "package",
+      "path": "microsoft.data.sqlite/10.0.14",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "lib/netstandard2.0/_._",
+        "microsoft.data.sqlite.10.0.14.nupkg.sha512",
+        "microsoft.data.sqlite.nuspec"
+      ]
+    },
+    "Microsoft.Data.Sqlite.Core/10.0.14": {
+      "sha512": "1p9rO3Q2X/L/9YrYog3vaDzi8u+WZfJCOkDYoHqmofqYP0DLPLPyZcS2Rnh/79JXAodgbs1AgsaNwLpIvC3Xew==",
+      "type": "package",
+      "path": "microsoft.data.sqlite.core/10.0.14",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "lib/net8.0/Microsoft.Data.Sqlite.dll",
+        "lib/net8.0/Microsoft.Data.Sqlite.xml",
+        "lib/netstandard2.0/Microsoft.Data.Sqlite.dll",
+        "lib/netstandard2.0/Microsoft.Data.Sqlite.xml",
+        "microsoft.data.sqlite.core.10.0.14.nupkg.sha512",
+        "microsoft.data.sqlite.core.nuspec"
+      ]
+    },
+    "Microsoft.DotNet.ILCompiler/10.0.6": {
+      "sha512": "nBOzxOys8OeyJ+Nsi/uYlI/5TSsvwjaM/p5m4dTL6khCLx9UuP3b2ec3HeuBw/+F7hHCAZG1yFx8VBeoRAX+EQ==",
+      "type": "package",
+      "path": "microsoft.dotnet.ilcompiler/10.0.6",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "build/BuildFrameworkNativeObjects.proj",
+        "build/Microsoft.DotNet.ILCompiler.SingleEntry.targets",
+        "build/Microsoft.DotNet.ILCompiler.props",
+        "build/Microsoft.NETCore.Native.Publish.targets",
+        "build/Microsoft.NETCore.Native.Unix.targets",
+        "build/Microsoft.NETCore.Native.Windows.targets",
+        "build/Microsoft.NETCore.Native.targets",
+        "build/NativeAOT.natstepfilter",
+        "build/NativeAOT.natvis",
+        "build/WindowsAPIs.txt",
+        "build/findvcvarsall.bat",
+        "microsoft.dotnet.ilcompiler.10.0.6.nupkg.sha512",
+        "microsoft.dotnet.ilcompiler.nuspec",
+        "runtime.json",
+        "tools/netstandard/ILCompiler.Build.Tasks.deps.json",
+        "tools/netstandard/ILCompiler.Build.Tasks.dll"
+      ]
+    },
+    "Microsoft.Extensions.AI.Abstractions/10.2.0": {
+      "sha512": "ONGlIBht0ygEdKc0bCt9XWUiq19/460dAu7fCKzPM34OFJSMQIohEDTJwjCJ8vVp8znNakloc9xFF9+R/eDCYQ==",
+      "type": "package",
+      "path": "microsoft.extensions.ai.abstractions/10.2.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "README.md",
+        "lib/net10.0/Microsoft.Extensions.AI.Abstractions.dll",
+        "lib/net10.0/Microsoft.Extensions.AI.Abstractions.xml",
+        "lib/net462/Microsoft.Extensions.AI.Abstractions.dll",
+        "lib/net462/Microsoft.Extensions.AI.Abstractions.xml",
+        "lib/net8.0/Microsoft.Extensions.AI.Abstractions.dll",
+        "lib/net8.0/Microsoft.Extensions.AI.Abstractions.xml",
+        "lib/net9.0/Microsoft.Extensions.AI.Abstractions.dll",
+        "lib/net9.0/Microsoft.Extensions.AI.Abstractions.xml",
+        "lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.AI.Abstractions.xml",
+        "microsoft.extensions.ai.abstractions.10.2.0.nupkg.sha512",
+        "microsoft.extensions.ai.abstractions.nuspec"
+      ]
+    },
+    "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.2": {
+      "sha512": "zOIurr59+kUf9vNcsUkCvKWZv+fPosUZXURZesYkJCvl0EzTc9F7maAO4Cd2WEV7ZJJ0AZrFQvuH6Npph9wdBw==",
+      "type": "package",
+      "path": "microsoft.extensions.dependencyinjection.abstractions/10.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/Microsoft.Extensions.DependencyInjection.Abstractions.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/Microsoft.Extensions.DependencyInjection.Abstractions.targets",
+        "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+        "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.xml",
+        "lib/net462/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+        "lib/net462/Microsoft.Extensions.DependencyInjection.Abstractions.xml",
+        "lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+        "lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.xml",
+        "lib/net9.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+        "lib/net9.0/Microsoft.Extensions.DependencyInjection.Abstractions.xml",
+        "lib/netstandard2.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.DependencyInjection.Abstractions.xml",
+        "lib/netstandard2.1/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+        "lib/netstandard2.1/Microsoft.Extensions.DependencyInjection.Abstractions.xml",
+        "microsoft.extensions.dependencyinjection.abstractions.10.0.2.nupkg.sha512",
+        "microsoft.extensions.dependencyinjection.abstractions.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "Microsoft.Extensions.FileSystemGlobbing/10.0.14": {
+      "sha512": "xt6c/PWLL6+CiBiZA3PWRSfkwcPh+HCwiOLrgSUkhzBT7lrT/+QpIKPeuCQyDPspwOuG1q0cbJhuiGpRjr4UNQ==",
+      "type": "package",
+      "path": "microsoft.extensions.filesystemglobbing/10.0.14",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/Microsoft.Extensions.FileSystemGlobbing.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/Microsoft.Extensions.FileSystemGlobbing.targets",
+        "lib/net10.0/Microsoft.Extensions.FileSystemGlobbing.dll",
+        "lib/net10.0/Microsoft.Extensions.FileSystemGlobbing.xml",
+        "lib/net462/Microsoft.Extensions.FileSystemGlobbing.dll",
+        "lib/net462/Microsoft.Extensions.FileSystemGlobbing.xml",
+        "lib/net8.0/Microsoft.Extensions.FileSystemGlobbing.dll",
+        "lib/net8.0/Microsoft.Extensions.FileSystemGlobbing.xml",
+        "lib/net9.0/Microsoft.Extensions.FileSystemGlobbing.dll",
+        "lib/net9.0/Microsoft.Extensions.FileSystemGlobbing.xml",
+        "lib/netstandard2.0/Microsoft.Extensions.FileSystemGlobbing.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.FileSystemGlobbing.xml",
+        "microsoft.extensions.filesystemglobbing.10.0.14.nupkg.sha512",
+        "microsoft.extensions.filesystemglobbing.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "Microsoft.Extensions.Logging.Abstractions/10.0.2": {
+      "sha512": "RZkez/JjpnO+MZ6efKkSynN6ZztLpw3WbxNzjLCPBd97wWj1S9ZYPWi0nmT4kWBRa6atHsdM1ydGkUr8GudyDQ==",
+      "type": "package",
+      "path": "microsoft.extensions.logging.abstractions/10.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "analyzers/dotnet/roslyn3.11/cs/Microsoft.Extensions.Logging.Generators.dll",
+        "analyzers/dotnet/roslyn3.11/cs/cs/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/de/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/es/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/fr/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/it/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/ja/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/ko/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/pl/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/pt-BR/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/ru/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/tr/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/zh-Hans/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn3.11/cs/zh-Hant/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/Microsoft.Extensions.Logging.Generators.dll",
+        "analyzers/dotnet/roslyn4.0/cs/cs/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/de/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/es/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/fr/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/it/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/ja/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/ko/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/pl/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/pt-BR/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/ru/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/tr/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/zh-Hans/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.0/cs/zh-Hant/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll",
+        "analyzers/dotnet/roslyn4.4/cs/cs/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/de/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/es/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/fr/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/it/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/ja/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/ko/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/pl/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/pt-BR/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/ru/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/tr/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/zh-Hans/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "analyzers/dotnet/roslyn4.4/cs/zh-Hant/Microsoft.Extensions.Logging.Generators.resources.dll",
+        "buildTransitive/net461/Microsoft.Extensions.Logging.Abstractions.targets",
+        "buildTransitive/net462/Microsoft.Extensions.Logging.Abstractions.targets",
+        "buildTransitive/net8.0/Microsoft.Extensions.Logging.Abstractions.targets",
+        "buildTransitive/netcoreapp2.0/Microsoft.Extensions.Logging.Abstractions.targets",
+        "buildTransitive/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.targets",
+        "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.dll",
+        "lib/net10.0/Microsoft.Extensions.Logging.Abstractions.xml",
+        "lib/net462/Microsoft.Extensions.Logging.Abstractions.dll",
+        "lib/net462/Microsoft.Extensions.Logging.Abstractions.xml",
+        "lib/net8.0/Microsoft.Extensions.Logging.Abstractions.dll",
+        "lib/net8.0/Microsoft.Extensions.Logging.Abstractions.xml",
+        "lib/net9.0/Microsoft.Extensions.Logging.Abstractions.dll",
+        "lib/net9.0/Microsoft.Extensions.Logging.Abstractions.xml",
+        "lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.xml",
+        "microsoft.extensions.logging.abstractions.10.0.2.nupkg.sha512",
+        "microsoft.extensions.logging.abstractions.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "Microsoft.ML.Tokenizers/2.0.1": {
+      "sha512": "RZN3zslVWinBCMDAnbZWEY8lQbMkP54Yxm1s5NigPcrvYFzXMrDjNcVM9afq4SZHf1BV1rEmO0p7ZdfBLDbu4g==",
+      "type": "package",
+      "path": "microsoft.ml.tokenizers/2.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net8.0/Microsoft.ML.Tokenizers.dll",
+        "lib/net8.0/Microsoft.ML.Tokenizers.xml",
+        "lib/netstandard2.0/Microsoft.ML.Tokenizers.dll",
+        "lib/netstandard2.0/Microsoft.ML.Tokenizers.xml",
+        "microsoft.ml.tokenizers.2.0.1.nupkg.sha512",
+        "microsoft.ml.tokenizers.nuspec",
+        "mlnetlogo.png"
+      ]
+    },
+    "Microsoft.ML.Tokenizers.Data.Cl100kBase/2.0.1": {
+      "sha512": "dS5fmNEnBJXMbROAciWg3V/Oo1MoDtUwXwr8ZYSVpctXaY2cZq/0t634BsAAzbN0dmO1iYhWaD8Zah2VT6hfFg==",
+      "type": "package",
+      "path": "microsoft.ml.tokenizers.data.cl100kbase/2.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net8.0/Microsoft.ML.Tokenizers.Data.Cl100kBase.dll",
+        "lib/net8.0/Microsoft.ML.Tokenizers.Data.Cl100kBase.xml",
+        "lib/netstandard2.0/Microsoft.ML.Tokenizers.Data.Cl100kBase.dll",
+        "lib/netstandard2.0/Microsoft.ML.Tokenizers.Data.Cl100kBase.xml",
+        "microsoft.ml.tokenizers.data.cl100kbase.2.0.1.nupkg.sha512",
+        "microsoft.ml.tokenizers.data.cl100kbase.nuspec",
+        "mlnetlogo.png"
+      ]
+    },
+    "Microsoft.NET.ILLink.Tasks/10.0.6": {
+      "sha512": "QKuvS0LWX4fjFqeDkyM7Kqt8P3wYTiPD4nwU+9y59n0sCiG714fxDgbbN82vDnzq89AF/PiHl92TP2C4aFDUQA==",
+      "type": "package",
+      "path": "microsoft.net.illink.tasks/10.0.6",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "Sdk/Sdk.props",
+        "THIRD-PARTY-NOTICES.TXT",
+        "analyzers/dotnet/cs/ILLink.CodeFixProvider.dll",
+        "analyzers/dotnet/cs/ILLink.RoslynAnalyzer.dll",
+        "build/Microsoft.NET.ILLink.Analyzers.props",
+        "build/Microsoft.NET.ILLink.Tasks.props",
+        "build/Microsoft.NET.ILLink.targets",
+        "microsoft.net.illink.tasks.10.0.6.nupkg.sha512",
+        "microsoft.net.illink.tasks.nuspec",
+        "tools/net/ILLink.Tasks.deps.json",
+        "tools/net/ILLink.Tasks.dll",
+        "tools/net/Mono.Cecil.Mdb.dll",
+        "tools/net/Mono.Cecil.Pdb.dll",
+        "tools/net/Mono.Cecil.Rocks.dll",
+        "tools/net/Mono.Cecil.dll",
+        "tools/net/Sdk/Sdk.props",
+        "tools/net/build/Microsoft.NET.ILLink.Analyzers.props",
+        "tools/net/build/Microsoft.NET.ILLink.Tasks.props",
+        "tools/net/build/Microsoft.NET.ILLink.targets",
+        "tools/net/illink.deps.json",
+        "tools/net/illink.dll",
+        "tools/net/illink.runtimeconfig.json",
+        "tools/netframework/ILLink.Tasks.dll",
+        "tools/netframework/ILLink.Tasks.dll.config",
+        "tools/netframework/Mono.Cecil.Mdb.dll",
+        "tools/netframework/Mono.Cecil.Pdb.dll",
+        "tools/netframework/Mono.Cecil.Rocks.dll",
+        "tools/netframework/Mono.Cecil.dll",
+        "tools/netframework/Sdk/Sdk.props",
+        "tools/netframework/System.Buffers.dll",
+        "tools/netframework/System.Collections.Immutable.dll",
+        "tools/netframework/System.Memory.dll",
+        "tools/netframework/System.Numerics.Vectors.dll",
+        "tools/netframework/System.Reflection.Metadata.dll",
+        "tools/netframework/System.Runtime.CompilerServices.Unsafe.dll",
+        "tools/netframework/build/Microsoft.NET.ILLink.Analyzers.props",
+        "tools/netframework/build/Microsoft.NET.ILLink.Tasks.props",
+        "tools/netframework/build/Microsoft.NET.ILLink.targets",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "runtime.win-x64.Microsoft.DotNet.ILCompiler/10.0.6": {
+      "sha512": "Yf0HUuOosQ3MJEfaWoS5iXOJx1gF3LprWEPz4UEMzunFwk8MobgP492bKOutO7A06cfaBEaYEnmLRTWRVrnE/A==",
+      "type": "package",
+      "path": "runtime.win-x64.microsoft.dotnet.ilcompiler/10.0.6",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "runtime.win-x64.microsoft.dotnet.ilcompiler.10.0.6.nupkg.sha512",
+        "runtime.win-x64.microsoft.dotnet.ilcompiler.nuspec",
+        "tools/clrjit_universal_arm64_x64.dll",
+        "tools/clrjit_universal_arm_x64.dll",
+        "tools/clrjit_unix_x64_x64.dll",
+        "tools/clrjit_win_x64_x64.dll",
+        "tools/clrjit_win_x86_x64.dll",
+        "tools/ilc.exe",
+        "tools/jitinterface_x64.dll"
+      ]
+    },
+    "SQLitePCLRaw.bundle_e_sqlite3/2.1.13": {
+      "sha512": "NlDixlC7uHmo+ojXRgkNvN0tQtVGpLDZ3x2OpgNj+G07VHh5cXSszFDrAiC4BpUiPwkcaeuQkMV9WQ123xVtmQ==",
+      "type": "package",
+      "path": "sqlitepclraw.bundle_e_sqlite3/2.1.13",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net461/SQLitePCLRaw.batteries_v2.dll",
+        "lib/net6.0-android31.0/SQLitePCLRaw.batteries_v2.dll",
+        "lib/net6.0-android31.0/SQLitePCLRaw.batteries_v2.xml",
+        "lib/net6.0-ios14.0/SQLitePCLRaw.batteries_v2.dll",
+        "lib/net6.0-ios14.2/SQLitePCLRaw.batteries_v2.dll",
+        "lib/net6.0-tvos10.0/SQLitePCLRaw.batteries_v2.dll",
+        "lib/netstandard2.0/SQLitePCLRaw.batteries_v2.dll",
+        "sqlitepclraw.bundle_e_sqlite3.2.1.13.nupkg.sha512",
+        "sqlitepclraw.bundle_e_sqlite3.nuspec"
+      ]
+    },
+    "SQLitePCLRaw.core/2.1.13": {
+      "sha512": "2joofoinuHBFs0nMX3nKuXgxpXryRkCOdM2Ua6HBqQLLy6IW+5f28ZI+HAvMyF8vG7XfNz/lwfBfE6V4juru8Q==",
+      "type": "package",
+      "path": "sqlitepclraw.core/2.1.13",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard2.0/SQLitePCLRaw.core.dll",
+        "sqlitepclraw.core.2.1.13.nupkg.sha512",
+        "sqlitepclraw.core.nuspec"
+      ]
+    },
+    "SQLitePCLRaw.lib.e_sqlite3/3.53.3": {
+      "sha512": "ZXiSbBkrlw2Of/dBqny/qtQol7dlThrUD8zH/jkQicCFm2yn2BbhKsQW0+YHAzhANWz4ZJCz7gvo88BwluVhkA==",
+      "type": "package",
+      "path": "sqlitepclraw.lib.e_sqlite3/3.53.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.txt",
+        "README.md",
+        "build/net471/SQLitePCLRaw.lib.e_sqlite3.props",
+        "build/net471/SQLitePCLRaw.lib.e_sqlite3.targets",
+        "buildTransitive/net471/SQLitePCLRaw.lib.e_sqlite3.props",
+        "buildTransitive/net471/SQLitePCLRaw.lib.e_sqlite3.targets",
+        "buildTransitive/net8.0/SQLitePCLRaw.lib.e_sqlite3.targets",
+        "buildTransitive/net9.0/SQLitePCLRaw.lib.e_sqlite3.targets",
+        "lib/net471/_._",
+        "lib/netstandard2.0/_._",
+        "runtimes/android-arm/native/libe_sqlite3.so",
+        "runtimes/android-arm64/native/libe_sqlite3.so",
+        "runtimes/android-x64/native/libe_sqlite3.so",
+        "runtimes/android-x86/native/libe_sqlite3.so",
+        "runtimes/browser-wasm/nativeassets/net8.0/e_sqlite3.a",
+        "runtimes/browser-wasm/nativeassets/net9.0/e_sqlite3.a",
+        "runtimes/ios-arm/native/e_sqlite3.a",
+        "runtimes/ios-arm64/native/e_sqlite3.a",
+        "runtimes/iossimulator-arm64/native/e_sqlite3.a",
+        "runtimes/iossimulator-x64/native/e_sqlite3.a",
+        "runtimes/linux-arm/native/libe_sqlite3.a",
+        "runtimes/linux-arm/native/libe_sqlite3.so",
+        "runtimes/linux-arm64/native/libe_sqlite3.a",
+        "runtimes/linux-arm64/native/libe_sqlite3.so",
+        "runtimes/linux-armel/native/libe_sqlite3.a",
+        "runtimes/linux-armel/native/libe_sqlite3.so",
+        "runtimes/linux-mips64/native/libe_sqlite3.a",
+        "runtimes/linux-mips64/native/libe_sqlite3.so",
+        "runtimes/linux-musl-arm/native/libe_sqlite3.a",
+        "runtimes/linux-musl-arm/native/libe_sqlite3.so",
+        "runtimes/linux-musl-arm64/native/libe_sqlite3.a",
+        "runtimes/linux-musl-arm64/native/libe_sqlite3.so",
+        "runtimes/linux-musl-riscv64/native/libe_sqlite3.a",
+        "runtimes/linux-musl-riscv64/native/libe_sqlite3.so",
+        "runtimes/linux-musl-s390x/native/libe_sqlite3.a",
+        "runtimes/linux-musl-s390x/native/libe_sqlite3.so",
+        "runtimes/linux-musl-x64/native/libe_sqlite3.a",
+        "runtimes/linux-musl-x64/native/libe_sqlite3.so",
+        "runtimes/linux-ppc64le/native/libe_sqlite3.a",
+        "runtimes/linux-ppc64le/native/libe_sqlite3.so",
+        "runtimes/linux-riscv64/native/libe_sqlite3.a",
+        "runtimes/linux-riscv64/native/libe_sqlite3.so",
+        "runtimes/linux-s390x/native/libe_sqlite3.a",
+        "runtimes/linux-s390x/native/libe_sqlite3.so",
+        "runtimes/linux-x64/native/libe_sqlite3.a",
+        "runtimes/linux-x64/native/libe_sqlite3.so",
+        "runtimes/linux-x86/native/libe_sqlite3.a",
+        "runtimes/linux-x86/native/libe_sqlite3.so",
+        "runtimes/maccatalyst-arm64/native/libe_sqlite3.dylib",
+        "runtimes/maccatalyst-x64/native/libe_sqlite3.dylib",
+        "runtimes/osx-arm64/native/libe_sqlite3.dylib",
+        "runtimes/osx-x64/native/libe_sqlite3.dylib",
+        "runtimes/win-arm64/native/e_sqlite3.dll",
+        "runtimes/win-x64/native/e_sqlite3.dll",
+        "runtimes/win-x86/native/e_sqlite3.dll",
+        "sqlitepclraw.lib.e_sqlite3.3.53.3.nupkg.sha512",
+        "sqlitepclraw.lib.e_sqlite3.nuspec"
+      ]
+    },
+    "SQLitePCLRaw.provider.e_sqlite3/2.1.13": {
+      "sha512": "ZU60dSqoSNRe49KcQDUmOVgdRtjITOssVXFtiISs+zJXDI4D2Sndwpn2NOtzDQNPu0ZAvpoLPQ+GLKv6iEZn8Q==",
+      "type": "package",
+      "path": "sqlitepclraw.provider.e_sqlite3/2.1.13",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net6.0-windows7.0/SQLitePCLRaw.provider.e_sqlite3.dll",
+        "lib/net6.0/SQLitePCLRaw.provider.e_sqlite3.dll",
+        "lib/netstandard2.0/SQLitePCLRaw.provider.e_sqlite3.dll",
+        "sqlitepclraw.provider.e_sqlite3.2.1.13.nupkg.sha512",
+        "sqlitepclraw.provider.e_sqlite3.nuspec"
+      ]
+    },
+    "System.CommandLine/2.0.14": {
+      "sha512": "15fyVO4aG6poR6IKmhM74zf7PUzaU6FZAGm2d3SQSO9yIyGAeo44e6t9qeKjjaqyMEqYdqcb2G1B0gpLoDU2cA==",
+      "type": "package",
+      "path": "system.commandline/2.0.14",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "README.md",
+        "lib/net8.0/System.CommandLine.dll",
+        "lib/net8.0/System.CommandLine.pdb",
+        "lib/net8.0/System.CommandLine.xml",
+        "lib/net8.0/cs/System.CommandLine.resources.dll",
+        "lib/net8.0/de/System.CommandLine.resources.dll",
+        "lib/net8.0/es/System.CommandLine.resources.dll",
+        "lib/net8.0/fr/System.CommandLine.resources.dll",
+        "lib/net8.0/it/System.CommandLine.resources.dll",
+        "lib/net8.0/ja/System.CommandLine.resources.dll",
+        "lib/net8.0/ko/System.CommandLine.resources.dll",
+        "lib/net8.0/pl/System.CommandLine.resources.dll",
+        "lib/net8.0/pt-BR/System.CommandLine.resources.dll",
+        "lib/net8.0/ru/System.CommandLine.resources.dll",
+        "lib/net8.0/tr/System.CommandLine.resources.dll",
+        "lib/net8.0/zh-Hans/System.CommandLine.resources.dll",
+        "lib/net8.0/zh-Hant/System.CommandLine.resources.dll",
+        "lib/netstandard2.0/System.CommandLine.dll",
+        "lib/netstandard2.0/System.CommandLine.pdb",
+        "lib/netstandard2.0/System.CommandLine.xml",
+        "lib/netstandard2.0/cs/System.CommandLine.resources.dll",
+        "lib/netstandard2.0/de/System.CommandLine.resources.dll",
+        "lib/netstandard2.0/es/System.CommandLine.resources.dll",
+        "lib/netstandard2.0/fr/System.CommandLine.resources.dll",
+        "lib/netstandard2.0/it/System.CommandLine.resources.dll",
+        "lib/netstandard2.0/ja/System.CommandLine.resources.dll",
+        "lib/netstandard2.0/ko/System.CommandLine.resources.dll",
+        "lib/netstandard2.0/pl/System.CommandLine.resources.dll",
+        "lib/netstandard2.0/pt-BR/System.CommandLine.resources.dll",
+        "lib/netstandard2.0/ru/System.CommandLine.resources.dll",
+        "lib/netstandard2.0/tr/System.CommandLine.resources.dll",
+        "lib/netstandard2.0/zh-Hans/System.CommandLine.resources.dll",
+        "lib/netstandard2.0/zh-Hant/System.CommandLine.resources.dll",
+        "system.commandline.2.0.14.nupkg.sha512",
+        "system.commandline.nuspec"
+      ]
+    },
+    "Vecc.YamlDotNet.Analyzers.StaticGenerator/18.1.0": {
+      "sha512": "LCS3M8xDJUoeSkKCi8i7mN/L0ODIrxLfF1Qy+PgkpxScBx1GLntgb+grV8f2byKnjoRwybJDc00nqEfvw4fX4g==",
+      "type": "package",
+      "path": "vecc.yamldotnet.analyzers.staticgenerator/18.1.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.txt",
+        "analyzers/dotnet/cs/netstandard2.0/YamlDotNet.Analyzers.StaticGenerator.dll",
+        "images/yamldotnet.png",
+        "vecc.yamldotnet.analyzers.staticgenerator.18.1.0.nupkg.sha512",
+        "vecc.yamldotnet.analyzers.staticgenerator.nuspec"
+      ]
+    },
+    "YamlDotNet/18.1.0": {
+      "sha512": "5K+9KFg2TdTl7VXv88Qzi/0lqK6JFoNP3lRuImPYGRV7K/QYklDyTrj4+A+KAki1JsQi6qKY+hDyY7d6WRqjrw==",
+      "type": "package",
+      "path": "yamldotnet/18.1.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "images/yamldotnet.png",
+        "lib/net10.0/YamlDotNet.dll",
+        "lib/net10.0/YamlDotNet.xml",
+        "lib/net47/YamlDotNet.dll",
+        "lib/net47/YamlDotNet.xml",
+        "lib/net8.0/YamlDotNet.dll",
+        "lib/net8.0/YamlDotNet.xml",
+        "lib/netstandard2.0/YamlDotNet.dll",
+        "lib/netstandard2.0/YamlDotNet.xml",
+        "lib/netstandard2.1/YamlDotNet.dll",
+        "lib/netstandard2.1/YamlDotNet.xml",
+        "yamldotnet.18.1.0.nupkg.sha512",
+        "yamldotnet.nuspec"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net10.0": [
+      "GitHub.Copilot.SDK >= 1.0.28",
+      "Microsoft.Bcl.Memory >= 10.0.14",
+      "Microsoft.Data.Sqlite >= 10.0.14",
+      "Microsoft.DotNet.ILCompiler >= 10.0.6",
+      "Microsoft.Extensions.FileSystemGlobbing >= 10.0.14",
+      "Microsoft.ML.Tokenizers >= 2.0.1",
+      "Microsoft.ML.Tokenizers.Data.Cl100kBase >= 2.0.1",
+      "Microsoft.NET.ILLink.Tasks >= 10.0.6",
+      "SQLitePCLRaw.lib.e_sqlite3 >= 3.53.3",
+      "System.CommandLine >= 2.0.14",
+      "Vecc.YamlDotNet.Analyzers.StaticGenerator >= 18.1.0",
+      "YamlDotNet >= 18.1.0"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\djapo\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {},
+    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "c:\\Source\\ReasonMCP\\.reason\\dotnet\\eng\\skill-validator\\src\\SkillValidator.csproj",
+      "projectName": "Microsoft.DotNet.SkillValidator",
+      "projectPath": "c:\\Source\\ReasonMCP\\.reason\\dotnet\\eng\\skill-validator\\src\\SkillValidator.csproj",
+      "packagesPath": "C:\\Users\\djapo\\.nuget\\packages\\",
+      "outputPath": "c:\\Source\\ReasonMCP\\.reason\\dotnet\\eng\\skill-validator\\..\\..\\artifacts\\obj\\SkillValidator\\",
+      "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
+        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+      ],
+      "configFilePaths": [
+        "C:\\Users\\djapo\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+      ],
+      "originalTargetFrameworks": [
+        "net10.0"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
+        "http://pkgs.dev.azure.com": {},
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net10.0": {
+          "targetAlias": "net10.0",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "allWarningsAsErrors": true,
+        "warnAsError": [
+          "NU1605"
+        ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "all"
+      },
+      "SdkAnalysisLevel": "10.0.200"
+    },
+    "frameworks": {
+      "net10.0": {
+        "targetAlias": "net10.0",
+        "dependencies": {
+          "GitHub.Copilot.SDK": {
+            "target": "Package",
+            "version": "[1.0.28, )"
+          },
+          "Microsoft.Bcl.Memory": {
+            "target": "Package",
+            "version": "[10.0.14, )"
+          },
+          "Microsoft.Data.Sqlite": {
+            "target": "Package",
+            "version": "[10.0.14, )"
+          },
+          "Microsoft.DotNet.ILCompiler": {
+            "suppressParent": "All",
+            "target": "Package",
+            "version": "[10.0.6, )",
+            "autoReferenced": true
+          },
+          "Microsoft.Extensions.FileSystemGlobbing": {
+            "target": "Package",
+            "version": "[10.0.14, )"
+          },
+          "Microsoft.ML.Tokenizers": {
+            "target": "Package",
+            "version": "[2.0.1, )"
+          },
+          "Microsoft.ML.Tokenizers.Data.Cl100kBase": {
+            "target": "Package",
+            "version": "[2.0.1, )"
+          },
+          "Microsoft.NET.ILLink.Tasks": {
+            "suppressParent": "All",
+            "target": "Package",
+            "version": "[10.0.6, )",
+            "autoReferenced": true
+          },
+          "SQLitePCLRaw.lib.e_sqlite3": {
+            "target": "Package",
+            "version": "[3.53.3, )"
+          },
+          "System.CommandLine": {
+            "target": "Package",
+            "version": "[2.0.14, )"
+          },
+          "Vecc.YamlDotNet.Analyzers.StaticGenerator": {
+            "target": "Package",
+            "version": "[18.1.0, )"
+          },
+          "YamlDotNet": {
+            "target": "Package",
+            "version": "[18.1.0, )"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Runtime.linux-arm64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.AspNetCore.App.Runtime.linux-x64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.AspNetCore.App.Runtime.osx-arm64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.AspNetCore.App.Runtime.win-arm64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.linux-arm64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.linux-x64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.osx-arm64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Runtime.linux-arm64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Runtime.linux-x64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Runtime.NativeAOT.linux-arm64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Runtime.NativeAOT.linux-x64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Runtime.NativeAOT.osx-arm64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Runtime.NativeAOT.win-arm64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Runtime.NativeAOT.win-x64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Runtime.osx-arm64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Runtime.win-arm64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Runtime.win-x64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Runtime.win-arm64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
+            "version": "[10.0.6, 10.0.6]"
+          },
+          {
+            "name": "runtime.win-x64.Microsoft.DotNet.ILCompiler",
+            "version": "[10.0.6, 10.0.6]"
+          }
+        ],
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.202/PortableRuntimeIdentifierGraph.json",
+        "packagesToPrune": {
+          "Microsoft.CSharp": "(,4.7.32767]",
+          "Microsoft.VisualBasic": "(,10.4.32767]",
+          "Microsoft.Win32.Primitives": "(,4.3.32767]",
+          "Microsoft.Win32.Registry": "(,5.0.32767]",
+          "runtime.any.System.Collections": "(,4.3.32767]",
+          "runtime.any.System.Diagnostics.Tools": "(,4.3.32767]",
+          "runtime.any.System.Diagnostics.Tracing": "(,4.3.32767]",
+          "runtime.any.System.Globalization": "(,4.3.32767]",
+          "runtime.any.System.Globalization.Calendars": "(,4.3.32767]",
+          "runtime.any.System.IO": "(,4.3.32767]",
+          "runtime.any.System.Reflection": "(,4.3.32767]",
+          "runtime.any.System.Reflection.Extensions": "(,4.3.32767]",
+          "runtime.any.System.Reflection.Primitives": "(,4.3.32767]",
+          "runtime.any.System.Resources.ResourceManager": "(,4.3.32767]",
+          "runtime.any.System.Runtime": "(,4.3.32767]",
+          "runtime.any.System.Runtime.Handles": "(,4.3.32767]",
+          "runtime.any.System.Runtime.InteropServices": "(,4.3.32767]",
+          "runtime.any.System.Text.Encoding": "(,4.3.32767]",
+          "runtime.any.System.Text.Encoding.Extensions": "(,4.3.32767]",
+          "runtime.any.System.Threading.Tasks": "(,4.3.32767]",
+          "runtime.any.System.Threading.Timer": "(,4.3.32767]",
+          "runtime.aot.System.Collections": "(,4.3.32767]",
+          "runtime.aot.System.Diagnostics.Tools": "(,4.3.32767]",
+          "runtime.aot.System.Diagnostics.Tracing": "(,4.3.32767]",
+          "runtime.aot.System.Globalization": "(,4.3.32767]",
+          "runtime.aot.System.Globalization.Calendars": "(,4.3.32767]",
+          "runtime.aot.System.IO": "(,4.3.32767]",
+          "runtime.aot.System.Reflection": "(,4.3.32767]",
+          "runtime.aot.System.Reflection.Extensions": "(,4.3.32767]",
+          "runtime.aot.System.Reflection.Primitives": "(,4.3.32767]",
+          "runtime.aot.System.Resources.ResourceManager": "(,4.3.32767]",
+          "runtime.aot.System.Runtime": "(,4.3.32767]",
+          "runtime.aot.System.Runtime.Handles": "(,4.3.32767]",
+          "runtime.aot.System.Runtime.InteropServices": "(,4.3.32767]",
+          "runtime.aot.System.Text.Encoding": "(,4.3.32767]",
+          "runtime.aot.System.Text.Encoding.Extensions": "(,4.3.32767]",
+          "runtime.aot.System.Threading.Tasks": "(,4.3.32767]",
+          "runtime.aot.System.Threading.Timer": "(,4.3.32767]",
+          "runtime.debian.8-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.debian.8-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.debian.8-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.debian.8-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.debian.8-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.debian.9-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.debian.9-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.debian.9-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.debian.9-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.fedora.23-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.fedora.23-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.fedora.23-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.fedora.23-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.fedora.23-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.fedora.23-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.fedora.24-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.fedora.24-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.fedora.24-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.fedora.24-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.fedora.24-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.fedora.24-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.fedora.27-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.fedora.27-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.fedora.27-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.fedora.27-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.fedora.28-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.fedora.28-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.fedora.28-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.fedora.28-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.opensuse.13.2-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.opensuse.13.2-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.opensuse.13.2-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.opensuse.13.2-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.opensuse.13.2-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.opensuse.13.2-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.opensuse.42.1-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.opensuse.42.1-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.opensuse.42.1-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.opensuse.42.1-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.opensuse.42.1-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.opensuse.42.1-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.opensuse.42.3-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.opensuse.42.3-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.opensuse.42.3-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.opensuse.42.3-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.osx.10.10-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.osx.10.10-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.osx.10.10-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.osx.10.10-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.osx.10.10-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.osx.10.10-x64.runtime.native.System.Security.Cryptography.Apple": "(,4.3.32767]",
+          "runtime.osx.10.10-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.rhel.7-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.rhel.7-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.rhel.7-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.rhel.7-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.rhel.7-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.rhel.7-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.ubuntu.14.04-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.ubuntu.14.04-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.ubuntu.14.04-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.ubuntu.14.04-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.ubuntu.14.04-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.ubuntu.14.04-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.ubuntu.16.04-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.ubuntu.16.04-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.ubuntu.16.04-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.ubuntu.16.04-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.ubuntu.16.04-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.ubuntu.16.04-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.ubuntu.16.10-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.ubuntu.16.10-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.ubuntu.16.10-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.ubuntu.16.10-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.ubuntu.16.10-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.ubuntu.16.10-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.ubuntu.18.04-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.ubuntu.18.04-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.ubuntu.18.04-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.ubuntu.18.04-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.unix.Microsoft.Win32.Primitives": "(,4.3.32767]",
+          "runtime.unix.System.Console": "(,4.3.32767]",
+          "runtime.unix.System.Diagnostics.Debug": "(,4.3.32767]",
+          "runtime.unix.System.IO.FileSystem": "(,4.3.32767]",
+          "runtime.unix.System.Net.Primitives": "(,4.3.32767]",
+          "runtime.unix.System.Net.Sockets": "(,4.3.32767]",
+          "runtime.unix.System.Private.Uri": "(,4.3.32767]",
+          "runtime.unix.System.Runtime.Extensions": "(,4.3.32767]",
+          "runtime.win.Microsoft.Win32.Primitives": "(,4.3.32767]",
+          "runtime.win.System.Console": "(,4.3.32767]",
+          "runtime.win.System.Diagnostics.Debug": "(,4.3.32767]",
+          "runtime.win.System.IO.FileSystem": "(,4.3.32767]",
+          "runtime.win.System.Net.Primitives": "(,4.3.32767]",
+          "runtime.win.System.Net.Sockets": "(,4.3.32767]",
+          "runtime.win.System.Runtime.Extensions": "(,4.3.32767]",
+          "runtime.win10-arm-aot.runtime.native.System.IO.Compression": "(,4.0.32767]",
+          "runtime.win10-arm64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.win10-x64-aot.runtime.native.System.IO.Compression": "(,4.0.32767]",
+          "runtime.win10-x86-aot.runtime.native.System.IO.Compression": "(,4.0.32767]",
+          "runtime.win7-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.win7-x86.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.win7.System.Private.Uri": "(,4.3.32767]",
+          "runtime.win8-arm.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "System.AppContext": "(,4.3.32767]",
+          "System.Buffers": "(,5.0.32767]",
+          "System.Collections": "(,4.3.32767]",
+          "System.Collections.Concurrent": "(,4.3.32767]",
+          "System.Collections.Immutable": "(,10.0.32767]",
+          "System.Collections.NonGeneric": "(,4.3.32767]",
+          "System.Collections.Specialized": "(,4.3.32767]",
+          "System.ComponentModel": "(,4.3.32767]",
+          "System.ComponentModel.Annotations": "(,4.3.32767]",
+          "System.ComponentModel.EventBasedAsync": "(,4.3.32767]",
+          "System.ComponentModel.Primitives": "(,4.3.32767]",
+          "System.ComponentModel.TypeConverter": "(,4.3.32767]",
+          "System.Console": "(,4.3.32767]",
+          "System.Data.Common": "(,4.3.32767]",
+          "System.Data.DataSetExtensions": "(,4.4.32767]",
+          "System.Diagnostics.Contracts": "(,4.3.32767]",
+          "System.Diagnostics.Debug": "(,4.3.32767]",
+          "System.Diagnostics.DiagnosticSource": "(,10.0.32767]",
+          "System.Diagnostics.FileVersionInfo": "(,4.3.32767]",
+          "System.Diagnostics.Process": "(,4.3.32767]",
+          "System.Diagnostics.StackTrace": "(,4.3.32767]",
+          "System.Diagnostics.TextWriterTraceListener": "(,4.3.32767]",
+          "System.Diagnostics.Tools": "(,4.3.32767]",
+          "System.Diagnostics.TraceSource": "(,4.3.32767]",
+          "System.Diagnostics.Tracing": "(,4.3.32767]",
+          "System.Drawing.Primitives": "(,4.3.32767]",
+          "System.Dynamic.Runtime": "(,4.3.32767]",
+          "System.Formats.Asn1": "(,10.0.32767]",
+          "System.Formats.Tar": "(,10.0.32767]",
+          "System.Globalization": "(,4.3.32767]",
+          "System.Globalization.Calendars": "(,4.3.32767]",
+          "System.Globalization.Extensions": "(,4.3.32767]",
+          "System.IO": "(,4.3.32767]",
+          "System.IO.Compression": "(,4.3.32767]",
+          "System.IO.Compression.ZipFile": "(,4.3.32767]",
+          "System.IO.FileSystem": "(,4.3.32767]",
+          "System.IO.FileSystem.AccessControl": "(,4.4.32767]",
+          "System.IO.FileSystem.DriveInfo": "(,4.3.32767]",
+          "System.IO.FileSystem.Primitives": "(,4.3.32767]",
+          "System.IO.FileSystem.Watcher": "(,4.3.32767]",
+          "System.IO.IsolatedStorage": "(,4.3.32767]",
+          "System.IO.MemoryMappedFiles": "(,4.3.32767]",
+          "System.IO.Pipelines": "(,10.0.32767]",
+          "System.IO.Pipes": "(,4.3.32767]",
+          "System.IO.Pipes.AccessControl": "(,5.0.32767]",
+          "System.IO.UnmanagedMemoryStream": "(,4.3.32767]",
+          "System.Linq": "(,4.3.32767]",
+          "System.Linq.AsyncEnumerable": "(,10.0.32767]",
+          "System.Linq.Expressions": "(,4.3.32767]",
+          "System.Linq.Parallel": "(,4.3.32767]",
+          "System.Linq.Queryable": "(,4.3.32767]",
+          "System.Memory": "(,5.0.32767]",
+          "System.Net.Http": "(,4.3.32767]",
+          "System.Net.Http.Json": "(,10.0.32767]",
+          "System.Net.NameResolution": "(,4.3.32767]",
+          "System.Net.NetworkInformation": "(,4.3.32767]",
+          "System.Net.Ping": "(,4.3.32767]",
+          "System.Net.Primitives": "(,4.3.32767]",
+          "System.Net.Requests": "(,4.3.32767]",
+          "System.Net.Security": "(,4.3.32767]",
+          "System.Net.ServerSentEvents": "(,10.0.32767]",
+          "System.Net.Sockets": "(,4.3.32767]",
+          "System.Net.WebHeaderCollection": "(,4.3.32767]",
+          "System.Net.WebSockets": "(,4.3.32767]",
+          "System.Net.WebSockets.Client": "(,4.3.32767]",
+          "System.Numerics.Vectors": "(,5.0.32767]",
+          "System.ObjectModel": "(,4.3.32767]",
+          "System.Private.DataContractSerialization": "(,4.3.32767]",
+          "System.Private.Uri": "(,4.3.32767]",
+          "System.Reflection": "(,4.3.32767]",
+          "System.Reflection.DispatchProxy": "(,6.0.32767]",
+          "System.Reflection.Emit": "(,4.7.32767]",
+          "System.Reflection.Emit.ILGeneration": "(,4.7.32767]",
+          "System.Reflection.Emit.Lightweight": "(,4.7.32767]",
+          "System.Reflection.Extensions": "(,4.3.32767]",
+          "System.Reflection.Metadata": "(,10.0.32767]",
+          "System.Reflection.Primitives": "(,4.3.32767]",
+          "System.Reflection.TypeExtensions": "(,4.3.32767]",
+          "System.Resources.Reader": "(,4.3.32767]",
+          "System.Resources.ResourceManager": "(,4.3.32767]",
+          "System.Resources.Writer": "(,4.3.32767]",
+          "System.Runtime": "(,4.3.32767]",
+          "System.Runtime.CompilerServices.Unsafe": "(,7.0.32767]",
+          "System.Runtime.CompilerServices.VisualC": "(,4.3.32767]",
+          "System.Runtime.Extensions": "(,4.3.32767]",
+          "System.Runtime.Handles": "(,4.3.32767]",
+          "System.Runtime.InteropServices": "(,4.3.32767]",
+          "System.Runtime.InteropServices.RuntimeInformation": "(,4.3.32767]",
+          "System.Runtime.Loader": "(,4.3.32767]",
+          "System.Runtime.Numerics": "(,4.3.32767]",
+          "System.Runtime.Serialization.Formatters": "(,4.3.32767]",
+          "System.Runtime.Serialization.Json": "(,4.3.32767]",
+          "System.Runtime.Serialization.Primitives": "(,4.3.32767]",
+          "System.Runtime.Serialization.Xml": "(,4.3.32767]",
+          "System.Security.AccessControl": "(,6.0.32767]",
+          "System.Security.Claims": "(,4.3.32767]",
+          "System.Security.Cryptography.Algorithms": "(,4.3.32767]",
+          "System.Security.Cryptography.Cng": "(,5.0.32767]",
+          "System.Security.Cryptography.Csp": "(,4.3.32767]",
+          "System.Security.Cryptography.Encoding": "(,4.3.32767]",
+          "System.Security.Cryptography.OpenSsl": "(,5.0.32767]",
+          "System.Security.Cryptography.Primitives": "(,4.3.32767]",
+          "System.Security.Cryptography.X509Certificates": "(,4.3.32767]",
+          "System.Security.Principal": "(,4.3.32767]",
+          "System.Security.Principal.Windows": "(,5.0.32767]",
+          "System.Security.SecureString": "(,4.3.32767]",
+          "System.Text.Encoding": "(,4.3.32767]",
+          "System.Text.Encoding.CodePages": "(,10.0.32767]",
+          "System.Text.Encoding.Extensions": "(,4.3.32767]",
+          "System.Text.Encodings.Web": "(,10.0.32767]",
+          "System.Text.Json": "(,10.0.32767]",
+          "System.Text.RegularExpressions": "(,4.3.32767]",
+          "System.Threading": "(,4.3.32767]",
+          "System.Threading.AccessControl": "(,10.0.32767]",
+          "System.Threading.Channels": "(,10.0.32767]",
+          "System.Threading.Overlapped": "(,4.3.32767]",
+          "System.Threading.Tasks": "(,4.3.32767]",
+          "System.Threading.Tasks.Dataflow": "(,10.0.32767]",
+          "System.Threading.Tasks.Extensions": "(,5.0.32767]",
+          "System.Threading.Tasks.Parallel": "(,4.3.32767]",
+          "System.Threading.Thread": "(,4.3.32767]",
+          "System.Threading.ThreadPool": "(,4.3.32767]",
+          "System.Threading.Timer": "(,4.3.32767]",
+          "System.ValueTuple": "(,4.5.32767]",
+          "System.Xml.ReaderWriter": "(,4.3.32767]",
+          "System.Xml.XDocument": "(,4.3.32767]",
+          "System.Xml.XmlDocument": "(,4.3.32767]",
+          "System.Xml.XmlSerializer": "(,4.3.32767]",
+          "System.Xml.XPath": "(,4.3.32767]",
+          "System.Xml.XPath.XDocument": "(,5.0.32767]"
+        }
+      }
+    },
+    "runtimes": {
+      "linux-arm64": {
+        "#import": []
+      },
+      "linux-x64": {
+        "#import": []
+      },
+      "osx-arm64": {
+        "#import": []
+      },
+      "win-arm64": {
+        "#import": []
+      },
+      "win-x64": {
+        "#import": []
+      }
+    }
+  },
+  "logs": [
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'System.CommandLine' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='System.CommandLine'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'System.CommandLine' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='System.CommandLine'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.Bcl.Memory' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.Bcl.Memory'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.Bcl.Memory' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.Bcl.Memory'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Vecc.YamlDotNet.Analyzers.StaticGenerator' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Vecc.YamlDotNet.Analyzers.StaticGenerator'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Vecc.YamlDotNet.Analyzers.StaticGenerator' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Vecc.YamlDotNet.Analyzers.StaticGenerator'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'SQLitePCLRaw.bundle_e_sqlite3' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='SQLitePCLRaw.bundle_e_sqlite3'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'SQLitePCLRaw.lib.e_sqlite3' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='SQLitePCLRaw.lib.e_sqlite3'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'SQLitePCLRaw.lib.e_sqlite3' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='SQLitePCLRaw.lib.e_sqlite3'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.NETCore.App.Runtime.NativeAOT.linux-arm64' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.NETCore.App.Runtime.NativeAOT.linux-arm64'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.NETCore.App.Runtime.NativeAOT.linux-arm64' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.NETCore.App.Runtime.NativeAOT.linux-arm64'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'GitHub.Copilot.SDK' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='GitHub.Copilot.SDK'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'GitHub.Copilot.SDK' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='GitHub.Copilot.SDK'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.Data.Sqlite' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.Data.Sqlite'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.Data.Sqlite' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.Data.Sqlite'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.NETCore.App.Runtime.NativeAOT.win-arm64' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.NETCore.App.Runtime.NativeAOT.win-arm64'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.NETCore.App.Runtime.NativeAOT.win-arm64' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.NETCore.App.Runtime.NativeAOT.win-arm64'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.Data.Sqlite.Core' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.Data.Sqlite.Core'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.Data.Sqlite.Core' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.Data.Sqlite.Core'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.Extensions.FileSystemGlobbing' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.Extensions.FileSystemGlobbing'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.Extensions.FileSystemGlobbing' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.Extensions.FileSystemGlobbing'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.ML.Tokenizers' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.ML.Tokenizers'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.ML.Tokenizers' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.ML.Tokenizers'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'SQLitePCLRaw.provider.e_sqlite3' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='SQLitePCLRaw.provider.e_sqlite3'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.NETCore.App.Runtime.NativeAOT.linux-x64' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.NETCore.App.Runtime.NativeAOT.linux-x64'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.NETCore.App.Runtime.NativeAOT.linux-x64' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.NETCore.App.Runtime.NativeAOT.linux-x64'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.NETCore.App.Runtime.NativeAOT.osx-arm64' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.NETCore.App.Runtime.NativeAOT.osx-arm64'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.ML.Tokenizers.Data.Cl100kBase' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.ML.Tokenizers.Data.Cl100kBase'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.ML.Tokenizers.Data.Cl100kBase' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.ML.Tokenizers.Data.Cl100kBase'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.NETCore.App.Runtime.NativeAOT.osx-arm64' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.NETCore.App.Runtime.NativeAOT.osx-arm64'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'SQLitePCLRaw.core' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='SQLitePCLRaw.core'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    }
+  ]
+}

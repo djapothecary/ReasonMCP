@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skills Evaluation Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
+          integrity="sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC"
+          crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --skilled: #58a6ff;
+      --vanilla: #8b949e;
+      --green: #3fb950;
+      --red: #f85149;
+      --warning: #d29922;
+      --not-activated: #d29922;
+      --timeout: #f85149;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 24px; margin-bottom: 4px; }
+    .subtitle { color: var(--text-muted); margin-bottom: 24px; font-size: 14px; }
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      font-size: 14px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active {
+      color: var(--skilled);
+      border-bottom-color: var(--skilled);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+    .card-label { color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .card-value { font-size: 32px; font-weight: 600; margin-top: 4px; }
+    .card-delta { font-size: 14px; margin-top: 4px; }
+    .positive { color: var(--green); }
+    .negative { color: var(--red); }
+    .neutral { color: var(--text-muted); }
+    .section-title { font-size: 18px; margin: 32px 0 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 24px;
+    }
+    .chart-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .chart-container h3 { font-size: 14px; margin-bottom: 12px; color: var(--text-muted); }
+    .chart-container canvas { width: 100% !important; }
+    .not-activated-legend {
+      color: var(--not-activated);
+      font-size: 11px;
+      margin-top: 4px;
+    }
+    .muted { color: var(--text-muted); }
+    .interpretation-note {
+      background: rgba(88,166,255,0.08);
+      border: 1px solid rgba(88,166,255,0.35);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.5;
+      padding: 12px 16px;
+    }
+    .evidence-empty {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-muted);
+      padding: 16px;
+    }
+    .evidence-run {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .evidence-run h3 {
+      font-size: 14px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .evidence-run h3 span { color: var(--text-muted); font-size: 12px; font-weight: 400; }
+    .evidence-freshness {
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      line-height: 1.45;
+      padding: 10px 16px;
+    }
+    .evidence-freshness a { color: inherit; font-weight: 600; }
+    .evidence-freshness.stale {
+      background: rgba(210,153,34,0.12);
+      color: var(--warning);
+    }
+    .evidence-freshness.current {
+      background: rgba(63,185,80,0.08);
+      color: var(--green);
+    }
+    .evidence-freshness.unknown { color: var(--text-muted); }
+    .evidence-table-wrap { overflow-x: auto; }
+    .evidence-table { width: 100%; border-collapse: collapse; min-width: 980px; }
+    .evidence-table caption {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .evidence-table th, .evidence-table td {
+      border-bottom: 1px solid var(--border);
+      padding: 12px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .evidence-table thead th {
+      color: var(--text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .evidence-table tbody tr:last-child th,
+    .evidence-table tbody tr:last-child td { border-bottom: none; }
+    .evidence-table tbody th { font-size: 13px; min-width: 160px; }
+    .evidence-table details { margin-top: 5px; }
+    .evidence-table summary { color: var(--skilled); cursor: pointer; }
+    .evidence-secondary { color: var(--text-muted); margin-top: 4px; }
+    .evidence-list { margin: 6px 0 0 18px; }
+    .evidence-list li { margin: 5px 0; }
+    .evidence-links { margin-top: 6px; }
+    .evidence-links a { color: var(--skilled); }
+    .evidence-tag {
+      border: 1px solid var(--warning);
+      border-radius: 999px;
+      color: var(--warning);
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 400;
+      margin-left: 5px;
+      padding: 1px 6px;
+      vertical-align: 1px;
+    }
+    .verdict-badge {
+      border-radius: 999px;
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+    }
+    .verdict-badge.pass { background: rgba(63,185,80,0.14); color: var(--green); }
+    .verdict-badge.fail { background: rgba(248,81,73,0.14); color: var(--red); }
+    .verdict-badge.warning { background: rgba(210,153,34,0.14); color: var(--warning); }
+    .verdict-badge.neutral { background: rgba(139,148,158,0.14); color: var(--text-muted); }
+    .footer {
+      margin-top: 48px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 12px;
+      text-align: center;
+    }
+    .footer a { color: var(--skilled); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+    /* Token usage table */
+    .token-table {
+      width: 100%; border-collapse: separate; border-spacing: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden;
+    }
+    .token-table th {
+      text-align: left; padding: 12px 16px; background: var(--surface);
+      border-bottom: 2px solid var(--border); color: var(--text-muted);
+      font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .token-table th.num { text-align: right; }
+    .token-table td { padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .token-table td.num {
+      text-align: right;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 13px;
+    }
+    .token-table tr:last-child td { border-bottom: none; }
+    .token-table tr.level-0 { font-weight: 600; }
+    .token-table tr.level-0 td { background: rgba(88,166,255,0.03); }
+    .token-table tr.level-1 td:first-child { padding-left: 40px; }
+    .token-table tr.level-2 td:first-child { padding-left: 64px; }
+    .token-table tr.level-2 td { color: var(--text-muted); }
+    .token-table tr.expandable { cursor: pointer; }
+    .token-table tr.expandable:hover td { background: rgba(88,166,255,0.06); }
+    .expand-icon { display: inline-block; width: 20px; font-size: 10px; transition: transform 0.2s; }
+    .expand-icon.expanded { transform: rotate(90deg); }
+    @media (max-width: 600px) {
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+    /* Skill Value view */
+    .sv-controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-bottom: 16px; }
+    .sv-controls label { font-size: 13px; color: var(--text-muted); }
+    .sv-controls select {
+      background: var(--surface); color: var(--text); border: 1px solid var(--border);
+      border-radius: 6px; padding: 6px 8px; font-size: 13px; margin-left: 4px;
+    }
+    .sv-controls input[type="search"] {
+      background: var(--surface); color: var(--text); border: 1px solid var(--border);
+      border-radius: 6px; padding: 6px 8px; font-size: 13px; margin-left: 4px;
+    }
+    .sv-controls input[type="search"]:focus-visible { outline: 2px solid var(--skilled); outline-offset: 2px; }
+    .sv-sub { display: block; color: var(--text-muted); font-size: 11px; font-weight: 400; margin-top: 2px; }
+    .sv-controls .sv-sub { display: inline; margin: 0; }
+    .sv-table td { vertical-align: top; }
+    .sv-value { font-size: 13px; max-width: 360px; }
+    .sv-tradeoff { color: var(--attention, #d29922); }
+    .sv-unproven { color: var(--text-muted); }
+    .sv-insufficient { color: var(--text-muted); font-style: italic; }
+    .sv-drill { padding: 4px 0; }
+    .sv-arm { font-size: 13px; padding: 3px 0; font-family: 'SF Mono', SFMono-Regular, Consolas, monospace; }
+    .sv-arm-label { display: inline-block; min-width: 110px; color: var(--text-muted); font-family: inherit; }
+    .sv-diluted { opacity: 0.6; }
+    .sv-dilute-mark { color: var(--text-muted); margin-right: 3px; cursor: help; font-weight: 600; }
+    .sv-btn { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
+    .sv-btn:hover { border-color: var(--skilled); color: var(--skilled); }
+    /* Model leaf rows carry the real numbers, so undo the token-table level-2 muting. */
+    .sv-table { overflow: visible; }
+    .sv-table thead th { position: sticky; top: 0; z-index: 1; background: var(--surface); }
+    .sv-table thead th:first-child { border-top-left-radius: 8px; }
+    .sv-table thead th:last-child { border-top-right-radius: 8px; }
+    .sv-table tr.level-2 td { color: var(--text); }
+    .sv-table tr.sv-detail td { padding-left: 88px; }
+  </style>
+</head>
+<body>
+  <h1>📊 Skills Evaluation Dashboard</h1>
+  <p class="subtitle">Tracking Copilot quality with and without skill plugins</p>
+
+  <div id="tab-bar" class="tab-bar"></div>
+  <div id="tab-content"></div>
+
+  <div class="footer">
+    Generated by the skills evaluation pipeline · Verdict evidence shows the latest retained run per model and its evaluated commit; 0–10 score averages are triage only, not the pass gate.
+  </div>
+
+  <script src="token-usage.js"></script>
+  <script src="skill-value.js"></script>
+  <script src="dashboard-freshness.js"></script>
+  <script src="dashboard-verdict.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

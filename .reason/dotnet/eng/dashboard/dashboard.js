@@ -1,0 +1,1388 @@
+(async function () {
+  // HTML escape helper for defense-in-depth against XSS
+  function escapeHtml(str) {
+    if (str == null) return '';
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
+  }
+
+  // AGENTVIZ session replay configuration
+  // Session data lives in the standalone dotnet/skills-data repo to keep this repo small.
+  const sessionManifestUrl = 'https://raw.githubusercontent.com/dotnet/skills-data/dashboard-session-data/data/manifest.json';
+  const replayBaseUrl = 'replay/index.html';
+
+  // Fetch plugin manifest and deployment provenance independently. Older
+  // deployments do not have dashboard-meta.json, so freshness stays unknown
+  // rather than inventing a stale/current classification.
+  let dashboardMeta = null;
+  try {
+    const response = await fetch('data/dashboard-meta.json');
+    if (response.ok) dashboardMeta = await response.json();
+  } catch {
+    dashboardMeta = null;
+  }
+
+  // Fetch plugin manifest
+  let plugins;
+  try {
+    const response = await fetch('data/components.json');
+    if (!response.ok) throw new Error(response.statusText);
+    plugins = await response.json();
+  } catch {
+    // No evaluation data – still allow Token Usage tab to work
+    plugins = [];
+  }
+
+  if (!Array.isArray(plugins)) {
+    plugins = [];
+  }
+
+  // skill-value.json is a compact derived index, not a dashboard plugin.
+  // Components manifests may include it when generated from all JSON data files.
+  plugins = plugins.filter(plugin => plugin !== 'skill-value');
+  plugins.sort();
+
+  const tabBar = document.getElementById('tab-bar');
+  const tabContentContainer = document.getElementById('tab-content');
+  const loadedPlugins = new Map(); // track loaded plugin data
+
+  // Build tabs and placeholder panels
+  plugins.forEach((plugin) => {
+    const tab = document.createElement('div');
+    tab.className = 'tab';
+    tab.textContent = plugin;
+    tab.dataset.plugin = plugin;
+    tab.addEventListener('click', () => switchTab(plugin));
+    tabBar.appendChild(tab);
+
+    const panel = document.createElement('div');
+    panel.className = 'tab-content';
+    panel.id = `panel-${plugin}`;
+    panel.innerHTML = '<p style="color:#8b949e;text-align:center;padding:2rem;">Loading...</p>';
+    tabContentContainer.appendChild(panel);
+  });
+
+  // Add Token Usage tab at the end
+  const tokenTabId = '__token-usage__';
+  const tokenTab = document.createElement('div');
+  tokenTab.className = 'tab';
+  tokenTab.textContent = '🔢 Token Usage';
+  tokenTab.dataset.plugin = tokenTabId;
+  tokenTab.addEventListener('click', () => switchTab(tokenTabId));
+  tabBar.appendChild(tokenTab);
+
+  const tokenPanel = document.createElement('div');
+  tokenPanel.className = 'tab-content';
+  tokenPanel.id = `panel-${tokenTabId}`;
+  tokenPanel.innerHTML = '<div id="token-usage-content"><p style="color:#8b949e;text-align:center;padding:2rem;">Loading…</p></div>';
+  tabContentContainer.appendChild(tokenPanel);
+
+  // Skill Value is the default landing tab, placed FIRST in the tab bar so the
+  // per-skill value story is the first thing a viewer sees.
+  const skillValueTabId = '__skill-value__';
+  const skillValueTab = document.createElement('div');
+  skillValueTab.className = 'tab active';
+  skillValueTab.textContent = '💡 Skill Value';
+  skillValueTab.dataset.plugin = skillValueTabId;
+  skillValueTab.addEventListener('click', () => switchTab(skillValueTabId));
+  tabBar.insertBefore(skillValueTab, tabBar.firstChild);
+
+  const skillValuePanel = document.createElement('div');
+  skillValuePanel.className = 'tab-content active';
+  skillValuePanel.id = `panel-${skillValueTabId}`;
+  skillValuePanel.innerHTML = '<div id="skill-value-content"><p style="color:#8b949e;text-align:center;padding:2rem;">Loading…</p></div>';
+  tabContentContainer.appendChild(skillValuePanel);
+
+  async function switchTab(plugin) {
+    tabBar.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.plugin === plugin));
+    tabContentContainer.querySelectorAll('.tab-content').forEach(p => p.classList.toggle('active', p.id === `panel-${plugin}`));
+    if (plugin === tokenTabId) {
+      if (window.initTokenUsage) window.initTokenUsage();
+      return;
+    }
+    if (plugin === skillValueTabId) {
+      if (window.initSkillValue) window.initSkillValue();
+      return;
+    }
+    if (!loadedPlugins.has(plugin)) {
+      await loadPlugin(plugin);
+    }
+  }
+
+  // Token usage auto-init is handled by token-usage.js itself (it checks
+  // whether the tab is already active after it loads).
+
+  async function loadPlugin(plugin) {
+    const panel = document.getElementById(`panel-${plugin}`);
+    try {
+      const response = await fetch(`data/${plugin}.json`);
+      if (!response.ok) throw new Error(response.statusText);
+      const data = await response.json();
+      loadedPlugins.set(plugin, data);
+      renderPlugin(plugin, data, panel);
+    } catch {
+      panel.innerHTML = '<p style="color:#f85149;text-align:center;padding:2rem;">Failed to load data.</p>';
+    }
+  }
+
+  // --- Shared constants and helpers for issue markers ---
+  const ISSUE_COLORS = {
+    notActivated: '#d29922',
+    timedOut: '#f85149',
+    overfittingModerate: '#d29922',
+    overfittingHigh: '#f85149',
+    multiIssue: '#f85149',
+  };
+
+  // Cross-family runs interleave several executor models in one plugin file.
+  // Colour each model distinctly so a trend line never blends two families,
+  // and the variant (Isolated / Plugin / Vanilla) is carried by the dash style.
+  const MODEL_PALETTE = ['#58a6ff', '#3fb950', '#d29922', '#a371f7', '#ff7b72', '#79c0ff', '#f778ba', '#56d364'];
+  const MODEL_MARKERS = [
+    { style: 'rect', rotation: 0 },
+    { style: 'rectRounded', rotation: 0 },
+    { style: 'rect', rotation: 15 },
+    { style: 'rectRounded', rotation: 15 },
+    { style: 'rect', rotation: 30 },
+    { style: 'rectRounded', rotation: 30 },
+    { style: 'rect', rotation: 60 },
+    { style: 'rectRounded', rotation: 60 },
+    { style: 'rect', rotation: 75 },
+    { style: 'rectRounded', rotation: 75 },
+  ];
+  const CHART_SURFACE = '#161b22';
+  const MAX_INLINE_LEGEND_SERIES = 6;
+  function orderedModels(entries) {
+    const seen = [];
+    for (const e of entries) {
+      const m = (e && e.model) ? e.model : 'unknown';
+      if (!seen.includes(m)) seen.push(m);
+    }
+    return seen;
+  }
+  function buildModelColorMap(models) {
+    const map = {};
+    models.forEach((m, i) => { map[m] = MODEL_PALETTE[i % MODEL_PALETTE.length]; });
+    return map;
+  }
+  function buildModelMarkerMap(models) {
+    const map = {};
+    models.forEach((m, i) => { map[m] = MODEL_MARKERS[i % MODEL_MARKERS.length]; });
+    return map;
+  }
+  function modelColorFor(model, models) {
+    const i = models.indexOf(model);
+    return MODEL_PALETTE[(i < 0 ? 0 : i) % MODEL_PALETTE.length];
+  }
+  // Canonical model->colour map for the plugin currently being rendered, built
+  // from the FULL history so the summary-table dot and every trend line agree on
+  // a model's colour even though the summary window (last N) can see a different
+  // subset/order of models than the charts. Falls back to per-set order when a
+  // chart is drawn before this is populated.
+  let activeModelColors = {};
+  let activeModelMarkers = {};
+  function colourForModel(model, fallbackModels) {
+    const m = (model || 'unknown');
+    if (Object.prototype.hasOwnProperty.call(activeModelColors, m)) return activeModelColors[m];
+    return modelColorFor(m, fallbackModels || [m]);
+  }
+  function markerForModel(model, fallbackModels) {
+    const m = (model || 'unknown');
+    if (Object.prototype.hasOwnProperty.call(activeModelMarkers, m)) return activeModelMarkers[m];
+    const models = fallbackModels || [m];
+    const index = models.indexOf(m);
+    return MODEL_MARKERS[(index < 0 ? 0 : index) % MODEL_MARKERS.length];
+  }
+
+  function getPointAppearance(flags, defaultColor, defaultStyle = 'circle', defaultRotation = 0) {
+    const count = (flags.timedOut ? 1 : 0) + (flags.notActivated ? 1 : 0) + (flags.overfitting ? 1 : 0);
+    if (count > 1) return { color: ISSUE_COLORS.multiIssue, style: 'circle', rotation: 0, radius: 4, borderWidth: 2 };
+    if (flags.timedOut) return { color: ISSUE_COLORS.timedOut, style: 'rectRot', rotation: 0, radius: 6, borderWidth: 2 };
+    if (flags.notActivated) return { color: ISSUE_COLORS.notActivated, style: 'triangle', rotation: 0, radius: 6, borderWidth: 2 };
+    if (flags.overfitting === 'high') return { color: ISSUE_COLORS.overfittingHigh, style: 'star', rotation: 0, radius: 7, borderWidth: 2 };
+    if (flags.overfitting) return { color: ISSUE_COLORS.overfittingModerate, style: 'star', rotation: 0, radius: 6, borderWidth: 2 };
+    return { color: defaultColor, style: defaultStyle, rotation: defaultRotation, radius: 4, borderWidth: 2 };
+  }
+
+  function buildIssueTooltipLines(entry, benchFilter) {
+    if (!entry || !entry.benches) return [];
+    const benches = benchFilter ? entry.benches.filter(benchFilter) : entry.benches;
+    const lines = [];
+    if (benches.some(b => b.notActivated)) lines.push('⚠️ SKILL NOT ACTIVATED');
+    if (benches.some(b => b.timedOut)) lines.push('⏰ EXECUTION TIMED OUT');
+    const ofBench = benches.find(b => b.overfitting);
+    if (ofBench) {
+      const sev = ofBench.overfitting;
+      const score = ofBench.overfittingScore;
+      const icon = sev === 'high' ? '🔴' : '🟡';
+      lines.push(`${icon} ${sev.toUpperCase()} EVAL OVERFITTING (score: ${score != null ? score.toFixed(2) : 'N/A'})`);
+    }
+    if (lines.length > 1) {
+      return ['⛔ MULTIPLE ISSUES:', ...lines.map(l => '  ' + l)];
+    }
+    return lines;
+  }
+
+  // Custom generateLabels that always shows a circle in the series color,
+  // regardless of per-point error markers (triangles, diamonds, stars).
+  function legendLabelsWithCircle(chart) {
+    return Chart.defaults.plugins.legend.labels.generateLabels(chart).map(function(l) {
+      const ds = chart.data.datasets[l.datasetIndex];
+      const seriesColor = ds && ds.borderColor ? ds.borderColor : l.strokeStyle;
+      return Object.assign({}, l, { pointStyle: 'circle', fillStyle: seriesColor, strokeStyle: seriesColor });
+    });
+  }
+  function legendLabelsWithModelMarker(chart) {
+    return Chart.defaults.plugins.legend.labels.generateLabels(chart).filter(function(l) {
+      const ds = chart.data.datasets[l.datasetIndex];
+      return ds && !ds.hidden;
+    }).map(function(l) {
+      const ds = chart.data.datasets[l.datasetIndex];
+      const seriesColor = ds && ds.borderColor ? ds.borderColor : l.strokeStyle;
+      const marker = ds && ds.modelMarker ? ds.modelMarker : { style: 'rect', rotation: 0 };
+      const fillStyle = ds && ds.modelPointFill ? ds.modelPointFill : seriesColor;
+      return Object.assign({}, l, {
+        pointStyle: marker.style,
+        rotation: marker.rotation,
+        fillStyle,
+        strokeStyle: seriesColor,
+      });
+    });
+  }
+
+  function appendLegendNotes(div, flags) {
+    if (flags.notActivated) {
+      const note = document.createElement('div');
+      note.className = 'not-activated-legend';
+      note.innerHTML = `⚠️ <span style="color:${ISSUE_COLORS.notActivated}">▲</span> = Skill was not activated`;
+      div.appendChild(note);
+    }
+    if (flags.timedOut) {
+      const note = document.createElement('div');
+      note.className = 'not-activated-legend';
+      note.innerHTML = `⏰ <span style="color:${ISSUE_COLORS.timedOut}">◆</span> = Execution timed out`;
+      div.appendChild(note);
+    }
+    if (flags.overfittingHigh) {
+      const note = document.createElement('div');
+      note.className = 'not-activated-legend';
+      note.innerHTML = `🔴 <span style="color:${ISSUE_COLORS.overfittingHigh}">★</span> = High eval overfitting`;
+      div.appendChild(note);
+    }
+    if (flags.overfittingModerate) {
+      const note = document.createElement('div');
+      note.className = 'not-activated-legend';
+      note.innerHTML = `🟡 <span style="color:${ISSUE_COLORS.overfittingModerate}">★</span> = Moderate eval overfitting`;
+      div.appendChild(note);
+    }
+    if (flags.multiIssue) {
+      const note = document.createElement('div');
+      note.className = 'not-activated-legend';
+      note.innerHTML = `⛔ <span style="color:${ISSUE_COLORS.multiIssue}">●</span> = Multiple issues (see tooltip)`;
+      div.appendChild(note);
+    }
+  }
+
+  function formatPercent(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return 'N/A';
+    const percent = value * 100;
+    return `${percent > 0 ? '+' : ''}${percent.toFixed(1)}%`;
+  }
+
+  function formatPValue(value) {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return 'N/A';
+    return value < 0.001 ? value.toExponential(2) : value.toFixed(3);
+  }
+
+  const verdictDisplay = window.VerdictDisplay?.forVerdict
+    ?? (typeof require === 'function' ? require('./dashboard-verdict.js').forVerdict : null);
+  if (!verdictDisplay) {
+    throw new Error('dashboard-verdict.js must load before dashboard.js');
+  }
+
+  function activationStatusLabel(status) {
+    return ({
+      activated: 'activated',
+      'missing-activation': 'missing activation',
+      'dormant-as-expected': 'dormant as expected',
+      'unexpected-activation': 'activated unexpectedly',
+      'reference-dormant': 'not self-activated (expected for reference skill)',
+      'reference-activated': 'activated despite reference-only metadata',
+      'plugin-activity-observed': 'some plugin skill activity observed',
+      'plugin-no-activity-observed': 'no plugin skill activity observed',
+      unknown: 'activation unknown',
+    })[status] || status || 'activation unknown';
+  }
+
+  function activationSummary(verdict) {
+    const scenarios = Array.isArray(verdict.activationScenarios) ? verdict.activationScenarios : [];
+    if (verdict.skillKind === 'reference') {
+      const unexpected = scenarios.filter(s => s.isolated === 'reference-activated').length;
+      return unexpected > 0
+        ? `Reference skill · ${unexpected} unexpected activation${unexpected === 1 ? '' : 's'}`
+        : 'Reference skill · self-activation is not expected';
+    }
+
+    let missing = 0;
+    let dormant = 0;
+    let unexpected = 0;
+    let active = 0;
+    let isolatedActivationOnlyFailures = 0;
+    let pluginActivationOnlyFailures = 0;
+    scenarios.forEach(s => {
+      for (const status of [s.isolated, s.plugin]) {
+        if (!status) continue;
+        if (status === 'missing-activation') missing++;
+        else if (status === 'dormant-as-expected') dormant++;
+        else if (status === 'unexpected-activation') unexpected++;
+        else if (status === 'activated') active++;
+      }
+      isolatedActivationOnlyFailures += s.isolatedActivationOnlyFailedRuns || 0;
+      pluginActivationOnlyFailures += s.pluginActivationOnlyFailedRuns || 0;
+    });
+
+    const parts = [];
+    if (missing) parts.push(`${missing} missing`);
+    if (unexpected) parts.push(`${unexpected} unexpected`);
+    if (isolatedActivationOnlyFailures) {
+      parts.push(`${isolatedActivationOnlyFailures} isolated failed after activation`);
+    }
+    if (pluginActivationOnlyFailures) {
+      parts.push(`${pluginActivationOnlyFailures} plugin failed after activation`);
+    }
+    if (dormant) parts.push(`${dormant} dormant as expected`);
+    if (active) parts.push(`${active} activated`);
+    const prefix = verdict.skillKind === 'workflow' ? 'Workflow' : verdict.skillKind === 'agent' ? 'Agent' : 'Skill';
+    return parts.length ? `${prefix}: ${parts.join(' · ')}` : `${prefix} activation evidence unavailable`;
+  }
+
+  function safeEvidenceUrl(value) {
+    try {
+      const url = new URL(value);
+      return url.protocol === 'https:' ? url.href : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function renderGateEvidence(gate) {
+    if (!gate) {
+      return '<span class="muted">Unavailable in this legacy run</span>';
+    }
+    const count = Number.isFinite(gate.stimulusVoteCount)
+      ? gate.stimulusVoteCount
+      : (gate.wins || 0) + (gate.ties || 0) + (gate.losses || 0);
+    const usesPreferenceEligibleVotes = Object.prototype.hasOwnProperty.call(
+      gate,
+      'excludedStimulusCount',
+    );
+    const voteLabel = usesPreferenceEligibleVotes
+      ? 'preference-eligible stimulus vote'
+      : 'stimulus vote';
+    const excluded = usesPreferenceEligibleVotes && Number.isFinite(gate.excludedStimulusCount)
+      ? gate.excludedStimulusCount
+      : 0;
+    return `
+      <div><strong>${count}</strong> ${voteLabel}${count === 1 ? '' : 's'} &middot;
+        <strong>${gate.wins || 0}W/${gate.ties || 0}T/${gate.losses || 0}L</strong></div>
+      <div class="evidence-secondary">discordant <strong>${gate.discordant || 0}</strong> &middot;
+        sign-test p=<strong>${formatPValue(gate.pValue)}</strong> &middot;
+        net win <strong>${formatPercent(gate.netWin)}</strong></div>
+      ${excluded ? `<div class="evidence-secondary"><strong>${excluded}</strong> ${excluded === 1 ? 'dormancy stimulus' : 'dormancy stimuli'} retained as activation-contract evidence and excluded from preference</div>` : ''}
+    `;
+  }
+
+  function renderActivationDetails(verdict) {
+    const scenarios = Array.isArray(verdict.activationScenarios) ? verdict.activationScenarios : [];
+    if (scenarios.length === 0) return `<span class="muted">${escapeHtml(activationSummary(verdict))}</span>`;
+    const rows = scenarios.map(s => {
+      const expectation = s.expectation === 'reference'
+        ? 'reference-only'
+        : s.expectation === 'dormant' ? 'should stay dormant' : 'should activate';
+      const preference = s.preferenceGateEligible === false
+        ? '; preference: excluded'
+        : '; preference: eligible';
+      const pluginStatus = s.plugin ? `; plugin: ${activationStatusLabel(s.plugin)}` : '';
+      const delegated = Array.isArray(s.delegatedAgents) && s.delegatedAgents.length
+        ? `; delegated: ${s.delegatedAgents.join(', ')}`
+        : '';
+      const skills = Array.isArray(s.invokedSkills) && s.invokedSkills.length
+        ? `; skills: ${s.invokedSkills.join(', ')}`
+        : '';
+      const tools = Array.isArray(s.isolatedTools) && s.isolatedTools.length
+        ? `; tools: ${s.isolatedTools.join(', ')}`
+        : '';
+      const completion = typeof s.isolatedCompleted === 'boolean'
+        ? `; completed: ${s.isolatedCompleted ? 'yes' : 'no'}`
+        : '';
+      const activationOnly = [];
+      if (s.isolatedActivationOnlyFailedRuns) {
+        activationOnly.push(`isolated activation-only failures: ${s.isolatedActivationOnlyFailedRuns}`);
+      }
+      if (s.pluginActivationOnlyFailedRuns) {
+        activationOnly.push(`plugin activation-only failures: ${s.pluginActivationOnlyFailedRuns}`);
+      }
+      const activationOnlyStatus = activationOnly.length
+        ? `; ${activationOnly.join('; ')}`
+        : '';
+      return `<li><strong>${escapeHtml(s.scenarioName)}</strong> (${escapeHtml(expectation)}): isolated: ${escapeHtml(activationStatusLabel(s.isolated))}${escapeHtml(pluginStatus)}${escapeHtml(delegated)}${escapeHtml(skills)}${escapeHtml(tools)}${escapeHtml(completion)}${escapeHtml(activationOnlyStatus)}${escapeHtml(preference)}</li>`;
+    }).join('');
+    return `
+      <div>${escapeHtml(activationSummary(verdict))}</div>
+      <details>
+        <summary>Scenario activation details</summary>
+        <ul class="evidence-list">${rows}</ul>
+      </details>
+    `;
+  }
+
+  function renderJudgeEvidence(verdict) {
+    const rationales = Array.isArray(verdict.judgeRationales) ? verdict.judgeRationales : [];
+    const links = (Array.isArray(verdict.links) ? verdict.links : [])
+      .map(link => ({ label: link.label, url: safeEvidenceUrl(link.url) }))
+      .filter(link => link.url);
+    const linkHtml = links.length
+      ? `<div class="evidence-links">${links.map(link =>
+          `<a href="${escapeHtml(link.url)}" target="_blank" rel="noopener">${escapeHtml(link.label)}</a>`
+        ).join(' &middot; ')}</div>`
+      : '';
+    if (rationales.length === 0) {
+      return `<span class="muted">No rationale retained in this run</span>${linkHtml}`;
+    }
+    const excerpts = rationales.map(item =>
+      `<li><strong>${escapeHtml(item.scenarioName)}</strong>${item.direction ? ` (${escapeHtml(item.direction)})` : ''}: ${escapeHtml(item.rationale)}</li>`
+    ).join('');
+    return `
+      <details>
+        <summary>${rationales.length} judge excerpt${rationales.length === 1 ? '' : 's'}</summary>
+        <ul class="evidence-list">${excerpts}</ul>
+      </details>
+      ${linkHtml}
+    `;
+  }
+
+  function renderVerdictEvidence(entries, container) {
+    const latestByModel = new Map();
+    for (let i = entries.length - 1; i >= 0; i--) {
+      const entry = entries[i];
+      const model = entry && entry.model ? entry.model : 'unknown';
+      if (!latestByModel.has(model) && Array.isArray(entry.verdictEvidence)) {
+        latestByModel.set(model, entry);
+      }
+    }
+
+    if (latestByModel.size === 0) {
+      container.innerHTML = '<p class="evidence-empty">Authoritative verdict evidence is unavailable in retained legacy runs. The score charts below remain useful for triage, but do not show the pass gate.</p>';
+      return;
+    }
+
+    container.innerHTML = Array.from(latestByModel.entries()).map(([model, entry]) => {
+      const date = new Date(entry.date);
+      const freshness = window.EvidenceFreshness
+        ? window.EvidenceFreshness.assess(entry, dashboardMeta)
+        : { stale: false, comparable: false };
+      const evidenceCommit = entry && entry.commit ? entry.commit : {};
+      const evidenceId = freshness.evidenceId || evidenceCommit.id || '';
+      const deployedId = freshness.deployedId || '';
+      const evidenceUrl = safeEvidenceUrl(evidenceCommit.url);
+      const deployedUrl = safeEvidenceUrl(
+        dashboardMeta && dashboardMeta.deployedCommit && dashboardMeta.deployedCommit.url
+      );
+      const commitLabel = evidenceId ? evidenceId.substring(0, 8) : 'unknown';
+      const commitHtml = evidenceUrl
+        ? `<a href="${escapeHtml(evidenceUrl)}" target="_blank" rel="noopener">${escapeHtml(commitLabel)}</a>`
+        : escapeHtml(commitLabel);
+      let freshnessHtml = '';
+      if (freshness.stale) {
+        const deployedLabel = deployedId.substring(0, 8);
+        const deployedHtml = deployedUrl
+          ? `<a href="${escapeHtml(deployedUrl)}" target="_blank" rel="noopener">${escapeHtml(deployedLabel)}</a>`
+          : escapeHtml(deployedLabel);
+        const age = window.EvidenceFreshness.formatAge(freshness.ageMs);
+        const relation = freshness.older
+          ? `is ${escapeHtml(age)} older than`
+          : 'does not match';
+        const guidance = freshness.older
+          ? 'This is retained evidence, not a measurement of the deployed main commit.'
+          : 'Commit age is unavailable or non-older; verify this revision before treating it as current.';
+        freshnessHtml = `<div class="evidence-freshness stale" role="alert">⚠ Evidence commit ${commitHtml} ${relation} deployed main commit ${deployedHtml}. ${guidance}</div>`;
+      } else if (freshness.comparable) {
+        freshnessHtml = `<div class="evidence-freshness current">Evidence commit ${commitHtml} matches the deployed main commit.</div>`;
+      } else {
+        freshnessHtml = `<div class="evidence-freshness unknown">Evidence commit ${commitHtml}; deployment comparison unavailable.</div>`;
+      }
+      const rows = entry.verdictEvidence.map(verdict => {
+        const display = verdictDisplay(verdict);
+        return `<tr>
+          <th scope="row">
+            ${escapeHtml(verdict.skillName)}
+            ${verdict.skillKind === 'reference' ? '<span class="evidence-tag">reference</span>' : ''}
+            ${verdict.skillKind === 'agent' ? '<span class="evidence-tag">agent</span>' : ''}
+            ${verdict.skillKind === 'workflow' ? '<span class="evidence-tag">workflow prompt</span>' : ''}
+          </th>
+          <td>
+            <span class="verdict-badge ${display.cls}">${escapeHtml(display.label)}</span>
+            ${verdict.reason ? `<div class="evidence-secondary">${escapeHtml(verdict.reason)}</div>` : ''}
+          </td>
+          <td>${renderGateEvidence(verdict.gateEvidence)}</td>
+          <td>${renderActivationDetails(verdict)}</td>
+          <td>${renderJudgeEvidence(verdict)}</td>
+        </tr>`;
+      }).join('');
+      return `
+        <section class="evidence-run">
+          <h3>${escapeHtml(model)} <span>latest retained evidence · ${escapeHtml(date.toLocaleString())}</span></h3>
+          ${freshnessHtml}
+          <div class="evidence-table-wrap">
+            <table class="evidence-table">
+              <caption>Authoritative verdict and supporting evidence for ${escapeHtml(model)}</caption>
+              <thead><tr><th>Target</th><th>Verdict</th><th>Gate evidence</th><th>Activation</th><th>Judge evidence</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    }).join('');
+  }
+
+  function createIssueFlags() {
+    return {
+      notActivated: false,
+      timedOut: false,
+      overfittingModerate: false,
+      overfittingHigh: false,
+      multiIssue: false,
+    };
+  }
+
+  function recordIssueFlags(flags, notActivated, timedOut, overfitting) {
+    if (notActivated) flags.notActivated = true;
+    if (timedOut) flags.timedOut = true;
+    if (overfitting === 'high') flags.overfittingHigh = true;
+    else if (overfitting) flags.overfittingModerate = true;
+    if ((notActivated ? 1 : 0) + (timedOut ? 1 : 0) + (overfitting ? 1 : 0) > 1) {
+      flags.multiIssue = true;
+    }
+  }
+
+  function combineIssueFlags(entryFlags, indexes) {
+    const combined = createIssueFlags();
+    indexes.forEach(index => {
+      const flags = entryFlags[index];
+      if (!flags) return;
+      combined.notActivated ||= flags.notActivated;
+      combined.timedOut ||= flags.timedOut;
+      combined.overfittingModerate ||= flags.overfittingModerate;
+      combined.overfittingHigh ||= flags.overfittingHigh;
+      combined.multiIssue ||= flags.multiIssue;
+    });
+    return combined;
+  }
+
+  function refreshLegendNotes(container, flags) {
+    container.innerHTML = '';
+    appendLegendNotes(container, flags);
+  }
+
+  const FILTERED_DATASET_PROPERTIES = [
+    'data',
+    'pointBackgroundColor',
+    'pointBorderColor',
+    'pointStyle',
+    'pointRotation',
+    'pointRadius',
+    'pointBorderWidth',
+  ];
+
+  function captureDatasetArrays(dataset) {
+    const captured = {};
+    FILTERED_DATASET_PROPERTIES.forEach(property => {
+      if (Array.isArray(dataset[property])) captured[property] = dataset[property].slice();
+    });
+    return captured;
+  }
+
+  function applyDatasetIndexes(dataset, captured, indexes) {
+    Object.entries(captured).forEach(([property, values]) => {
+      dataset[property] = indexes.map(index => values[index]);
+    });
+  }
+
+  function renderPlugin(plugin, data, panel) {
+    if (!data || !data.entries) {
+      panel.innerHTML = '<p style="color:#8b949e;text-align:center;padding:2rem;">No data available.</p>';
+      return;
+    }
+
+    const allQualityEntries = data.entries['Quality'] || [];
+    const allEfficiencyEntries = data.entries['Efficiency'] || [];
+
+    // Canonical model styling for this plugin comes from the FULL history, so the
+    // summary, filter, and charts keep the same colours and markers while models
+    // are filtered. Plugin-scoped maps prevent lazy redraws from picking up the
+    // styling of a different tab.
+    const allModels = orderedModels(allQualityEntries);
+    const pluginModelColors = buildModelColorMap(allModels);
+    const pluginModelMarkers = buildModelMarkerMap(allModels);
+    activeModelColors = pluginModelColors;
+    activeModelMarkers = pluginModelMarkers;
+
+    // Model filter state: every model is enabled by default. The filter bar (built
+    // below) lets the viewer focus on a subset.
+    const activeModels = new Set(allModels);
+    const liveCharts = [];
+    let chartsInitialized = false;
+    let pendingDraw = false;
+
+    const replayHref = `${replayBaseUrl}?manifest=${encodeURIComponent(sessionManifestUrl)}&tag=${encodeURIComponent(plugin)}`;
+
+    panel.innerHTML = `
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+        <a href="${escapeHtml(replayHref)}" target="_blank" rel="noopener"
+           style="color:#58a6ff;font-size:13px;text-decoration:none;">&#9654; Sessions Visualisation</a>
+      </div>
+      <div id="model-filter-${plugin}" style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:16px;"></div>
+      <div class="interpretation-note"><strong>Pass gate:</strong> preference-eligible distinct-stimulus W/T/L, the exact sign test over discordant votes, net win, and explicit dormancy activation contracts. Dormancy comparison outcomes remain visible but do not vote. <strong>Score averages:</strong> triage only; 0&ndash;10 quality does not decide pass/fail.</div>
+      <h2 class="section-title">Latest Verdict Evidence</h2>
+      <div id="verdict-evidence-${plugin}"></div>
+      <h2 class="section-title">Quality Score Triage</h2>
+      <div class="summary-cards" id="summary-${plugin}"></div>
+      <h2 class="section-title">Quality Over Time</h2>
+      <div class="charts-grid" id="quality-${plugin}"></div>
+      <h2 class="section-title">Efficiency Over Time</h2>
+      <div class="charts-grid" id="efficiency-${plugin}"></div>
+    `;
+
+    function draw() {
+      // Restore this plugin's canonical colour and marker maps. The module globals
+      // may have been overwritten by another plugin tab since the last render.
+      activeModelColors = pluginModelColors;
+      activeModelMarkers = pluginModelMarkers;
+
+      // Restrict history to the models the viewer has enabled.
+      const qualityEntries = allQualityEntries.filter(e => activeModels.has((e && e.model) ? e.model : 'unknown'));
+      const efficiencyEntries = allEfficiencyEntries.filter(e => activeModels.has((e && e.model) ? e.model : 'unknown'));
+
+      const _summary = document.getElementById(`summary-${plugin}`);
+      const _verdictEvidence = document.getElementById(`verdict-evidence-${plugin}`);
+      const _quality = document.getElementById(`quality-${plugin}`);
+      const _efficiency = document.getElementById(`efficiency-${plugin}`);
+      if (_summary) _summary.innerHTML = '';
+      if (_verdictEvidence) _verdictEvidence.innerHTML = '';
+      if (!chartsInitialized) {
+        if (_quality) _quality.innerHTML = '';
+        if (_efficiency) _efficiency.innerHTML = '';
+      }
+
+    if (_verdictEvidence) {
+      renderVerdictEvidence(qualityEntries, _verdictEvidence);
+    }
+
+    // Summary cards — compute averages across the last 50 entries
+    const summaryDiv = document.getElementById(`summary-${plugin}`);
+    const SUMMARY_WINDOW = 50;
+    if (qualityEntries.length > 0) {
+      // Use only the most recent entries for summary cards
+      const recentEntries = qualityEntries.slice(-SUMMARY_WINDOW);
+      const windowLabel = qualityEntries.length > SUMMARY_WINDOW
+        ? `last ${SUMMARY_WINDOW} of ${qualityEntries.length} runs`
+        : `${qualityEntries.length} runs`;
+
+      // Per-model breakdown: cross-family runs mix executor models into one
+      // file, so a single blended average would hide per-model differences.
+      // Group the recent window by model and show one row per model.
+      const summaryModels = orderedModels(recentEntries);
+      const stats = {}; // model -> running sums
+      let anyPluginSummary = false;
+      recentEntries.forEach(entry => {
+        const m = (entry && entry.model) ? entry.model : 'unknown';
+        const st = stats[m] || (stats[m] = { sSum: 0, sN: 0, pSum: 0, pN: 0, vSum: 0, vN: 0, runs: 0 });
+        st.runs++;
+        entry.benches.forEach(b => {
+          if (b.name.endsWith('- Skilled Quality')) { st.sSum += b.value; st.sN++; }
+          else if (b.name.endsWith('- Plugin Quality')) { st.pSum += b.value; st.pN++; anyPluginSummary = true; }
+          else if (b.name.endsWith('- Vanilla Quality')) { st.vSum += b.value; st.vN++; }
+        });
+      });
+      const fmtAvg = (sum, n) => (n > 0 ? (sum / n).toFixed(2) : '&mdash;');
+      const fmtDelta = (aSum, aN, bSum, bN) => {
+        if (!(aN > 0 && bN > 0)) return '&mdash;';
+        const d = aSum / aN - bSum / bN;
+        const cls = d > 0 ? 'positive' : d < 0 ? 'negative' : 'neutral';
+        return `<span class="${cls}">${d > 0 ? '+' : ''}${d.toFixed(2)}</span>`;
+      };
+      const modelRows = summaryModels.map(m => {
+        const st = stats[m];
+        const dot = `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${colourForModel(m, summaryModels)};margin-right:6px;"></span>`;
+        return `<tr>
+          <td style="text-align:left;white-space:nowrap">${dot}${escapeHtml(m) || 'N/A'}</td>
+          <td>${st.runs}</td>
+          <td style="color:var(--skilled)">${fmtAvg(st.sSum, st.sN)}</td>
+          ${anyPluginSummary ? `<td style="color:#3fb950">${fmtAvg(st.pSum, st.pN)}</td>` : ''}
+          <td style="color:var(--vanilla)">${fmtAvg(st.vSum, st.vN)}</td>
+          <td>${fmtDelta(st.sSum, st.sN, st.vSum, st.vN)}</td>
+          ${anyPluginSummary ? `<td>${fmtDelta(st.pSum, st.pN, st.vSum, st.vN)}</td>` : ''}
+        </tr>`;
+      }).join('');
+      summaryDiv.innerHTML = `
+        <div class="card" style="grid-column:1/-1;flex:1 1 100%;text-align:left">
+          <div class="card-label">Quality by model (triage only) &mdash; ${windowLabel} &middot; ${qualityEntries.length} total runs</div>
+          <table class="model-summary" style="width:100%;border-collapse:collapse;margin-top:10px;font-size:13px;text-align:center;">
+            <thead><tr style="color:#8b949e">
+              <th style="text-align:left">Model</th><th>Runs</th><th>Skilled (0&ndash;10)</th>${anyPluginSummary ? '<th>Plugin (0&ndash;10)</th>' : ''}<th>Vanilla (0&ndash;10)</th><th>&Delta; Isolated</th>${anyPluginSummary ? '<th>&Delta; Plugin</th>' : ''}
+            </tr></thead>
+            <tbody>${modelRows}</tbody>
+          </table>
+        </div>`;
+
+      // Count not-activated entries
+      let notActivatedCount = 0;
+      recentEntries.forEach(entry => {
+        if (entry.benches.some(b => b.notActivated)) notActivatedCount++;
+      });
+      if (notActivatedCount > 0) {
+        summaryDiv.innerHTML += `
+          <div class="card">
+            <div class="card-label">Not Activated</div>
+            <div class="card-value" style="color: var(--warning)">${notActivatedCount}</div>
+            <div class="card-delta">runs where skill was not loaded</div>
+          </div>
+        `;
+      }
+
+      // Count timed-out entries
+      let timedOutCount = 0;
+      recentEntries.forEach(entry => {
+        if (entry.benches.some(b => b.timedOut)) timedOutCount++;
+      });
+      if (timedOutCount > 0) {
+        summaryDiv.innerHTML += `
+          <div class="card">
+            <div class="card-label">Timed Out</div>
+            <div class="card-value" style="color: var(--timeout)">${timedOutCount}</div>
+            <div class="card-delta">runs where execution timed out</div>
+          </div>
+        `;
+      }
+
+      // Count overfitting entries by severity
+      let overfittingHighCount = 0;
+      let overfittingModerateCount = 0;
+      recentEntries.forEach(entry => {
+        const ofBench = entry.benches.find(b => b.overfitting);
+        if (ofBench) {
+          if (ofBench.overfitting === 'high') overfittingHighCount++;
+          else overfittingModerateCount++;
+        }
+      });
+      const overfittingTotal = overfittingHighCount + overfittingModerateCount;
+      if (overfittingTotal > 0) {
+        const cardColor = overfittingHighCount > 0 ? ISSUE_COLORS.overfittingHigh : ISSUE_COLORS.overfittingModerate;
+        const breakdown = [];
+        if (overfittingHighCount > 0) breakdown.push(`${overfittingHighCount} high`);
+        if (overfittingModerateCount > 0) breakdown.push(`${overfittingModerateCount} moderate`);
+        summaryDiv.innerHTML += `
+          <div class="card">
+            <div class="card-label">Overfitting</div>
+            <div class="card-value" style="color: ${cardColor}">${overfittingTotal}</div>
+            <div class="card-delta">${breakdown.join(', ')} overfitting</div>
+          </div>
+        `;
+      }
+    }
+
+    if (!chartsInitialized) {
+      // Quality charts
+      const qualityChartsDiv = document.getElementById(`quality-${plugin}`);
+      if (qualityEntries.length > 0) {
+      // Discover tests from all entries (not just latest, which may have partial data)
+      const tests = new Set();
+      let hasAnyPlugin = false;
+      qualityEntries.forEach(entry => {
+        entry.benches.forEach(b => {
+          const match = b.name.match(/^(.+) - (Skilled|Plugin|Vanilla) Quality$/);
+          if (match) {
+            tests.add(match[1]);
+            if (match[2] === 'Plugin') hasAnyPlugin = true;
+          }
+        });
+      });
+
+      tests.forEach(test => {
+        if (hasAnyPlugin) {
+          liveCharts.push(createTripleChart(
+            qualityChartsDiv, test, qualityEntries,
+            `${test} - Skilled Quality`, `${test} - Plugin Quality`, `${test} - Vanilla Quality`,
+            'Isolated', 'Plugin', 'Vanilla',
+            '#58a6ff', '#3fb950', '#8b949e'
+          ));
+        } else {
+          liveCharts.push(createPairedChart(
+            qualityChartsDiv, test, qualityEntries,
+            `${test} - Skilled Quality`, `${test} - Vanilla Quality`,
+            'Skilled', 'Vanilla', '#58a6ff', '#8b949e'
+          ));
+        }
+      });
+      }
+
+      // Efficiency charts
+      const efficiencyChartsDiv = document.getElementById(`efficiency-${plugin}`);
+      if (efficiencyEntries.length > 0) {
+      // Discover tests from all entries (not just latest, which may have partial data)
+      const effTests = new Set();
+      let hasAnyPluginEff = false;
+      let hasAnyVanillaEff = false;
+      efficiencyEntries.forEach(entry => {
+        entry.benches.forEach(b => {
+          const matchSkilled = b.name.match(/^(.+) - Skilled Time$/);
+          if (matchSkilled) effTests.add(matchSkilled[1]);
+          const matchPlugin = b.name.match(/^(.+) - Plugin Time$/);
+          if (matchPlugin) { effTests.add(matchPlugin[1]); hasAnyPluginEff = true; }
+          const matchVanilla = b.name.match(/^(.+) - Vanilla Time$/);
+          if (matchVanilla) { effTests.add(matchVanilla[1]); hasAnyVanillaEff = true; }
+        });
+      });
+
+      effTests.forEach(test => {
+        const div = document.createElement('div');
+        div.className = 'chart-container';
+        div.innerHTML = `<h3>${escapeHtml(test)}</h3><canvas></canvas>`;
+        efficiencyChartsDiv.appendChild(div);
+        const canvas = div.querySelector('canvas');
+
+        const labels = efficiencyEntries.map(e => {
+          const d = new Date(e.date);
+          return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        });
+
+        // Precompute per-entry data in a single pass over e.benches
+        const timeName = `${test} - Skilled Time`;
+        const tokenName = `${test} - Skilled Tokens In`;
+        const plugTimeName = `${test} - Plugin Time`;
+        const plugTokenName = `${test} - Plugin Tokens In`;
+        const vanTimeName = `${test} - Vanilla Time`;
+        const vanTokenName = `${test} - Vanilla Tokens In`;
+        const entryLegendFlags = efficiencyEntries.map(() => createIssueFlags());
+
+        const perEntryData = efficiencyEntries.map((e, entryIndex) => {
+          let timeBench = undefined;
+          let tokenBench = undefined;
+          let plugTimeBench = undefined;
+          let plugTokenBench = undefined;
+          let vanTimeBench = undefined;
+          let vanTokenBench = undefined;
+          for (const b of e.benches) {
+            if (!timeBench && b.name === timeName) timeBench = b;
+            else if (!tokenBench && b.name === tokenName) tokenBench = b;
+            else if (!plugTimeBench && b.name === plugTimeName) plugTimeBench = b;
+            else if (!plugTokenBench && b.name === plugTokenName) plugTokenBench = b;
+            else if (!vanTimeBench && b.name === vanTimeName) vanTimeBench = b;
+            else if (!vanTokenBench && b.name === vanTokenName) vanTokenBench = b;
+          }
+          const timeNA = !!(timeBench && timeBench.notActivated);
+          const tokenNA = !!(tokenBench && tokenBench.notActivated);
+          const timeTO = !!(timeBench && timeBench.timedOut);
+          const tokenTO = !!(tokenBench && tokenBench.timedOut);
+          const timeOF = timeBench && timeBench.overfitting ? timeBench.overfitting : null;
+          const tokenOF = tokenBench && tokenBench.overfitting ? tokenBench.overfitting : null;
+          const entryFlags = entryLegendFlags[entryIndex];
+          recordIssueFlags(entryFlags, timeNA, timeTO, timeOF);
+          recordIssueFlags(entryFlags, tokenNA, tokenTO, tokenOF);
+          if (entryFlags.overfittingHigh) entryFlags.overfittingModerate = false;
+          return {
+            timeValue: timeBench ? timeBench.value : null,
+            timeNotActivated: timeNA,
+            timeTimedOut: timeTO,
+            timeOverfitting: timeOF,
+            tokenValue: tokenBench ? tokenBench.value / 1000 : null,
+            tokenNotActivated: tokenNA,
+            tokenTimedOut: tokenTO,
+            tokenOverfitting: tokenOF,
+            plugTimeValue: plugTimeBench ? plugTimeBench.value : null,
+            plugTokenValue: plugTokenBench ? plugTokenBench.value / 1000 : null,
+            vanTimeValue: vanTimeBench ? vanTimeBench.value : null,
+            vanTokenValue: vanTokenBench ? vanTokenBench.value / 1000 : null,
+          };
+        });
+        const legendFlags = combineIssueFlags(
+          entryLegendFlags,
+          efficiencyEntries.map((_, index) => index)
+        );
+
+        const timeData = perEntryData.map(d => d.timeValue);
+        const tokenData = perEntryData.map(d => d.tokenValue);
+        const plugTimeData = perEntryData.map(d => d.plugTimeValue);
+        const plugTokenData = perEntryData.map(d => d.plugTokenValue);
+        const vanTimeData = perEntryData.map(d => d.vanTimeValue);
+        const vanTokenData = perEntryData.map(d => d.vanTokenValue);
+
+        // Per-point styling using shared helper
+        const timeAp = perEntryData.map(d => getPointAppearance({ timedOut: d.timeTimedOut, notActivated: d.timeNotActivated, overfitting: d.timeOverfitting }, '#58a6ff'));
+        const timePointBg = timeAp.map(a => a.color);
+        const timePointStyle = timeAp.map(a => a.style);
+        const timePointRadius = timeAp.map(a => a.radius);
+        const timePointBorderWidth = timeAp.map(a => a.borderWidth);
+        const tokenAp = perEntryData.map(d => getPointAppearance({ timedOut: d.tokenTimedOut, notActivated: d.tokenNotActivated, overfitting: d.tokenOverfitting }, '#58a6ff'));
+        const tokenPointBg = tokenAp.map(a => a.color);
+        const tokenPointStyle = tokenAp.map(a => a.style);
+        const tokenPointRadius = tokenAp.map(a => a.radius);
+        const tokenPointBorderWidth = tokenAp.map(a => a.borderWidth);
+
+        const datasets = [
+          {
+            label: 'Isolated Time (s)',
+            data: timeData,
+            borderColor: '#58a6ff',
+            borderWidth: 2,
+            pointBackgroundColor: timePointBg,
+            pointBorderColor: timePointBg,
+            pointRadius: timePointRadius,
+            pointBorderWidth: timePointBorderWidth,
+            pointStyle: timePointStyle,
+            tension: 0.3,
+            fill: false,
+            yAxisID: 'y'
+          },
+          {
+            label: 'Isolated Tokens (k)',
+            data: tokenData,
+            borderColor: '#58a6ff',
+            borderWidth: 2,
+            pointBackgroundColor: tokenPointBg,
+            pointBorderColor: tokenPointBg,
+            pointRadius: tokenPointRadius,
+            pointBorderWidth: tokenPointBorderWidth,
+            pointStyle: tokenPointStyle,
+            tension: 0.3,
+            borderDash: [5, 5],
+            fill: false,
+            yAxisID: 'y1'
+          }
+        ];
+
+        // Add plugin efficiency datasets if any plugin data exists
+        if (hasAnyPluginEff) {
+          datasets.push({
+            label: 'Plugin Time (s)',
+            data: plugTimeData,
+            borderColor: '#3fb950',
+            borderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            tension: 0.3,
+            fill: false,
+            yAxisID: 'y'
+          });
+          datasets.push({
+            label: 'Plugin Tokens (k)',
+            data: plugTokenData,
+            borderColor: '#3fb950',
+            borderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            tension: 0.3,
+            borderDash: [5, 5],
+            fill: false,
+            yAxisID: 'y1'
+          });
+        }
+
+        // Add vanilla efficiency datasets if any vanilla data exists
+        if (hasAnyVanillaEff) {
+          datasets.push({
+            label: 'Vanilla Time (s)',
+            data: vanTimeData,
+            borderColor: '#8b949e',
+            borderWidth: 2,
+            // Hollow diamond markers keep vanilla visible when it overlaps the
+            // isolated/plugin lines. Vanilla is pushed last, so it draws on top.
+            pointStyle: 'rectRot',
+            pointBackgroundColor: 'transparent',
+            pointBorderColor: '#8b949e',
+            pointBorderWidth: 1.5,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            tension: 0.3,
+            borderDash: [8, 6],
+            fill: false,
+            yAxisID: 'y'
+          });
+          datasets.push({
+            label: 'Vanilla Tokens (k)',
+            data: vanTokenData,
+            borderColor: '#8b949e',
+            borderWidth: 2,
+            pointStyle: 'rectRot',
+            pointBackgroundColor: 'transparent',
+            pointBorderColor: '#8b949e',
+            pointBorderWidth: 1.5,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            tension: 0.3,
+            borderDash: [8, 6],
+            fill: false,
+            yAxisID: 'y1'
+          });
+        }
+
+        let visibleEfficiencyEntries = efficiencyEntries;
+        const sourceLabels = labels.slice();
+        const datasetSources = datasets.map(captureDatasetArrays);
+        const effChart = new Chart(canvas, {
+          type: 'line',
+          data: {
+            labels,
+            datasets
+          },
+          options: {
+            responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { labels: { color: '#8b949e', font: { size: 11 }, usePointStyle: true, generateLabels: legendLabelsWithCircle } },
+              tooltip: {
+                callbacks: {
+                  afterTitle: (items) => {
+                    const idx = items[0].dataIndex;
+                    const entry = visibleEfficiencyEntries[idx];
+                    const parts = [];
+                    if (entry && entry.model) parts.push(`Model: ${entry.model}`);
+                    if (entry && entry.commit) {
+                      const msg = entry.commit.message.split('\n')[0];
+                      parts.push(msg.length > 60 ? msg.substring(0, 60) + '...' : msg);
+                    }
+                    parts.push(...buildIssueTooltipLines(entry, b => b.name === timeName || b.name === tokenName));
+                    return parts.join('\n');
+                  }
+                }
+              }
+            },
+            scales: {
+              x: { ticks: { color: '#8b949e' }, grid: { color: '#30363d' } },
+              y: {
+                type: 'linear',
+                position: 'left',
+                ticks: { color: '#8b949e' },
+                grid: { color: '#30363d' },
+                title: { display: true, text: 'seconds', color: '#8b949e' }
+              },
+              y1: {
+                type: 'linear',
+                position: 'right',
+                ticks: { color: '#8b949e' },
+                grid: { drawOnChartArea: false },
+                title: { display: true, text: 'tokens (k)', color: '#8b949e' }
+              }
+            }
+          }
+        });
+
+        const issueNotes = document.createElement('div');
+        refreshLegendNotes(issueNotes, legendFlags);
+        div.appendChild(issueNotes);
+        effChart.applyModelFilter = (models) => {
+          const indexes = [];
+          efficiencyEntries.forEach((entry, index) => {
+            const model = (entry && entry.model) ? entry.model : 'unknown';
+            if (models.has(model)) indexes.push(index);
+          });
+          visibleEfficiencyEntries = indexes.map(index => efficiencyEntries[index]);
+          effChart.data.labels = indexes.map(index => sourceLabels[index]);
+          effChart.data.datasets.forEach((dataset, index) => {
+            applyDatasetIndexes(dataset, datasetSources[index], indexes);
+          });
+          div.style.display = effChart.data.datasets.some(dataset =>
+            dataset.data.some(value => value != null)
+          ) ? '' : 'none';
+          refreshLegendNotes(issueNotes, combineIssueFlags(entryLegendFlags, indexes));
+          effChart.update('none');
+        };
+
+        liveCharts.push(effChart);
+      });
+      }
+      chartsInitialized = true;
+    } else {
+      liveCharts.forEach(chart => {
+        if (chart && chart.applyModelFilter) chart.applyModelFilter(activeModels);
+      });
+    }
+    } // end draw()
+
+    function scheduleDraw() {
+      if (pendingDraw) return;
+      pendingDraw = true;
+      const schedule = window.requestAnimationFrame || (callback => setTimeout(callback, 0));
+      schedule(() => {
+        pendingDraw = false;
+        draw();
+      });
+    }
+
+    // Per-model filter bar: all models enabled by default. Toggling a model
+    // updates the existing charts for just the selected models. Changes within
+    // one browser frame are coalesced so rapid toggles only trigger one refresh.
+    // Colours stay canonical (bound to full history), so hiding a model never
+    // recolours the others. Only shown when there is more than one model.
+    const filterBar = document.getElementById(`model-filter-${plugin}`);
+    if (filterBar && allModels.length > 1) {
+      const lbl = document.createElement('span');
+      lbl.textContent = 'Models:';
+      lbl.style.cssText = 'color:#8b949e;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;';
+      filterBar.appendChild(lbl);
+      allModels.forEach(m => {
+        const item = document.createElement('label');
+        item.style.cssText = 'display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#e6edf3;cursor:pointer;user-select:none;';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = true;
+        cb.addEventListener('change', () => {
+          // Keep at least one model active so the view is never empty.
+          if (!cb.checked && activeModels.size === 1 && activeModels.has(m)) {
+            cb.checked = true;
+            return;
+          }
+          if (cb.checked) activeModels.add(m); else activeModels.delete(m);
+          scheduleDraw();
+        });
+        const marker = document.createElement('span');
+        const modelMarker = markerForModel(m, allModels);
+        marker.setAttribute('aria-hidden', 'true');
+        marker.style.cssText = `width:10px;height:10px;display:inline-block;flex:0 0 auto;background:${colourForModel(m, allModels)};border-radius:${modelMarker.style === 'rectRounded' ? '3px' : '0'};`;
+        marker.style.transform = `rotate(${modelMarker.rotation}deg)`;
+        const nm = document.createElement('span');
+        nm.textContent = m;
+        item.appendChild(cb);
+        item.appendChild(marker);
+        item.appendChild(nm);
+        filterBar.appendChild(item);
+      });
+    }
+
+    draw();
+  }
+
+  // Quality trend charts, segmented by executor model.
+  //
+  // Cross-family evaluation interleaves several models in one plugin's history,
+  // so a single line per variant would connect points from different families
+  // and blend them. Instead, draw one line PER MODEL (colour = model) and encode
+  // the variant (Isolated / Plugin / Vanilla) with the dash style. Each per-model
+  // dataset carries values only at its own runs (null elsewhere, spanGaps:false),
+  // so a line never bridges two models.
+  function renderModelSegmentedChart(container, title, entries, variants) {
+    const div = document.createElement('div');
+    div.className = 'chart-container';
+    div.innerHTML = `<h3>${escapeHtml(title)}</h3><canvas></canvas>`;
+    container.appendChild(div);
+    const canvas = div.querySelector('canvas');
+
+    const labels = entries.map(e => {
+      const d = new Date(e.date);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    });
+    const models = orderedModels(entries);
+    const colorMap = {};
+    models.forEach(m => { colorMap[m] = colourForModel(m, models); });
+    const modelOf = entries.map(e => (e && e.model) ? e.model : 'unknown');
+    const allNames = variants.map(v => v.name);
+
+    const legendFlags = createIssueFlags();
+    const entryLegendFlags = entries.map(() => createIssueFlags());
+    const datasets = [];
+    const datasetModels = [];
+
+    variants.forEach(v => {
+      // Bench for this variant at each entry (or null when absent).
+      const per = entries.map(e => e.benches.find(x => x.name === v.name) || null);
+
+      // Issue legend flags come from the skilled-side variants only (matches the
+      // previous behaviour where Vanilla did not raise issue markers).
+      if (!v.vanilla) {
+        per.forEach((b, index) => {
+          if (!b) return;
+          const na = !!b.notActivated, to = !!b.timedOut, of = b.overfitting || null;
+          recordIssueFlags(legendFlags, na, to, of);
+          recordIssueFlags(entryLegendFlags[index], na, to, of);
+        });
+      }
+
+      // Full-length per-point appearance; base colour is the point's model colour
+      // so non-issue markers match their model line. Issue markers still override.
+      const appearance = per.map((b, i) => {
+        const base = colorMap[modelOf[i]];
+        const modelMarker = markerForModel(modelOf[i], models);
+        if (v.vanilla) {
+          return {
+            color: base,
+            bg: CHART_SURFACE,
+            style: modelMarker.style,
+            rotation: modelMarker.rotation,
+            radius: 6,
+            borderWidth: 2,
+          };
+        }
+        const ap = getPointAppearance(
+          { timedOut: b && b.timedOut, notActivated: b && b.notActivated, overfitting: b && b.overfitting },
+          base,
+          modelMarker.style,
+          modelMarker.rotation
+        );
+        return {
+          color: ap.color,
+          bg: ap.color,
+          style: ap.style,
+          rotation: ap.rotation,
+          radius: ap.radius,
+          borderWidth: ap.borderWidth,
+        };
+      });
+      const pointBg = appearance.map(a => a.bg);
+      const pointBorder = appearance.map(a => a.color);
+      const pointStyle = appearance.map(a => a.style);
+      const pointRotation = appearance.map(a => a.rotation);
+      const pointRadius = appearance.map(a => a.radius);
+      const pointBorderWidth = appearance.map(a => a.borderWidth);
+
+      // One dataset per model: value present only at that model's indices.
+      models.forEach(m => {
+        const data = per.map((b, i) => (modelOf[i] === m && b) ? b.value : null);
+        if (data.every(x => x === null)) return;
+        const modelMarker = markerForModel(m, models);
+        datasets.push({
+          label: `${m} \u00B7 ${v.label}`,
+          modelMarker,
+          modelPointFill: v.vanilla ? CHART_SURFACE : colorMap[m],
+          data,
+          borderColor: colorMap[m],
+          backgroundColor: colorMap[m] + '20',
+          borderWidth: 2,
+          borderDash: (v.dash && v.dash.length) ? v.dash : [],
+          pointBackgroundColor: pointBg,
+          pointBorderColor: pointBorder,
+          pointStyle: pointStyle,
+          pointRotation: pointRotation,
+          pointRadius: pointRadius,
+          pointBorderWidth: pointBorderWidth,
+          pointHoverRadius: 8,
+          tension: 0.3,
+          spanGaps: false,
+          fill: false,
+        });
+        datasetModels.push(m);
+      });
+    });
+
+    let visibleEntries = entries;
+    const sourceLabels = labels.slice();
+    const datasetSources = datasets.map(captureDatasetArrays);
+    const chart = new Chart(canvas, {
+      type: 'line',
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          // The model filter above the charts already provides the colour key.
+          // Hide the repeated model-by-variant legend before it crowds out the plot.
+          legend: {
+            display: datasets.length <= MAX_INLINE_LEGEND_SERIES,
+            labels: { color: '#8b949e', font: { size: 11 }, usePointStyle: true, generateLabels: legendLabelsWithModelMarker }
+          },
+          tooltip: {
+            callbacks: {
+              afterTitle: (items) => {
+                const idx = items[0].dataIndex;
+                const entry = visibleEntries[idx];
+                const parts = [];
+                if (entry && entry.model) parts.push(`Model: ${entry.model}`);
+                if (entry && entry.commit) {
+                  const msg = entry.commit.message.split('\n')[0];
+                  parts.push(msg.length > 60 ? msg.substring(0, 60) + '...' : msg);
+                }
+                parts.push(...buildIssueTooltipLines(entry, b => allNames.includes(b.name)));
+                return parts.join('\n');
+              }
+            }
+          }
+        },
+        scales: {
+          x: { ticks: { color: '#8b949e' }, grid: { color: '#30363d' } },
+          y: { ticks: { color: '#8b949e' }, grid: { color: '#30363d' }, suggestedMin: 0, suggestedMax: 10 }
+        }
+      }
+    });
+
+    const issueNotes = document.createElement('div');
+    refreshLegendNotes(issueNotes, legendFlags);
+    let visibleModels = new Set(models);
+    chart.applyModelFilter = (activeModels) => {
+      const indexes = [];
+      entries.forEach((entry, index) => {
+        const model = (entry && entry.model) ? entry.model : 'unknown';
+        if (activeModels.has(model)) indexes.push(index);
+      });
+      visibleEntries = indexes.map(index => entries[index]);
+      chart.data.labels = indexes.map(index => sourceLabels[index]);
+      chart.data.datasets.forEach((dataset, index) => {
+        applyDatasetIndexes(dataset, datasetSources[index], indexes);
+        const model = datasetModels[index];
+        const modelVisible = activeModels.has(model);
+        dataset.hidden = !modelVisible;
+        if (modelVisible !== visibleModels.has(model)) {
+          chart.setDatasetVisibility(index, modelVisible);
+        }
+      });
+      const visibleDatasetCount = datasetModels.filter(model => activeModels.has(model)).length;
+      chart.options.plugins.legend.display = visibleDatasetCount <= MAX_INLINE_LEGEND_SERIES;
+      div.style.display = chart.data.datasets.some(dataset =>
+        !dataset.hidden && dataset.data.some(value => value != null)
+      ) ? '' : 'none';
+      refreshLegendNotes(issueNotes, combineIssueFlags(entryLegendFlags, indexes));
+      chart.update('none');
+      visibleModels = new Set(activeModels);
+    };
+
+    const dashName = d => (!d || !d.length) ? 'solid' : (d[0] >= 6 ? 'dashed' : 'dotted');
+    const cap = document.createElement('div');
+    cap.className = 'not-activated-legend';
+    const colourKey = datasets.length > MAX_INLINE_LEGEND_SERIES
+      ? 'Line colour + point shape = model (see Models filter above) \u00B7 '
+      : 'Line colour + point shape = model \u00B7 ';
+    cap.innerHTML = colourKey + variants.map(v => `${dashName(v.dash)} = ${escapeHtml(v.label)}`).join(', ');
+    div.appendChild(cap);
+    div.appendChild(issueNotes);
+    return chart;
+  }
+
+  // Triple chart (Skilled / Plugin / Vanilla), now one line per model.
+  function createTripleChart(container, title, entries, nameA, nameB, nameC, labelA, labelB, labelC, colorA, colorB, colorC) {
+    return renderModelSegmentedChart(container, title, entries, [
+      { name: nameA, label: labelA, dash: [], vanilla: false },
+      { name: nameB, label: labelB, dash: [8, 6], vanilla: false },
+      { name: nameC, label: labelC, dash: [2, 3], vanilla: true },
+    ]);
+  }
+
+  // Paired chart (Skilled / Vanilla), now one line per model.
+  function createPairedChart(container, title, entries, nameA, nameB, labelA, labelB, colorA, colorB) {
+    return renderModelSegmentedChart(container, title, entries, [
+      { name: nameA, label: labelA, dash: [], vanilla: false },
+      { name: nameB, label: labelB, dash: [2, 3], vanilla: true },
+    ]);
+  }
+
+  // Skill Value is the default active tab, so render it immediately. Plugin tabs
+  // load lazily on first click; Token Usage self-inits when its tab is shown.
+  if (window.initSkillValue) {
+    window.initSkillValue();
+  } else if (plugins.length > 0) {
+    // Defensive fallback: if skill-value.js failed to load, activate the first plugin.
+    await switchTab(plugins[0]);
+  } else {
+    // No plugins either — fall back to Token Usage so the page is not stuck on
+    // the Skill Value panel's permanent "Loading…".
+    await switchTab(tokenTabId);
+  }
+})();
