@@ -376,17 +376,17 @@
     {
       "code": "NU1301",
       "level": "Error",
-      "message": "Failed to retrieve information about 'Microsoft.Agents.AI' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.Agents.AI'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
-    },
-    {
-      "code": "NU1301",
-      "level": "Error",
       "message": "Failed to retrieve information about 'OpenAI' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='OpenAI'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
     },
     {
       "code": "NU1301",
       "level": "Error",
       "message": "Failed to retrieve information about 'Microsoft.Extensions.AI.OpenAI' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.Extensions.AI.OpenAI'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.Agents.AI' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.Agents.AI'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found)."
     }
   ]
 }
