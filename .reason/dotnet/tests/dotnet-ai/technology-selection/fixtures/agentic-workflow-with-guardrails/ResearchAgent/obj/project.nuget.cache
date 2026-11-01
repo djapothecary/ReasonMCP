@@ -8,6 +8,22 @@
     {
       "code": "NU1301",
       "level": "Error",
+      "message": "Failed to retrieve information about 'OpenAI' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='OpenAI'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found).",
+      "projectPath": "c:\\Source\\ReasonMCP\\.reason\\dotnet\\tests\\dotnet-ai\\technology-selection\\fixtures\\agentic-workflow-with-guardrails\\ResearchAgent\\ResearchAgent.csproj",
+      "filePath": "c:\\Source\\ReasonMCP\\.reason\\dotnet\\tests\\dotnet-ai\\technology-selection\\fixtures\\agentic-workflow-with-guardrails\\ResearchAgent\\ResearchAgent.csproj",
+      "targetGraphs": []
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Failed to retrieve information about 'Microsoft.Extensions.AI.OpenAI' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.Extensions.AI.OpenAI'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found).",
+      "projectPath": "c:\\Source\\ReasonMCP\\.reason\\dotnet\\tests\\dotnet-ai\\technology-selection\\fixtures\\agentic-workflow-with-guardrails\\ResearchAgent\\ResearchAgent.csproj",
+      "filePath": "c:\\Source\\ReasonMCP\\.reason\\dotnet\\tests\\dotnet-ai\\technology-selection\\fixtures\\agentic-workflow-with-guardrails\\ResearchAgent\\ResearchAgent.csproj",
+      "targetGraphs": []
+    },
+    {
+      "code": "NU1301",
+      "level": "Error",
       "message": "Failed to retrieve information about 'Microsoft.Agents.AI' from remote source 'http://pkgs.dev.azure.com/FindPackagesById()?id='Microsoft.Agents.AI'&semVerLevel=2.0.0'.\r\n  Response status code does not indicate success: 404 (Not Found).",
       "projectPath": "c:\\Source\\ReasonMCP\\.reason\\dotnet\\tests\\dotnet-ai\\technology-selection\\fixtures\\agentic-workflow-with-guardrails\\ResearchAgent\\ResearchAgent.csproj",
       "filePath": "c:\\Source\\ReasonMCP\\.reason\\dotnet\\tests\\dotnet-ai\\technology-selection\\fixtures\\agentic-workflow-with-guardrails\\ResearchAgent\\ResearchAgent.csproj",
