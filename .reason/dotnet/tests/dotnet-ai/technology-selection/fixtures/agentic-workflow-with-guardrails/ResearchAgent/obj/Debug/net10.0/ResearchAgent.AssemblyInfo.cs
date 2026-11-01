@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ResearchAgent")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4d7ad6bdc02f62c4397f2a6f2ace5d6cbcf823ae")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8f8d40e02f26c5ed851cd8b492eaa993310683dc")]
 [assembly: System.Reflection.AssemblyProductAttribute("ResearchAgent")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ResearchAgent")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
